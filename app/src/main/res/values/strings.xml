@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Whistle Blower</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="google_client_id">372242022464-5mfk2arisqiqoaosggqmhr7qjf3k4tvt.apps.googleusercontent.com</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="user_icon">&#xf041;</string>
+    <string name="user_text">User</string>
+    <string name="whistle_blower_icon">&#xf083;</string>
+    <string name="whistle_blower_text">Whistle Blower</string>
+    <string name="volunteer_icon">&#xf02e;</string>
+    <string name="volunteer_text">Volunteer</string>
+    <string name="signing_in">Signing in...</string>
+    <string name="logout">Logout</string>
+    <string name="no_network_access">Please Check Your Internet Connectivity &amp; Try Again!</string>
+    <string name="internet_failure">No Internet!</string>
+</resources>
