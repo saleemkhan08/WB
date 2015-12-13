@@ -3,7 +3,7 @@ package in.org.whistleblower;
 import android.content.Context;
 import android.view.View;
 
-import in.org.whistleblower.services.Util;
+import in.org.whistleblower.services.MiscUtil;
 
 /**
  * Created by Saleem Khan on 12/8/2015.
@@ -11,13 +11,13 @@ import in.org.whistleblower.services.Util;
 public class AddIssueListener implements View.OnClickListener
 {
     Context context;
-    Util util;
+    MiscUtil util;
     Dialogs dialogs;
 
     public AddIssueListener(Context context)
     {
         this.context = context;
-        util = new Util(context);
+        util = new MiscUtil(context);
         dialogs = new Dialogs(context);
     }
 

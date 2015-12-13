@@ -21,7 +21,7 @@ import java.util.List;
 import in.org.whistleblower.services.CameraUtil;
 import in.org.whistleblower.services.LocationUtil;
 import in.org.whistleblower.services.NavigationUtil;
-import in.org.whistleblower.services.Util;
+import in.org.whistleblower.services.MiscUtil;
 
 public class MainActivity extends AppCompatActivity //implements PermissionRequestListener
 {
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
 
     public static String WHISTLE_BLOWER_PREFERENCE = "WHISTLE_BLOWER_PREFERENCE";
     // Activity request codes
-    Util util;
+    MiscUtil util;
     LocationUtil locationUtil;
     NavigationUtil navigationUtil;
     CameraUtil cameraUtil;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
     {
         super.onCreate(savedInstanceState);
         //Initialize Util Classes
-        util = new Util(this);
+        util = new MiscUtil(this);
         //Check For Sign In
         if (!util.hasUserSignedIn())
         {

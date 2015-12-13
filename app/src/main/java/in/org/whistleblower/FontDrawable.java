@@ -30,7 +30,7 @@ import in.org.whistleblower.icon.Icon;
 /**
  * A custom {@link Drawable} which can display icons from icon fonts.
  */
-public class IconicFontDrawable extends Drawable {
+public class FontDrawable extends Drawable {
 
     private Context mContext;
 
@@ -53,7 +53,7 @@ public class IconicFontDrawable extends Drawable {
     private Icon mIcon;
     private char[] mIconUtfChars;
 
-    public IconicFontDrawable(Context context) {
+    public FontDrawable(Context context) {
         mContext = context.getApplicationContext();
 
         mIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -67,7 +67,7 @@ public class IconicFontDrawable extends Drawable {
         mPaddingBounds = new Rect();
     }
 
-    public IconicFontDrawable(Context context, final Icon icon) {
+    public FontDrawable(Context context, final Icon icon) {
         this(context);
         updateIcon(icon);
     }

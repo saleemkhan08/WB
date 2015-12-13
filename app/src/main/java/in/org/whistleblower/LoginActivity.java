@@ -32,8 +32,8 @@ import com.google.android.gms.common.api.Status;
 
 import java.util.List;
 
-import in.org.whistleblower.models.Account;
-import in.org.whistleblower.services.Util;
+import in.org.whistleblower.models.AccountDao;
+import in.org.whistleblower.services.MiscUtil;
 import in.org.whistleblower.storage.QueryResultListener;
 import in.org.whistleblower.storage.RStorageObject;
 import in.org.whistleblower.storage.RStorageQuery;
@@ -46,7 +46,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     public static final String USER_ID = "userId";
-    private Util util;
+    private MiscUtil util;
     static Typeface mFont;
 
     public static class PlaceholderFragment extends Fragment
@@ -147,7 +147,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        util = new Util(this);
+        util = new MiscUtil(this);
 
         mFont = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
         ActionBar actionBar = getSupportActionBar();
@@ -253,20 +253,20 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void saveData(final String email, final String name, final String googleId, final String photo_url)
     {
-        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Account.TABLE);//ParseQuery.getQuery(Account.TABLE);
+        RStorageQuery<RStorageObject> query = new RStorageQuery<>(AccountDao.TABLE);//ParseQuery.getQuery(Account.TABLE);
 
-        query.getWhereEqualTo(Account.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
+        query.getWhereEqualTo(AccountDao.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
         {
             @Override
             public void onResult(List<StorageObject> userList)
             {
                 if (userList.size() == 0)
                 {
-                    final StorageObject userAccount = new RStorageObject(Account.TABLE);
-                    userAccount.put(Account.EMAIL, email);
-                    userAccount.put(Account.NAME, name);
-                    userAccount.put(Account.GOOGLE_ID, googleId);
-                    userAccount.put(Account.PHOTO_URL, photo_url);
+                    final StorageObject userAccount = new RStorageObject(AccountDao.TABLE);
+                    userAccount.put(AccountDao.EMAIL, email);
+                    userAccount.put(AccountDao.NAME, name);
+                    userAccount.put(AccountDao.GOOGLE_ID, googleId);
+                    userAccount.put(AccountDao.PHOTO_URL, photo_url);
                     userAccount.store(new StorageListener()
                     {
                         @Override
@@ -277,10 +277,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                             getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
                                     .putBoolean(LOGIN_STATUS, true)
-                                    .putString(Account.EMAIL, email)
-                                    .putString(Account.NAME, name)
-                                    .putString(Account.GOOGLE_ID, googleId)
-                                    .putString(Account.PHOTO_URL, photo_url)
+                                    .putString(AccountDao.EMAIL, email)
+                                    .putString(AccountDao.NAME, name)
+                                    .putString(AccountDao.GOOGLE_ID, googleId)
+                                    .putString(AccountDao.PHOTO_URL, photo_url)
                                     .putString(USER_ID, userAccount.getPrimaryKey())
                                     .commit();
                             finish();
@@ -299,18 +299,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 else
                 {
                     StorageObject userAccount = userList.get(0);
-                    userAccount.put(Account.EMAIL, email);
-                    userAccount.put(Account.NAME, name);
-                    userAccount.put(Account.GOOGLE_ID, googleId);
-                    userAccount.put(Account.PHOTO_URL, photo_url);
+                    userAccount.put(AccountDao.EMAIL, email);
+                    userAccount.put(AccountDao.NAME, name);
+                    userAccount.put(AccountDao.GOOGLE_ID, googleId);
+                    userAccount.put(AccountDao.PHOTO_URL, photo_url);
                     userAccount.store();
 
                     getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
                             .putBoolean(LOGIN_STATUS, true)
-                            .putString(Account.EMAIL, email)
-                            .putString(Account.NAME, name)
-                            .putString(Account.GOOGLE_ID, googleId)
-                            .putString(Account.PHOTO_URL, photo_url)
+                            .putString(AccountDao.EMAIL, email)
+                            .putString(AccountDao.NAME, name)
+                            .putString(AccountDao.GOOGLE_ID, googleId)
+                            .putString(AccountDao.PHOTO_URL, photo_url)
                             .commit();
 
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
@@ -348,7 +348,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void checkConnectivityNlogin()
     {
-        if (!Util.isConnected(this))
+        if (!MiscUtil.isConnected(this))
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.no_network_access);
@@ -358,7 +358,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
-                            if (Util.isConnected(getBaseContext()))
+                            if (MiscUtil.isConnected(getBaseContext()))
                             {
                                 signIn();
                                 dialog.dismiss();

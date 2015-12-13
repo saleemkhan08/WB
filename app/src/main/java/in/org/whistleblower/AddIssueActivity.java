@@ -15,14 +15,15 @@ import android.widget.VideoView;
 
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.icon.Icon;
-import in.org.whistleblower.services.Util;
+import in.org.whistleblower.services.CameraUtil;
+import in.org.whistleblower.services.MiscUtil;
 
 public class AddIssueActivity extends AppCompatActivity
 {
     private ImageView imgPreview;
     private VideoView videoPreview;
     private ImageView playPause;
-    private Util util;
+    private MiscUtil util;
 
     AddIssueListener listener;// = new AddIssueListener();
     private void setUpIcon(int id, Icon icon)
@@ -45,7 +46,7 @@ public class AddIssueActivity extends AppCompatActivity
         }
         */
 
-        util = new Util(this);
+        util = new MiscUtil(this);
         listener = new AddIssueListener(this);
         setContentView(R.layout.activity_add_issue);
         imgPreview = (ImageView) findViewById(R.id.image_view);
@@ -74,8 +75,8 @@ public class AddIssueActivity extends AppCompatActivity
        // /*
 
         Intent intent = getIntent();
-        String path = intent.getStringExtra(MapsActivity.FILE_PATH);
-        if (intent.getBooleanExtra(MapsActivity.IS_PHOTO, true))
+        String path = intent.getStringExtra(CameraUtil.FILE_PATH);
+        if (intent.getBooleanExtra(CameraUtil.IS_PHOTO, true))
         {
             Bitmap image = BitmapFactory.decodeFile(path);
             imgPreview.setImageBitmap(image);

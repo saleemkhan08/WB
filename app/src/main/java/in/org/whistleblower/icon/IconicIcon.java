@@ -15,8 +15,6 @@
  */
 package in.org.whistleblower.icon;
 
-import in.org.whistleblower.util.TypefaceManager;
-
 /**
  * A wrapper for Iconic icon font (http://somerandomdude.com/work/iconic/).
  */

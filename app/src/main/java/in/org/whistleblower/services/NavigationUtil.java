@@ -21,7 +21,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String MAP_FRAGMENT_TAG = "mapFragmentTag";
     public static final String MAIN_FRAGMENT_TAG = "mainFragmentTag";
 
-    Util util;
+    MiscUtil util;
     LocationUtil locationUtil;
 
     DrawerLayout drawer;
@@ -33,7 +33,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         this.activity = activity;
         fragmentManager = activity.getSupportFragmentManager();
     }
-    public void setUp(Util util, LocationUtil locationUtil)
+    public void setUp(MiscUtil util, LocationUtil locationUtil)
     {
         this.util = util;
         this.locationUtil = locationUtil;

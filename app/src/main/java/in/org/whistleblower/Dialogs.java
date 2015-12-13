@@ -4,17 +4,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
-import in.org.whistleblower.services.Util;
+import in.org.whistleblower.services.MiscUtil;
 
 public class Dialogs
 {
     Context mContext;
-    Util util;
+    MiscUtil util;
 
     public Dialogs(Context context)
     {
         mContext = context;
-        util = new Util(context);
+        util = new MiscUtil(context);
     }
 
     public void showRadiusDialog()

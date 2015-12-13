@@ -16,8 +16,6 @@
 package in.org.whistleblower.icon;
 
 
-import in.org.whistleblower.util.TypefaceManager;
-
 /**
  * A wrapper for Entypo-Social icon font (http://www.entypo.com).
  */

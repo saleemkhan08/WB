@@ -15,8 +15,6 @@
  */
 package in.org.whistleblower.icon;
 
-import in.org.whistleblower.util.TypefaceManager;
-
 /**
  * A wrapper for Font Awesome icon font (http://fortawesome.github.com/Font-Awesome/).
  */

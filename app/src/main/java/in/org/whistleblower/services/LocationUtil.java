@@ -56,7 +56,7 @@ public class LocationUtil implements GoogleApiClient.ConnectionCallbacks,
     LocationRequest mLocationRequest;
     public GoogleApiClient mGoogleApiClient;
     AppCompatActivity activity;
-    Util util;
+    MiscUtil util;
     LocationManager locationManager;
     FloatingActionButton buttonMyLoc;
     RelativeLayout addIssueMenu;
@@ -73,7 +73,7 @@ public class LocationUtil implements GoogleApiClient.ConnectionCallbacks,
         mapFragment = SupportMapFragment.newInstance();
     }
 
-    public void setUp(Util util)
+    public void setUp(MiscUtil util)
     {
         this.util = util;
         setUpMyLocationButton();

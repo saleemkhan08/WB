@@ -45,7 +45,7 @@ public class CameraUtil
         this.activity = activity;
     }
 
-    public void setUp(Util util)
+    public void setUp(MiscUtil util)
     {
         FloatingActionButton buttonPhoto = (FloatingActionButton) activity.findViewById(R.id.photo);
         buttonPhoto.setIconDrawable(util.getIcon(FontAwesomeIcon.CAMERA));
