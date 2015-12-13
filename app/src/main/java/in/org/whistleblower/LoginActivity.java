@@ -1,6 +1,5 @@
 package in.org.whistleblower;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,30 +29,25 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.SaveCallback;
 
 import java.util.List;
 
+import in.org.whistleblower.models.Account;
 import in.org.whistleblower.services.Util;
+import in.org.whistleblower.storage.QueryResultListener;
+import in.org.whistleblower.storage.RStorageObject;
+import in.org.whistleblower.storage.RStorageQuery;
+import in.org.whistleblower.storage.StorageListener;
+import in.org.whistleblower.storage.StorageObject;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener
 {
-    static final String EMAIL = "email";
-    static final String NAME = "name";
-    static final String GOOGLE_ID = "google_id";
-    static final String PHOTO_URL = "photo_url";
-    static final String USER_ACCOUNT = "UserAccount";
-    static final String LOGIN_STATUS = "login_status";
+    public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     public static final String USER_ID = "userId";
     private Util util;
     static Typeface mFont;
-    private ProgressDialog mProgressDialog;
 
     public static class PlaceholderFragment extends Fragment
     {
@@ -153,7 +147,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        util = new Util(this, mProgressDialog);
+        util = new Util(this);
 
         mFont = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
         ActionBar actionBar = getSupportActionBar();
@@ -259,80 +253,79 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void saveData(final String email, final String name, final String googleId, final String photo_url)
     {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(USER_ACCOUNT);
-        query.whereEqualTo(GOOGLE_ID, googleId);
-        query.findInBackground(new FindCallback<ParseObject>()
+        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Account.TABLE);//ParseQuery.getQuery(Account.TABLE);
+
+        query.getWhereEqualTo(Account.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
         {
-            public void done(List<ParseObject> userList, ParseException e)
+            @Override
+            public void onResult(List<StorageObject> userList)
             {
-                if (e == null)
+                if (userList.size() == 0)
                 {
-                    if (userList.size() == 0)
+                    final StorageObject userAccount = new RStorageObject(Account.TABLE);
+                    userAccount.put(Account.EMAIL, email);
+                    userAccount.put(Account.NAME, name);
+                    userAccount.put(Account.GOOGLE_ID, googleId);
+                    userAccount.put(Account.PHOTO_URL, photo_url);
+                    userAccount.store(new StorageListener()
                     {
-                        final ParseObject userAccount = new ParseObject(USER_ACCOUNT);
-                        userAccount.put(EMAIL, email);
-                        userAccount.put(NAME, name);
-                        userAccount.put(GOOGLE_ID, googleId);
-                        userAccount.put(PHOTO_URL, photo_url);
-                        userAccount.saveInBackground(new SaveCallback()
+                        @Override
+                        public void onSuccess()
                         {
-                            @Override
-                            public void done(ParseException e)
-                            {
-                                if (e == null)
-                                {
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                    util.hideProgressDialog();
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            util.hideProgressDialog();
 
-                                    getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
-                                            .putBoolean(LOGIN_STATUS, true)
-                                            .putString(EMAIL, email)
-                                            .putString(NAME, name)
-                                            .putString(GOOGLE_ID, googleId)
-                                            .putString(PHOTO_URL, photo_url)
-                                            .putString(USER_ID, userAccount.getObjectId())
-                                            .commit();
-                                    finish();
-                                }
-                                else
-                                {
-                                    util.hideProgressDialog();
-                                    util.toast("Something went wrong!");
-                                    util.toast("Please Try again!");
-                                    signOut();
-                                }
-                            }
-                        });
-                    }
-                    else
-                    {
-                        ParseObject userAccount = userList.get(0);
-                        userAccount.put(EMAIL, email);
-                        userAccount.put(NAME, name);
-                        userAccount.put(GOOGLE_ID, googleId);
-                        userAccount.put(PHOTO_URL, photo_url);
-                        userAccount.saveInBackground();
+                            getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
+                                    .putBoolean(LOGIN_STATUS, true)
+                                    .putString(Account.EMAIL, email)
+                                    .putString(Account.NAME, name)
+                                    .putString(Account.GOOGLE_ID, googleId)
+                                    .putString(Account.PHOTO_URL, photo_url)
+                                    .putString(USER_ID, userAccount.getPrimaryKey())
+                                    .commit();
+                            finish();
+                        }
 
-                        getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
-                                .putBoolean(LOGIN_STATUS, true)
-                                .putString(EMAIL, email)
-                                .putString(NAME, name)
-                                .putString(GOOGLE_ID, googleId)
-                                .putString(PHOTO_URL, photo_url)
-                                .commit();
-
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        util.hideProgressDialog();
-                        finish();
-                    }
+                        @Override
+                        public void onError(String e)
+                        {
+                            util.hideProgressDialog();
+                            util.toast(e);
+                            util.toast("Please Try again!");
+                            signOut();
+                        }
+                    });
                 }
                 else
                 {
+                    StorageObject userAccount = userList.get(0);
+                    userAccount.put(Account.EMAIL, email);
+                    userAccount.put(Account.NAME, name);
+                    userAccount.put(Account.GOOGLE_ID, googleId);
+                    userAccount.put(Account.PHOTO_URL, photo_url);
+                    userAccount.store();
+
+                    getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
+                            .putBoolean(LOGIN_STATUS, true)
+                            .putString(Account.EMAIL, email)
+                            .putString(Account.NAME, name)
+                            .putString(Account.GOOGLE_ID, googleId)
+                            .putString(Account.PHOTO_URL, photo_url)
+                            .commit();
+
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     util.hideProgressDialog();
-                    util.toast("Something went wrong!");
-                    util.toast("Please Try again!");
-                    signOut();
+                    finish();
                 }
+            }
+
+            @Override
+            public void onError(String e)
+            {
+                util.hideProgressDialog();
+                util.toast(e);
+                util.toast("Please Try again!");
+                signOut();
             }
         });
     }
