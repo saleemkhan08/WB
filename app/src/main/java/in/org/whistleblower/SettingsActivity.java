@@ -6,7 +6,6 @@ import android.support.v7.widget.Toolbar;
 
 public class SettingsActivity extends AppCompatActivity
 {
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -16,5 +15,4 @@ public class SettingsActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-
 }
