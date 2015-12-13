@@ -43,7 +43,6 @@ public class TypefaceManager
 
     public enum IconicTypeface
     {
-
         FONT_AWESOME(R.raw.fontawesome_webfont),
         ICONIC(R.raw.iconic);
 
