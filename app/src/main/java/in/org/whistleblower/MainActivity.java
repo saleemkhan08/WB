@@ -18,10 +18,10 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import in.org.whistleblower.services.CameraUtil;
-import in.org.whistleblower.services.LocationUtil;
-import in.org.whistleblower.services.NavigationUtil;
-import in.org.whistleblower.services.MiscUtil;
+import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.utilities.CameraUtil;
+import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class MainActivity extends AppCompatActivity //implements PermissionRequestListener
 {
@@ -32,10 +32,9 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
     public static String WHISTLE_BLOWER_PREFERENCE = "WHISTLE_BLOWER_PREFERENCE";
     // Activity request codes
     MiscUtil util;
-    LocationUtil locationUtil;
     NavigationUtil navigationUtil;
     CameraUtil cameraUtil;
-
+    MapFragment mapFragment;
     static Typeface mFont;
 
     @Override
@@ -52,10 +51,6 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
         else
         {
             setContentView(R.layout.activity_main);
-
-            //Set Up Location Util
-            locationUtil = new LocationUtil(this);
-            locationUtil.setUp(util);
             //Toolbar
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
@@ -69,7 +64,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
 
             //Set up Navigation Util
             navigationUtil = new NavigationUtil(drawer, this);
-            navigationUtil.setUp(util, locationUtil);
+            mapFragment = navigationUtil.setUp(util);
             navigationUtil.showMapFragment();
             cameraUtil = new CameraUtil(this);
             cameraUtil.setUp(util);
@@ -127,6 +122,11 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
+        else if (id == R.id.search_issue)
+        {
+            startActivity(new Intent(this, SearchActivity.class));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    locationUtil.setMyLocationOnMap();
+                    mapFragment.setMyLocationOnMap();
                 }
                 else
                 {

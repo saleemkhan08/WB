@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="4"
+        android:entries="@array/map_type"
+        android:entryValues="@array/map_type_val"
+        android:summary="%s"
+        android:key="mapType"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="Select Type of Map"/>
+    <ListPreference
+        android:defaultValue="60000"
+        android:entries="@array/loc_update_freq"
+        android:entryValues="@array/loc_update_freq_val"
+        android:summary="%s"
+        android:key="updateFreq"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="Location Update Frequency "/>
+</PreferenceScreen>

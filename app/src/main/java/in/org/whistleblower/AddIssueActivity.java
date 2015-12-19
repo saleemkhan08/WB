@@ -15,8 +15,8 @@ import android.widget.VideoView;
 
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.icon.Icon;
-import in.org.whistleblower.services.CameraUtil;
-import in.org.whistleblower.services.MiscUtil;
+import in.org.whistleblower.utilities.CameraUtil;
+import in.org.whistleblower.utilities.MiscUtil;
 
 public class AddIssueActivity extends AppCompatActivity
 {

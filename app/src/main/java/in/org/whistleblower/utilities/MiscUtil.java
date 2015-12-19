@@ -1,14 +1,17 @@
-package in.org.whistleblower.services;
+package in.org.whistleblower.utilities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 import in.org.whistleblower.FontDrawable;
@@ -53,7 +56,19 @@ public class MiscUtil
         }
         return false;
     }
-
+    public boolean isConnected()
+    {
+        ConnectivityManager connectivity = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity != null)
+        {
+            NetworkInfo info = connectivity.getActiveNetworkInfo();
+            if (info != null && info.isConnected())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     public Drawable getIcon(Icon icon, int color)
     {
         fontDrawable = new FontDrawable(mContext);
@@ -82,9 +97,55 @@ public class MiscUtil
         {
             return true;
         }
-
     }
 
+    public void isConnected(final ConnectivityListener listener)
+    {
+        if (!isConnected())
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setMessage(R.string.no_network_access);
+            builder.setPositiveButton("Try Again",
+                    new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            if (isConnected())
+                            {
+                                listener.onInternetConnected();
+                                dialog.dismiss();
+                            }
+                            else
+                            {
+                                isConnected(listener);
+                            }
+                        }
+                    });
+            builder.setCancelable(false);
+            builder.setTitle(R.string.internet_failure);
+            builder.setOnKeyListener(new DialogInterface.OnKeyListener()
+            {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode,
+                                     KeyEvent event)
+                {
+                    if (keyCode == KeyEvent.KEYCODE_BACK
+                            && event.getAction() == KeyEvent.ACTION_UP
+                            && !event.isCanceled())
+                    {
+                        dialog.dismiss();
+                    }
+                    return false;
+                }
+            });
+            builder.show();
+        }
+        else
+        {
+            listener.onInternetConnected();
+        }
+    }
     public void showProgressDialog(String msg)
     {
         if (mProgressDialog == null)

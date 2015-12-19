@@ -4,7 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
-import in.org.whistleblower.services.MiscUtil;
+import in.org.whistleblower.utilities.MiscUtil;
 
 public class Dialogs
 {

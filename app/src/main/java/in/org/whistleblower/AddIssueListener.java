@@ -3,7 +3,7 @@ package in.org.whistleblower;
 import android.content.Context;
 import android.view.View;
 
-import in.org.whistleblower.services.MiscUtil;
+import in.org.whistleblower.utilities.MiscUtil;
 
 /**
  * Created by Saleem Khan on 12/8/2015.

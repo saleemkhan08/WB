@@ -1,7 +1,6 @@
 package in.org.whistleblower;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -11,10 +10,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,21 +30,28 @@ import com.google.android.gms.common.api.Status;
 import java.util.List;
 
 import in.org.whistleblower.models.AccountDao;
-import in.org.whistleblower.services.MiscUtil;
 import in.org.whistleblower.storage.QueryResultListener;
 import in.org.whistleblower.storage.RStorageObject;
 import in.org.whistleblower.storage.RStorageQuery;
 import in.org.whistleblower.storage.StorageListener;
 import in.org.whistleblower.storage.StorageObject;
+import in.org.whistleblower.utilities.ConnectivityListener;
+import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener
+        View.OnClickListener, ConnectivityListener
 {
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     public static final String USER_ID = "userId";
     private MiscUtil util;
     static Typeface mFont;
+
+    @Override
+    public void onInternetConnected()
+    {
+        signIn();
+    }
 
     public static class PlaceholderFragment extends Fragment
     {
@@ -346,64 +350,13 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         util.showProgressDialog(SIGNING_IN);
     }
 
-    public void checkConnectivityNlogin()
-    {
-        if (!MiscUtil.isConnected(this))
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.no_network_access);
-            builder.setPositiveButton("Try Again",
-                    new DialogInterface.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            if (MiscUtil.isConnected(getBaseContext()))
-                            {
-                                signIn();
-                                dialog.dismiss();
-                            }
-                            else
-                            {
-                                checkConnectivityNlogin();
-                            }
-                        }
-                    });
-            builder.setCancelable(false);
-            builder.setTitle(R.string.internet_failure);
-            builder.setOnKeyListener(new DialogInterface.OnKeyListener()
-            {
-
-                @Override
-                public boolean onKey(DialogInterface dialog, int keyCode,
-                                     KeyEvent event)
-                {
-                    if (keyCode == KeyEvent.KEYCODE_BACK
-                            && event.getAction() == KeyEvent.ACTION_UP
-                            && !event.isCanceled())
-                    {
-                        dialog.dismiss();
-
-                        finish();
-                    }
-                    return false;
-                }
-            });
-            builder.show();
-        }
-        else
-        {
-            signIn();
-        }
-    }
-
     @Override
     public void onClick(View v)
     {
         switch (v.getId())
         {
             case R.id.sign_in_button:
-                checkConnectivityNlogin();
+                util.isConnected((ConnectivityListener)this);
                 break;
             case R.id.sign_out_button:
                 signOut();
