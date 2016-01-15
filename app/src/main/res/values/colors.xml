@@ -6,7 +6,10 @@
     <color name="colorPrimary">#192331</color>
     <color name="colorPrimaryDark">#101720</color>
     <color name="colorAccent">#55c4c1</color>
+    <color name="colorAccentPressed">#84d5d2</color>
     <color name="divider">#aaaaaa</color>
+    <color name="travel_mode">#F57C00</color>
+    <color name="travel_mode_pressed">#FF9f40</color>
     <color name="black_semi_transparent">#B2000000</color>
     <color name="background">#e5e5e5</color>
     <color name="half_black">#808080</color>
@@ -15,4 +18,5 @@
     <color name="blue_semi_transparent">#805677fc</color>
     <color name="blue_semi_transparent_pressed">#80738ffe</color>
     <color name="pink">#881010</color>
+    <color name="colorAccentDark">#38A09E</color>
 </resources>

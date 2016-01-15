@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 
 import in.org.whistleblower.FontDrawable;
 import in.org.whistleblower.LoginActivity;
-import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.icon.Icon;
 
@@ -24,7 +24,7 @@ public class MiscUtil
 {
     private Context mContext;
     FontDrawable fontDrawable;
-    private ProgressDialog mProgressDialog;
+    public ProgressDialog mProgressDialog;
     Resources resources;
 
     public MiscUtil(Context mContext)
@@ -88,7 +88,7 @@ public class MiscUtil
     public boolean hasUserSignedIn()
     {
         //Login Check
-        if (!mContext.getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).getBoolean(LoginActivity.LOGIN_STATUS, false))
+        if (!PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LoginActivity.LOGIN_STATUS, false))
         {
             mContext.startActivity(new Intent(mContext, LoginActivity.class));
             return false;
@@ -146,18 +146,31 @@ public class MiscUtil
             listener.onInternetConnected();
         }
     }
+    public void showIndeterminateProgressDialog(String msg)
+    {
+        if (mProgressDialog == null)
+        {
+            mProgressDialog = new ProgressDialog(mContext);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setMessage(msg);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setIndeterminate(true);
+        }
+        mProgressDialog.show();
+    }
     public void showProgressDialog(String msg)
     {
         if (mProgressDialog == null)
         {
             mProgressDialog = new ProgressDialog(mContext);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setCancelable(false);
             mProgressDialog.setMessage(msg);
-            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         }
 
         mProgressDialog.show();
     }
-
     public void hideProgressDialog()
     {
         if (mProgressDialog != null && mProgressDialog.isShowing())

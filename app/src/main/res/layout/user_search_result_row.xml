@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:padding="10dp"
+    >
+
+    <ImageView
+        android:id="@+id/displayPic"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:scaleType="centerCrop"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:gravity="center_vertical"
+        android:layout_marginRight="15dp"
+        android:src="@drawable/img"
+        />
+
+    <TextView
+        android:id="@+id/username"
+        android:layout_centerVertical="true"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:text="Anonymous"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="20sp"
+        android:layout_toRightOf="@+id/displayPic"
+        android:layout_toLeftOf="@+id/addFriendButton"
+        />
+
+    <Button
+
+        android:id="@+id/addFriendButton"
+        android:gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Friend"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+</RelativeLayout>

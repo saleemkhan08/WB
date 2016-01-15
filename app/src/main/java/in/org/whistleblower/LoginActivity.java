@@ -1,10 +1,10 @@
 package in.org.whistleblower;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -29,7 +29,7 @@ import com.google.android.gms.common.api.Status;
 
 import java.util.List;
 
-import in.org.whistleblower.models.AccountDao;
+import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.storage.QueryResultListener;
 import in.org.whistleblower.storage.RStorageObject;
 import in.org.whistleblower.storage.RStorageQuery;
@@ -257,34 +257,37 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void saveData(final String email, final String name, final String googleId, final String photo_url)
     {
-        RStorageQuery<RStorageObject> query = new RStorageQuery<>(AccountDao.TABLE);//ParseQuery.getQuery(Account.TABLE);
+        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
 
-        query.getWhereEqualTo(AccountDao.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
+        query.getWhereEqualTo(Accounts.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
         {
             @Override
             public void onResult(List<StorageObject> userList)
             {
+                MiscUtil.log("List : "+userList);
+                MiscUtil.log("Len : "+ userList.size());
                 if (userList.size() == 0)
                 {
-                    final StorageObject userAccount = new RStorageObject(AccountDao.TABLE);
-                    userAccount.put(AccountDao.EMAIL, email);
-                    userAccount.put(AccountDao.NAME, name);
-                    userAccount.put(AccountDao.GOOGLE_ID, googleId);
-                    userAccount.put(AccountDao.PHOTO_URL, photo_url);
+                    final StorageObject userAccount = new RStorageObject(Accounts.TABLE);
+                    userAccount.put(Accounts.EMAIL, email);
+                    userAccount.put(Accounts.NAME, name);
+                    userAccount.put(Accounts.GOOGLE_ID, googleId);
+                    userAccount.put(Accounts.PHOTO_URL, photo_url);
                     userAccount.store(new StorageListener()
                     {
                         @Override
                         public void onSuccess()
                         {
+                            MiscUtil.log("Saved");
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
                             util.hideProgressDialog();
-
-                            getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
+                            PreferenceManager.getDefaultSharedPreferences(LoginActivity.this)
+                                    .edit()
                                     .putBoolean(LOGIN_STATUS, true)
-                                    .putString(AccountDao.EMAIL, email)
-                                    .putString(AccountDao.NAME, name)
-                                    .putString(AccountDao.GOOGLE_ID, googleId)
-                                    .putString(AccountDao.PHOTO_URL, photo_url)
+                                    .putString(Accounts.EMAIL, email)
+                                    .putString(Accounts.NAME, name)
+                                    .putString(Accounts.GOOGLE_ID, googleId)
+                                    .putString(Accounts.PHOTO_URL, photo_url)
                                     .putString(USER_ID, userAccount.getPrimaryKey())
                                     .commit();
                             finish();
@@ -302,19 +305,36 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
                 else
                 {
-                    StorageObject userAccount = userList.get(0);
-                    userAccount.put(AccountDao.EMAIL, email);
-                    userAccount.put(AccountDao.NAME, name);
-                    userAccount.put(AccountDao.GOOGLE_ID, googleId);
-                    userAccount.put(AccountDao.PHOTO_URL, photo_url);
-                    userAccount.store();
+                    MiscUtil.log("List : "+userList);
+                    MiscUtil.log("Values : email : "+email+", name : "+name+", googleId : "+googleId+", photo_url : "+photo_url);
 
-                    getSharedPreferences(MainActivity.WHISTLE_BLOWER_PREFERENCE, Context.MODE_PRIVATE).edit()
+                    StorageObject userAccount = userList.get(0);
+                    userAccount.put(Accounts.EMAIL, email);
+                    userAccount.put(Accounts.NAME, name);
+                    userAccount.put(Accounts.PHOTO_URL, photo_url);
+
+                    userAccount.update(new StorageListener()
+                    {
+                        @Override
+                        public void onSuccess()
+                        {
+                            MiscUtil.log("Updated");
+                        }
+
+                        @Override
+                        public void onError(String e)
+                        {
+                            MiscUtil.log("Couldn't Update");
+                        }
+                    });
+
+                    PreferenceManager.getDefaultSharedPreferences(LoginActivity.this)
+                            .edit()
                             .putBoolean(LOGIN_STATUS, true)
-                            .putString(AccountDao.EMAIL, email)
-                            .putString(AccountDao.NAME, name)
-                            .putString(AccountDao.GOOGLE_ID, googleId)
-                            .putString(AccountDao.PHOTO_URL, photo_url)
+                            .putString(Accounts.EMAIL, email)
+                            .putString(Accounts.NAME, name)
+                            .putString(Accounts.GOOGLE_ID, googleId)
+                            .putString(Accounts.PHOTO_URL, photo_url)
                             .commit();
 
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
@@ -347,7 +367,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_GET_TOKEN);
-        util.showProgressDialog(SIGNING_IN);
+        util.showIndeterminateProgressDialog(SIGNING_IN);
     }
 
     @Override

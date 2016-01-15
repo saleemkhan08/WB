@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <ListPreference
-        android:defaultValue="4"
+        android:defaultValue="1"
         android:entries="@array/map_type"
         android:entryValues="@array/map_type_val"
         android:summary="%s"

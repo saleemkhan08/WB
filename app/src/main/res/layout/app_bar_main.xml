@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    android:id="@+id/mainActivityContainer"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
@@ -10,7 +11,7 @@
     tools:context="in.org.whistleblower.MainActivity">
 
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/view"
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -24,9 +25,15 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/appBarLayout">
+        <include layout="@layout/content_main"/>
+    </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/fab_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -34,7 +41,6 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="80dp"
         android:layout_marginRight="10dp"
-        android:id="@+id/fab_wrapper"
         >
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
@@ -42,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_addButtonColorNormal="@color/colorAccent"
-            fab:fab_addButtonColorPressed="@color/colorAccent"
+            fab:fab_addButtonColorPressed="@color/colorAccentPressed"
             fab:fab_addButtonPlusIconColor="@color/white"
             fab:fab_addButtonStrokeVisible="false"
             fab:fab_expandDirection="up"
@@ -64,11 +70,19 @@
                 fab:fab_colorPressed="@color/white_pressed"
                 fab:fab_size="mini"/>
 
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/alarm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_colorNormal="@color/white"
+                fab:fab_colorPressed="@color/white_pressed"
+                fab:fab_size="mini"/>
+
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
     </RelativeLayout>
 
-    <com.getbase.floatingactionbutton.FloatingActionButton
-        android:id="@+id/my_loc"
+    <RelativeLayout
+        android:id="@+id/location_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -76,7 +90,13 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
-        fab:fab_colorNormal="@color/colorAccent"
-        fab:fab_colorPressed="@color/colorAccent"/>
+        >
 
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/my_loc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="@color/colorAccent"
+            fab:fab_colorPressed="@color/colorAccentPressed"/>
+    </RelativeLayout>
 </RelativeLayout>

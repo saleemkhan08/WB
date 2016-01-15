@@ -6,7 +6,7 @@ import java.util.Set;
 
 public abstract class StorageObject
 {
-    private Map<String, Object> data;
+    protected Map<String, Object> data;
 
     public String getPrimaryKey()
     {
@@ -124,4 +124,7 @@ public abstract class StorageObject
 
     abstract public void store(final StorageListener listener);
     abstract public void store();
+
+    abstract public void update(final StorageListener listener);
+    abstract public void update();
 }

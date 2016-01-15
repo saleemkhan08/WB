@@ -2,10 +2,13 @@ package in.org.whistleblower;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -14,36 +17,39 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.util.List;
 
 import in.org.whistleblower.fragments.MapFragment;
-import in.org.whistleblower.utilities.CameraUtil;
+import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
-public class MainActivity extends AppCompatActivity //implements PermissionRequestListener
+public class MainActivity extends AppCompatActivity
 {
     public static final int IMAGE_AND_STORAGE_REQUEST = 101;
     public static final int VIDEO_AND_STORAGE_REQUEST = 102;
     public static final int LOCATION_REQUEST = 103;
+    private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
 
-    public static String WHISTLE_BLOWER_PREFERENCE = "WHISTLE_BLOWER_PREFERENCE";
     // Activity request codes
     MiscUtil util;
-    NavigationUtil navigationUtil;
-    CameraUtil cameraUtil;
-    MapFragment mapFragment;
-    static Typeface mFont;
+    NavigationUtil mNavigationUtil;
+    FABUtil mFabUtil;
+    SharedPreferences preferences;
+    //static Typeface mFont;
+    DrawerLayout drawer;
+    RelativeLayout mainActivityContainer;
+    private MapFragment mMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        //Initialize Util Classes
         util = new MiscUtil(this);
-        //Check For Sign In
         if (!util.hasUserSignedIn())
         {
             finish();
@@ -51,24 +57,98 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
         else
         {
             setContentView(R.layout.activity_main);
+            preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
 
             //Navigation Drawer
-            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                     this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
             drawer.setDrawerListener(toggle);
             toggle.syncState();
+            MiscUtil.log("OnCreate");
+            mNavigationUtil = new NavigationUtil(drawer, this);
+            mMapFragment = mNavigationUtil.setUp(util);
+            mFabUtil = new FABUtil(this);
+            mFabUtil.setUp(util);
+            if (savedInstanceState == null)
+            {
+                mNavigationUtil.showMapFragment();
+                mNavigationUtil.navigationView.getMenu().getItem(0).setChecked(true);
+            }
+        }
+    }
 
-            //Set up Navigation Util
-            navigationUtil = new NavigationUtil(drawer, this);
-            mapFragment = navigationUtil.setUp(util);
-            navigationUtil.showMapFragment();
-            cameraUtil = new CameraUtil(this);
-            cameraUtil.setUp(util);
-            mFont = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState)
+    {
+        super.onSaveInstanceState(outState, outPersistentState);
+        //for()
+        //outPersistentState.putString(FRAGMENT_TAG, );
+    }
+
+    //If Location Settings is "OFF" then this Call Back will be used
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        // if the result is capturing Image
+        switch (requestCode)
+        {
+            // Check for the integer request code originally supplied to startResolutionForResult().
+            case MapFragment.REQUEST_CODE_LOCATION_SETTINGS:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                        MiscUtil.log("User agreed to make required location settings changes.");
+                        mMapFragment.updateCurrentLocationOnMap();
+                        mMapFragment.startLocationUpdates();
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        preferences.edit().putBoolean(MapFragment.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
+                        MiscUtil.log("User chose not to make required location settings changes.");
+                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "App requires Location settings to be on!", Snackbar.LENGTH_INDEFINITE);
+                        snackbar.setAction("Retry", new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+                                MiscUtil.log("onActivityResult : checkLocationSettings Again - Snack Bar");
+                                mMapFragment.updateCurrentLocationOnMap();
+                            }
+                        });
+                        snackbar.show();
+                        break;
+                }
+                break;
+            case FABUtil.RECORD_VIDEO_REQUEST:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                        mFabUtil.launchIssueEditor(false);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        util.toast("User cancelled video recording");
+                        break;
+                    default:
+                        util.toast("Sorry! Failed to record video");
+                }
+                break;
+            case FABUtil.CAPTURE_IMAGE_REQUEST:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                        mFabUtil.launchIssueEditor(true);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        util.toast("User cancelled image capture");
+                        break;
+                    default:
+                        util.toast("Sorry! Failed to capture image");
+                }
+                break;
         }
     }
 
@@ -130,7 +210,6 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -141,7 +220,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    cameraUtil.captureImage();
+                    mFabUtil.captureImage();
                 }
                 else
                 {
@@ -154,7 +233,7 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    cameraUtil.recordVideo();
+                    mFabUtil.addFavoritePlace();
                 }
                 else
                 {
@@ -162,62 +241,20 @@ public class MainActivity extends AppCompatActivity //implements PermissionReque
                 }
             }
             break;
-            case LOCATION_REQUEST:
-            {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    mapFragment.setMyLocationOnMap();
-                }
-                else
-                {
-                    Toast.makeText(this, "To access your location this permissions are required!", Toast.LENGTH_LONG).show();
-                }
-            }
-            break;
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        // if the result is capturing Image
-        if (requestCode == CameraUtil.CAPTURE_IMAGE_REQUEST)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                cameraUtil.launchIssueEditor(true);
-            }
-            else if (resultCode == RESULT_CANCELED)
-            {
-                // user cancelled Image capture
-                util.toast("User cancelled image capture");
-            }
-            else
-            {
-                util.toast("Sorry! Failed to capture image");
-            }
-        }
-        else if (requestCode == CameraUtil.RECORD_VIDEO_REQUEST)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                cameraUtil.launchIssueEditor(false);
-            }
-            else if (resultCode == RESULT_CANCELED)
-            {
-                util.toast("User cancelled video recording");
-            }
-            else
-            {
-                util.toast("Sorry! Failed to record video");
-            }
-        }
-    }
-
-    //@Override
     public static void requestPermission(List<String> permissionsList, int requestCode, Activity activity)
     {
         String[] permissions = new String[permissionsList.size()];
         ActivityCompat.requestPermissions(activity, permissionsList.toArray(permissions), requestCode);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+
+        //util.toast("on New Intent");
     }
 }

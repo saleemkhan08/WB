@@ -4,10 +4,12 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -25,29 +27,42 @@ import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 
-public class CameraUtil
+public class FABUtil
 {
+    SharedPreferences preferences;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     public static final int CAPTURE_IMAGE_REQUEST = 301;
     public static final int RECORD_VIDEO_REQUEST = 302;
+    public static final int SET_REMINDER_REQUEST = 303;
     public String storagePath = "";
-    public static final String FILE_PATH = "FILE_PATH";
+    public static final String FILE_PATH = "FILE_URL";
     public static final String IS_PHOTO = "IS_PHOTO";
     private Uri fileUri; // file url to store image/video
-
     // directory name to store captured images and videos
     private static final String IMAGE_DIRECTORY_NAME = "WhistleBlower";
-    Activity activity;
-
-    public CameraUtil(Activity activity)
+    Activity mActivity;
+    MiscUtil mUtil;
+    public FABUtil(Activity activity)
     {
-        this.activity = activity;
+        this.mActivity = activity;
     }
 
     public void setUp(MiscUtil util)
     {
-        FloatingActionButton buttonPhoto = (FloatingActionButton) activity.findViewById(R.id.photo);
+        FloatingActionButton buttonAlarm = (FloatingActionButton) mActivity.findViewById(R.id.alarm);
+        buttonAlarm.setIconDrawable(util.getIcon(FontAwesomeIcon.BELL));
+        buttonAlarm.setStrokeVisible(false);
+        buttonAlarm.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                setAlarm();
+            }
+        });
+
+        FloatingActionButton buttonPhoto = (FloatingActionButton) mActivity.findViewById(R.id.photo);
         buttonPhoto.setIconDrawable(util.getIcon(FontAwesomeIcon.CAMERA));
         buttonPhoto.setStrokeVisible(false);
         buttonPhoto.setOnClickListener(new View.OnClickListener()
@@ -59,25 +74,32 @@ public class CameraUtil
             }
         });
 
-        FloatingActionButton buttonVideo = (FloatingActionButton) activity.findViewById(R.id.video);
-        buttonVideo.setIconDrawable(util.getIcon(FontAwesomeIcon.VIDEO));
+        FloatingActionButton buttonVideo = (FloatingActionButton) mActivity.findViewById(R.id.video);
+        buttonVideo.setIconDrawable(util.getIcon(FontAwesomeIcon.MAP_MARKER));
         buttonVideo.setStrokeVisible(false);
         buttonVideo.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                recordVideo();
+                addFavoritePlace();
             }
         });
+        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        mUtil = util;
+    }
+
+    public void setAlarm()
+    {
+        mUtil.toast("Set Alarm!");
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private boolean isCameraAndStoragePermissionsAvailable()
     {
-        return ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
     }
 
     public void captureImage()
@@ -92,26 +114,13 @@ public class CameraUtil
             fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
             // start the image capture Intent
-            activity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST);
+            mActivity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST);
         }
     }
 
-    public void recordVideo()
+    public void addFavoritePlace()
     {
-        if (!isCameraAndStoragePermissionsAvailable())
-        {
-            requestCameraAndStoragePermissions(MainActivity.VIDEO_AND_STORAGE_REQUEST);
-        }
-        else
-        {
-            Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-            fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-            // set video quality
-            intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-            // start the video capture Intent
-            activity.startActivityForResult(intent, RECORD_VIDEO_REQUEST);
-        }
+        mUtil.toast("Add Favorite Places!");
     }
 
     public Uri getOutputMediaFileUri(int type)
@@ -159,10 +168,10 @@ public class CameraUtil
 
     public void launchIssueEditor(boolean isPhoto)
     {
-        Intent intent = new Intent(activity, AddIssueActivity.class);
+        Intent intent = new Intent(mActivity, AddIssueActivity.class);
         intent.putExtra(FILE_PATH, storagePath);
         intent.putExtra(IS_PHOTO, isPhoto);
-        activity.startActivity(intent);
+        mActivity.startActivity(intent);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -172,6 +181,6 @@ public class CameraUtil
                 Arrays.asList(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.CAMERA,
                         Manifest.permission.READ_EXTERNAL_STORAGE),
-                requestCode, activity);
+                requestCode, mActivity);
     }
 }
