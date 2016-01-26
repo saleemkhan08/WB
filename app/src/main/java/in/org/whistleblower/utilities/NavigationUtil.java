@@ -14,7 +14,7 @@ import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.SearchActivity;
 import in.org.whistleblower.fragments.MainFragment;
-import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.MapFragmentOld;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 
 public class NavigationUtil implements NavigationView.OnNavigationItemSelectedListener
@@ -23,11 +23,14 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String MAIN_FRAGMENT_TAG = "mainFragmentTag";
     public static final String KEY_CATEGORY = "KEY_CATEGORY";
     public static final String ADD_FRIEND = "ADD_FRIEND";
+    public static final String FRIEND_LIST = "FRIEND_LIST";
+    public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
+    public static final String FAV_PLACE = "FAV_PLACE";
 
     MiscUtil util;
     DrawerLayout drawer;
     private AppCompatActivity mActivity;
-    public MapFragment mapFragment;
+    public MapFragmentOld mapFragmentOld;
     FragmentManager fragmentManager;
     public NavigationView navigationView;
     public MainFragment mainFragment;
@@ -39,7 +42,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         fragmentManager = activity.getSupportFragmentManager();
     }
 
-    public MapFragment setUp(MiscUtil util)
+    public MapFragmentOld setUp(MiscUtil util)
     {
         this.util = util;
         navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
@@ -53,13 +56,13 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE_ALT));
         menu.findItem(R.id.nav_add_friend).setIcon(util.getIcon(FontAwesomeIcon.USER));
         menu.findItem(R.id.nav_logout).setIcon(util.getIcon(FontAwesomeIcon.SIGNOUT));
-        mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-        if(mapFragment == null)
+        mapFragmentOld = (MapFragmentOld) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        if(mapFragmentOld == null)
         {
-            mapFragment = new MapFragment();
+            mapFragmentOld = new MapFragmentOld();
             MiscUtil.log("NavigationUtilSetup : mapFragment : Created");
         }
-        return mapFragment;
+        return mapFragmentOld;
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -82,7 +85,9 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
         else if (id == R.id.nav_friends)
         {
-            util.toast("Not Implemented");
+            Intent intent = new Intent(mActivity, SearchActivity.class);
+            intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
+            mActivity.startActivity(intent);
         }
         else if (id == R.id.nav_share_loc)
         {
@@ -109,14 +114,14 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showMapFragment()
     {
-        if (mapFragment == null)
+        if (mapFragmentOld == null)
         {
-            mapFragment = new MapFragment();
+            mapFragmentOld = new MapFragmentOld();
             MiscUtil.log("showMapFragment : mapFragment : Created");
         }
         fragmentManager
                 .beginTransaction()
-                .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                .replace(R.id.content_layout, mapFragmentOld, MAP_FRAGMENT_TAG)
                 .commit();
     }
 

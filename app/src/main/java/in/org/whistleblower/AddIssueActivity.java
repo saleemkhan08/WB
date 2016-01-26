@@ -28,7 +28,7 @@ import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 
-import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.MapFragmentOld;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.icon.Icon;
 import in.org.whistleblower.icon.IconicIcon;
@@ -120,7 +120,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void showAreaNameAndTypeDetails()
     {
-        String placeTypeNameText = preferences.getString(MapFragment.ADDRESS, "@Unknown Place");
+        String placeTypeNameText = preferences.getString(MapFragmentOld.ADDRESS, "@Unknown Place");
         String temp = dialogsUtil.getSelectedZonesStrings();
         placeTypeNameText += ", " + temp;
         placeTypeName.setText(placeTypeNameText);
@@ -289,8 +289,8 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
 
         issue.put(Issues.RADIUS, preferences.getInt(Issues.RADIUS, 0));
 
-        issue.put(Issues.LATITUDE, preferences.getFloat(MapFragment.LATITUDE, 0));
-        issue.put(Issues.LONGITUDE, preferences.getFloat(MapFragment.LONGITUDE, 0));
+        issue.put(Issues.LATITUDE, preferences.getFloat(MapFragmentOld.LATITUDE, 0));
+        issue.put(Issues.LONGITUDE, preferences.getFloat(MapFragmentOld.LONGITUDE, 0));
 
         issue.store(new StorageListener()
         {

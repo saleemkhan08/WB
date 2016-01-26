@@ -6,12 +6,13 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -30,16 +31,27 @@ import in.org.whistleblower.utilities.MiscUtil;
 
 public class MainFragment extends Fragment implements View.OnTouchListener
 {
-    ListView issuesListView;
-    List<ParseObject> mIssues;
+    RecyclerView issuesRecyclerView;
+    List<ParseObject> mParseObjectList;
     MiscUtil mUtil;
     Activity mActivity;
     IssueAdapter adapter;
     FloatingActionButton addButton;
     private ArrayList<Issues> issuesList = null;
+    RemoteDataTask mDataTask;
     public MainFragment()
     {
 
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        if(mDataTask != null && mDataTask.getStatus().equals(AsyncTask.Status.RUNNING))
+        {
+            mDataTask.cancel(true);
+        }
     }
 
     @Override
@@ -53,7 +65,6 @@ public class MainFragment extends Fragment implements View.OnTouchListener
                              Bundle savedInstanceState)
     {
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
-        issuesListView = (ListView) parentView.findViewById(R.id.issuesList);
         mActivity = getActivity();
         mUtil = new MiscUtil(mActivity);
         MiscUtil.log("onCreateView");
@@ -72,10 +83,11 @@ public class MainFragment extends Fragment implements View.OnTouchListener
         super.onResume();
         MiscUtil.log("onResume");
 
-        RemoteDataTask dataTask = new RemoteDataTask();
-        dataTask.execute();
+        mDataTask = new RemoteDataTask();
+        mDataTask.execute();
         hideMyLocButton();
     }
+
     public void hideMyLocButton()
     {
         MiscUtil.log("hideMyLocButton");
@@ -97,7 +109,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener
     @Override
     public boolean onTouch(View v, MotionEvent event)
     {
-        if(event.getAction()== MotionEvent.ACTION_UP)
+        if (event.getAction() == MotionEvent.ACTION_UP)
         {
 
         }
@@ -124,28 +136,28 @@ public class MainFragment extends Fragment implements View.OnTouchListener
                 ParseQuery<ParseObject> query = new ParseQuery<>(Issues.TABLE);
                 query.orderByDescending("createdAt");
                 MiscUtil.log("Try : Getting the list");
-                mIssues = query.find();
-                MiscUtil.log("List Obtained, mIssues : " + mIssues);
-                if (mIssues != null)
+                mParseObjectList = query.find();
+                MiscUtil.log("List Obtained, mParseObjectList : " + mParseObjectList);
+                if (mParseObjectList != null)
                 {
-                    for (ParseObject issueParseObj : mIssues)
+                    for (ParseObject issueParseObj : mParseObjectList)
                     {
                         // Locate images in flag column
                         Issues issue = new Issues();
-                        issue.setImgUrl(((ParseFile) issueParseObj.get(Issues.FILE_URL)).getUrl());
+                        issue.imgUrl = (((ParseFile) issueParseObj.get(Issues.FILE_URL)).getUrl());
+                        issue.issueId = issueParseObj.getObjectId();
+                        issue.latitude = (((Double) issueParseObj.get(Issues.LATITUDE)).floatValue());
+                        issue.longitude = (((Double) issueParseObj.get(Issues.LONGITUDE)).floatValue());
 
-                        issue.setLatitude(((Double) issueParseObj.get(Issues.LATITUDE)).floatValue());
-                        issue.setLongitude(((Double) issueParseObj.get(Issues.LONGITUDE)).floatValue());
-
-                        issue.setDescription((String) issueParseObj.get(Issues.DESCRIPTION));
-                        issue.setPlaceName((String) issueParseObj.get(Issues.PLACE_NAME));
-                        issue.setUserDpUrl((String) issueParseObj.get(Issues.USER_DP_URL));
-                        issue.setUserId((String) issueParseObj.get(Issues.USER_ID));
-                        issue.setUsername((String) issueParseObj.get(Issues.USERNAME));
+                        issue.description = ((String) issueParseObj.get(Issues.DESCRIPTION));
+                        issue.placeName = ((String) issueParseObj.get(Issues.PLACE_NAME));
+                        issue.userDpUrl = ((String) issueParseObj.get(Issues.USER_DP_URL));
+                        issue.userId = ((String) issueParseObj.get(Issues.USER_ID));
+                        issue.username = ((String) issueParseObj.get(Issues.USERNAME));
 
                         MiscUtil.log("Place Name : " + issueParseObj.get(Issues.PLACE_NAME));
-                        issue.setRadius((int) issueParseObj.get(Issues.RADIUS));
-                        issue.setZone((String) issueParseObj.get(Issues.AREA_TYPE));
+                        issue.radius = ((int) issueParseObj.get(Issues.RADIUS));
+                        issue.zone = ((String) issueParseObj.get(Issues.AREA_TYPE));
                         issuesList.add(issue);
                     }
                 }
@@ -162,11 +174,12 @@ public class MainFragment extends Fragment implements View.OnTouchListener
         protected void onPostExecute(Void result)
         {
             // Locate the listview in listview_main.xml
-            issuesListView = (ListView) mActivity.findViewById(R.id.issuesList);
+            issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
             // Pass the results into ListViewAdapter.java
             adapter = new IssueAdapter(mActivity, issuesList);
             // Binds the Adapter to the ListView
-            issuesListView.setAdapter(adapter);
+            issuesRecyclerView.setAdapter(adapter);
+            issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
             // Close the progressdialog
             mUtil.hideProgressDialog();
         }

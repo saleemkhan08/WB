@@ -4,5 +4,5 @@
         android:startColor="@color/colorAccentDark"
         android:endColor="@color/colorAccentPressed"
         android:type="linear"
-        android:angle="0"/>
+        android:angle="135"/>
 </shape>

@@ -1,12 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/settings"
-        android:orderInCategory="200"
-        android:title="@string/action_settings"
+        android:id="@+id/reportIssue"
+        android:orderInCategory="100"
+        android:title="@string/action_report"
         />
     <item
-        android:id="@+id/search_issue"
-        android:orderInCategory="100"
-        android:title="@string/action_search"
+        android:id="@+id/editIssue"
+        android:orderInCategory="200"
+        android:title="@string/action_edit"
+        />
+    <item
+        android:id="@+id/deleteIssue"
+        android:orderInCategory="300"
+        android:title="@string/action_delete"
         />
 </menu>

@@ -361,10 +361,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         util.toast("Something went wrong!");
         util.toast("Please Try again!");
         signOut();
+        revokeAccess();
     }
 
     private void signIn()
     {
+        signOut();
+        revokeAccess();
+
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_GET_TOKEN);
         util.showIndeterminateProgressDialog(SIGNING_IN);

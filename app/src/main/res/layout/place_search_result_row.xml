@@ -3,40 +3,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:paddingRight="10dp"
                 android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:paddingTop="10dp"
     >
 
     <RelativeLayout
+        android:id="@+id/userRow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/userRow">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/displayPic"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="15dp"
-            android:gravity="center_vertical"
-            android:scaleType="centerCrop"
-            android:src="@drawable/img"
-            />
-
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/addPlaceButton"
-            android:layout_toRightOf="@+id/displayPic"
-            android:gravity="center_vertical"
-            android:text="Anonymous"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="20sp"
-            />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/localeName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:text="Place Name"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="20sp"
+                />
+
+            <TextView
+                android:id="@+id/country"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:text="Country Name"
+                android:textColor="#999"
+                android:textSize="15sp"
+                />
+        </LinearLayout>
 
         <Button
             android:id="@+id/addPlaceButton"
@@ -49,7 +53,7 @@
             android:layout_gravity="center"
             android:background="@drawable/button_bg"
             android:gravity="center_vertical|center_horizontal"
-            android:text="Add Friend"
+            android:text="Add Place"
             android:textColor="@color/white"
             />
     </RelativeLayout>

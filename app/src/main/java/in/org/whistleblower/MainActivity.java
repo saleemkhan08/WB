@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -18,13 +19,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
 
-import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.MapFragmentOld;
+import in.org.whistleblower.icon.FontAwesomeIcon;
+import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
+import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
@@ -36,21 +42,23 @@ public class MainActivity extends AppCompatActivity
     private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
 
     // Activity request codes
-    MiscUtil util;
+    MiscUtil mUtil;
     NavigationUtil mNavigationUtil;
     FABUtil mFabUtil;
     SharedPreferences preferences;
     //static Typeface mFont;
     DrawerLayout drawer;
     RelativeLayout mainActivityContainer;
-    private MapFragment mMapFragment;
+    private MapFragmentOld mMapFragmentOld;
+    ImageView profilePic;
+    TextView username, emailId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        util = new MiscUtil(this);
-        if (!util.hasUserSignedIn())
+        mUtil = new MiscUtil(this);
+        if (!mUtil.hasUserSignedIn())
         {
             finish();
         }
@@ -64,6 +72,32 @@ public class MainActivity extends AppCompatActivity
             setSupportActionBar(toolbar);
 
             //Navigation Drawer
+
+            NavigationView navigationHeader = (NavigationView) findViewById(R.id.nav_view);
+
+            View header = navigationHeader.getHeaderView(0);
+            profilePic = (ImageView) header.findViewById(R.id.navigationProfilePic);
+            ImageUtil imageUtil = new ImageUtil(this);
+            String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
+            if (dpUrl == null || dpUrl.isEmpty())
+            {
+                profilePic.setBackground(mUtil.getIcon(FontAwesomeIcon.ANONYMOUS, R.color.colorPrimary));
+                profilePic.setImageResource(android.R.color.transparent);
+            }
+            else
+            {
+                imageUtil.displayImage(dpUrl, profilePic, true);
+                profilePic.setBackgroundColor(getResources().getColor(android.R.color.transparent, null));
+            }
+
+
+            emailId = (TextView) header.findViewById(R.id.emailId);
+            emailId.setText(preferences.getString(Accounts.EMAIL, "No Email Id Found!"));
+
+            username = (TextView) header.findViewById(R.id.username);
+            username.setText(preferences.getString(Accounts.NAME, "Anonymous"));
+
+
             drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                     this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -71,9 +105,11 @@ public class MainActivity extends AppCompatActivity
             toggle.syncState();
             MiscUtil.log("OnCreate");
             mNavigationUtil = new NavigationUtil(drawer, this);
-            mMapFragment = mNavigationUtil.setUp(util);
+            mMapFragmentOld = mNavigationUtil.setUp(mUtil);
             mFabUtil = new FABUtil(this);
-            mFabUtil.setUp(util);
+            mFabUtil.setUp(mUtil);
+
+
             if (savedInstanceState == null)
             {
                 mNavigationUtil.showMapFragment();
@@ -98,16 +134,16 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode)
         {
             // Check for the integer request code originally supplied to startResolutionForResult().
-            case MapFragment.REQUEST_CODE_LOCATION_SETTINGS:
+            case MapFragmentOld.REQUEST_CODE_LOCATION_SETTINGS:
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
                         MiscUtil.log("User agreed to make required location settings changes.");
-                        mMapFragment.updateCurrentLocationOnMap();
-                        mMapFragment.startLocationUpdates();
+                        mMapFragmentOld.updateCurrentLocationOnMap();
+                        mMapFragmentOld.startLocationUpdates();
                         break;
                     case Activity.RESULT_CANCELED:
-                        preferences.edit().putBoolean(MapFragment.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
+                        preferences.edit().putBoolean(MapFragmentOld.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
                         MiscUtil.log("User chose not to make required location settings changes.");
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "App requires Location settings to be on!", Snackbar.LENGTH_INDEFINITE);
                         snackbar.setAction("Retry", new View.OnClickListener()
@@ -116,7 +152,7 @@ public class MainActivity extends AppCompatActivity
                             public void onClick(View v)
                             {
                                 MiscUtil.log("onActivityResult : checkLocationSettings Again - Snack Bar");
-                                mMapFragment.updateCurrentLocationOnMap();
+                                mMapFragmentOld.updateCurrentLocationOnMap();
                             }
                         });
                         snackbar.show();
@@ -130,10 +166,10 @@ public class MainActivity extends AppCompatActivity
                         mFabUtil.launchIssueEditor(false);
                         break;
                     case Activity.RESULT_CANCELED:
-                        util.toast("User cancelled video recording");
+                        mUtil.toast("User cancelled video recording");
                         break;
                     default:
-                        util.toast("Sorry! Failed to record video");
+                        mUtil.toast("Sorry! Failed to record video");
                 }
                 break;
             case FABUtil.CAPTURE_IMAGE_REQUEST:
@@ -143,10 +179,10 @@ public class MainActivity extends AppCompatActivity
                         mFabUtil.launchIssueEditor(true);
                         break;
                     case Activity.RESULT_CANCELED:
-                        util.toast("User cancelled image capture");
+                        mUtil.toast("User cancelled image capture");
                         break;
                     default:
-                        util.toast("Sorry! Failed to capture image");
+                        mUtil.toast("Sorry! Failed to capture image");
                 }
                 break;
         }
@@ -170,26 +206,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.main, menu);
-        /*// Get the root inflator.
-        LayoutInflater baseInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        // Inflate your custom view.
-        View locView = baseInflater.inflate(R.layout.my_custom_view, null);
-
-        TextView myLoc = ((TextView) locView.findViewById(R.id.icon_view));
-
-        myLoc.setText(R.string.my_loc_icon);
-        myLoc.setTypeface(mFont);
-
-        // Inflate your custom view.
-        View searchView = baseInflater.inflate(R.layout.my_custom_view, null);
-
-        TextView search = ((TextView) searchView.findViewById(R.id.icon_view));
-
-        search.setText(R.string.search_icon);
-        search.setTypeface(mFont);
-        menu.findItem(R.id.se).setActionView(searchView);*/
         return true;
     }
 
@@ -204,7 +220,9 @@ public class MainActivity extends AppCompatActivity
         }
         else if (id == R.id.search_issue)
         {
-            startActivity(new Intent(this, SearchActivity.class));
+            Intent intent = new Intent(this, SearchActivity.class);
+            intent.putExtra(NavigationUtil.KEY_CATEGORY, NavigationUtil.ADD_FAV_PLACE);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -255,6 +273,6 @@ public class MainActivity extends AppCompatActivity
     {
         super.onNewIntent(intent);
 
-        //util.toast("on New Intent");
+        //mUtil.toast("on New Intent");
     }
 }

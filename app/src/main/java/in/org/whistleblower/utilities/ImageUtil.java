@@ -11,15 +11,27 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import in.org.whistleblower.R;
 
-/**
- * Created by Saleem Khan on 1/15/2016.
- */
 public class ImageUtil
 {
-    public static void loadImage(Context context, ImageView imgView, String imgUrl){
-        ImageLoader mImageLoader = ImageLoader.getInstance();
-        mImageLoader.init(ImageLoaderConfiguration.createDefault(context));
-        DisplayImageOptions dpOptions = new DisplayImageOptions.Builder()
+    public ImageLoader mImageLoader;
+    Context mContext;
+    DisplayImageOptions dpOptions, issueOptions;
+    public ImageUtil(Context context)
+    {
+        mContext = context;
+        mImageLoader = ImageLoader.getInstance();
+        mImageLoader.init(ImageLoaderConfiguration.createDefault(mContext));
+        issueOptions = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_stub)
+                .showImageForEmptyUri(R.drawable.ic_empty)
+                .showImageOnFail(R.drawable.ic_error)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
+
+        dpOptions = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.ic_stub)
                 .showImageForEmptyUri(R.drawable.ic_empty)
                 .showImageOnFail(R.drawable.ic_error)
@@ -29,6 +41,17 @@ public class ImageUtil
                 .bitmapConfig(Bitmap.Config.RGB_565)
                 .displayer(new RoundedBitmapDisplayer(100))
                 .build();
-        mImageLoader.displayImage(imgUrl, imgView, dpOptions);
+    }
+
+    public void displayImage(String photo_url, ImageView view, boolean isRounded)
+    {
+        if(isRounded)
+        {
+            mImageLoader.displayImage(photo_url, view, dpOptions);
+        }
+        else
+        {
+            mImageLoader.displayImage(photo_url, view, issueOptions);
+        }
     }
 }

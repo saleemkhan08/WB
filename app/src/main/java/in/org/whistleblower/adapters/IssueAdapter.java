@@ -1,131 +1,67 @@
 package in.org.whistleblower.adapters;
 
-import android.app.Activity;
-import android.graphics.Bitmap;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.parse.DeleteCallback;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.icon.FontAwesomeIcon;
+import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issues;
+import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 
-public class IssueAdapter extends BaseAdapter
+public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHolder>
 {
-    private final MiscUtil mUtil;
-    Activity mActivity;
     LayoutInflater mInflater;
-    ImageLoader mImageLoader;
-    private ArrayList<Issues> mIssuesArrayList;
-    private DisplayImageOptions dpOptions, issueOptions;
+    Context mContext;
+    ArrayList<Issues> mIssuesArrayList;
+    MiscUtil mUtil;
+    ImageUtil mImageUtil;
+    SharedPreferences preferences;
 
-    public IssueAdapter(Activity context, ArrayList<Issues> data)
+    public IssueAdapter(Context mContext, ArrayList<Issues> mIssuesList)
     {
-        mActivity = context;
-        mIssuesArrayList = data;
-        MiscUtil.log("IssueAdapter, mIssuesArrayList size : " + mIssuesArrayList.size());
-        mImageLoader = ImageLoader.getInstance();
-        mImageLoader.init(ImageLoaderConfiguration.createDefault(mActivity));
-        mInflater = LayoutInflater.from(context);
-        mUtil = new MiscUtil(mActivity);
-        issueOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_stub)
-                .showImageForEmptyUri(R.drawable.ic_empty)
-                .showImageOnFail(R.drawable.ic_error)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
-                .build();
-        dpOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_stub)
-                .showImageForEmptyUri(R.drawable.ic_empty)
-                .showImageOnFail(R.drawable.ic_error)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
-                .displayer(new RoundedBitmapDisplayer(100))
-                .build();
-
-
+        mInflater = LayoutInflater.from(mContext);
+        this.mContext = mContext;
+        this.mIssuesArrayList = mIssuesList;
+        mUtil = new MiscUtil(mContext);
+        mImageUtil = new ImageUtil(mContext);
+        preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     @Override
-    public int getCount()
+    public IssueViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        return mIssuesArrayList.size();
+        View view = mInflater.inflate(R.layout.single_issue_layout, parent, false);
+        return new IssueViewHolder(view);
     }
 
     @Override
-    public Object getItem(int position)
+    public void onBindViewHolder(IssueViewHolder holder, final int position)
     {
-        return mIssuesArrayList.get(position);
-    }
-
-    public class ViewHolder
-    {
-        TextView placeName, username;
-        ImageView issueImage, profilePic, optionsIcon, shareIcon, locationIcon, volunteerIcon;
-        View optionsIconContainer, locationContainer, volunteerContainer, shareContainer;
-    }
-
-    @Override
-    public long getItemId(int position)
-    {
-        return position;
-    }
-
-    @Override
-    public View getView(final int position, View view, ViewGroup parent)
-    {
-        MiscUtil.log("getView");
-        final ViewHolder holder;
-        if (view == null)
-        {
-            holder = new ViewHolder();
-            view = mInflater.inflate(R.layout.single_issue_layout, null);
-
-            holder.issueImage = (ImageView) view.findViewById(R.id.issueImg);
-            holder.profilePic = (ImageView) view.findViewById(R.id.displayPic);
-
-            holder.optionsIcon = (ImageView) view.findViewById(R.id.optionsIcon);
-            holder.optionsIconContainer = view.findViewById(R.id.optionsIconContainer);
-
-            holder.shareIcon = (ImageView) view.findViewById(R.id.shareIcon);
-            holder.shareContainer = view.findViewById(R.id.shareContainer);
-
-            holder.locationIcon = (ImageView) view.findViewById(R.id.locationIcon);
-            holder.locationContainer = view.findViewById(R.id.locationContainer);
-
-            holder.volunteerIcon = (ImageView) view.findViewById(R.id.volunteerIcon);
-            holder.volunteerContainer = view.findViewById(R.id.volunteerContainer);
-
-            holder.username = (TextView) view.findViewById(R.id.username);
-            holder.placeName = (TextView) view.findViewById(R.id.placeTypeName);
-
-            view.setTag(holder);
-        }
-        else
-        {
-            holder = (ViewHolder) view.getTag();
-        }
+        final Issues issue = mIssuesArrayList.get(position);
         // Set the results into TextViews
-        holder.placeName.setText(mIssuesArrayList.get(position).getPlaceName());
-        holder.username.setText(mIssuesArrayList.get(position).getUsername());
+        holder.placeName.setText(issue.placeName);
+        holder.username.setText(issue.username);
 
         holder.locationIcon.setBackground(mUtil.getIcon(FontAwesomeIcon.MAP_MARKER));
         holder.locationContainer.setOnClickListener(new View.OnClickListener()
@@ -133,7 +69,7 @@ public class IssueAdapter extends BaseAdapter
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Show Location On Map : "+position);
+                mUtil.toast("Show Location On Map : " + position);
             }
         });
 
@@ -143,7 +79,7 @@ public class IssueAdapter extends BaseAdapter
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Share This Post : "+position);
+                mUtil.toast("Share This Post : " + position);
             }
         });
 
@@ -153,7 +89,7 @@ public class IssueAdapter extends BaseAdapter
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Volunteer : "+position);
+                mUtil.toast("Volunteer : " + position);
             }
         });
 
@@ -163,15 +99,40 @@ public class IssueAdapter extends BaseAdapter
             @Override
             public void onClick(View v)
             {
-                PopupMenu popup = new PopupMenu(mActivity, v);
+                PopupMenu popup = new PopupMenu(mContext, v);
                 popup.getMenuInflater()
                         .inflate(R.menu.issue_options, popup.getMenu());
 
+                Menu menu = popup.getMenu();
+                if (issue.userId.equals(preferences.getString(Accounts.GOOGLE_ID, "")))
+                {
+                    menu.getItem(0).setVisible(false);
+                    menu.getItem(1).setVisible(true);
+                    menu.getItem(2).setVisible(true);
+                }
+                else
+                {
+                    menu.getItem(0).setVisible(true);
+                    menu.getItem(1).setVisible(false);
+                    menu.getItem(2).setVisible(false);
+                }
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
                 {
                     public boolean onMenuItemClick(MenuItem item)
                     {
-                        mUtil.toast(item.getTitle() + " : " + position);
+                        switch (item.getItemId())
+                        {
+                            case R.id.editIssue:
+                                editIssue(issue.issueId);
+                                break;
+                            case R.id.deleteIssue:
+                                deleteIssue(issue.issueId, position);
+                                break;
+                            case R.id.reportIssue:
+                                reportIssue(issue.issueId);
+                                break;
+
+                        }
                         return true;
                     }
                 });
@@ -179,8 +140,8 @@ public class IssueAdapter extends BaseAdapter
             }
         });
 
-        mImageLoader.displayImage(mIssuesArrayList.get(position).getImgUrl(), holder.issueImage, issueOptions);
-        String dpUrl = mIssuesArrayList.get(position).getUserDpUrl();
+        mImageUtil.displayImage(issue.imgUrl, holder.issueImage, false);
+        String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
             holder.profilePic.setBackground(mUtil.getIcon(FontAwesomeIcon.ANONYMOUS, R.color.white));
@@ -188,8 +149,8 @@ public class IssueAdapter extends BaseAdapter
         }
         else
         {
-            mImageLoader.displayImage(dpUrl, holder.profilePic, dpOptions);
-            holder.profilePic.setBackgroundColor(mActivity.getResources().getColor(android.R.color.transparent, null));
+            mImageUtil.displayImage(dpUrl, holder.profilePic, true);
+            holder.profilePic.setBackgroundColor(mContext.getResources().getColor(android.R.color.transparent, null));
         }
 
         holder.issueImage.setOnClickListener(new View.OnClickListener()
@@ -197,9 +158,107 @@ public class IssueAdapter extends BaseAdapter
             @Override
             public void onClick(View arg0)
             {
-                mUtil.toast("Image : "+position+" clicked");
+                mUtil.toast("Image : " + position + " clicked");
             }
         });
-        return view;
+    }
+
+    private void reportIssue(String issueId)
+    {
+        mUtil.showIndeterminateProgressDialog("Reporting...");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(Issues.TABLE);
+        query.getInBackground(issueId, new GetCallback<ParseObject>()
+        {
+            public void done(ParseObject issue, ParseException e)
+            {
+                if (e == null)
+                {
+                    issue.put(Issues.STATUS, Issues.SPAM);
+                    issue.saveInBackground(new SaveCallback()
+                    {
+                        @Override
+                        public void done(ParseException e)
+                        {
+                            if (e == null)
+                            {
+                                mUtil.toast("Reported!");
+                                mUtil.hideProgressDialog();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void deleteIssue(String issueId, final int position)
+    {
+        mUtil.showIndeterminateProgressDialog("Deleting...");
+        ParseQuery<ParseObject> query = new ParseQuery<>(Issues.TABLE);
+        query.getInBackground(issueId, new GetCallback<ParseObject>()
+        {
+            @Override
+            public void done(final ParseObject object, ParseException e)
+            {
+                object.deleteInBackground(new DeleteCallback()
+                {
+                    @Override
+                    public void done(ParseException e)
+                    {
+                        mUtil.toast("Deleted");
+                        mUtil.hideProgressDialog();
+                        removeAt(position);
+                    }
+                });
+            }
+        });
+    }
+
+    public void removeAt(int position)
+    {
+        mIssuesArrayList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, mIssuesArrayList.size());
+    }
+
+    private void editIssue(String issueId)
+    {
+        mUtil.toast("Not Implemented");
+    }
+
+    @Override
+    public int getItemCount()
+    {
+        return mIssuesArrayList.size();
+    }
+
+    class IssueViewHolder extends RecyclerView.ViewHolder
+    {
+        TextView placeName, username;
+        ImageView issueImage, profilePic, optionsIcon, shareIcon, locationIcon, volunteerIcon;
+        View optionsIconContainer, locationContainer, volunteerContainer, shareContainer;
+
+        public IssueViewHolder(View view)
+        {
+            super(view);
+
+            issueImage = (ImageView) view.findViewById(R.id.issueImg);
+            profilePic = (ImageView) view.findViewById(R.id.displayPic);
+
+            optionsIcon = (ImageView) view.findViewById(R.id.optionsIcon);
+            optionsIconContainer = view.findViewById(R.id.optionsIconContainer);
+
+            shareIcon = (ImageView) view.findViewById(R.id.shareIcon);
+            shareContainer = view.findViewById(R.id.shareContainer);
+
+            locationIcon = (ImageView) view.findViewById(R.id.locationIcon);
+            locationContainer = view.findViewById(R.id.locationContainer);
+
+            volunteerIcon = (ImageView) view.findViewById(R.id.volunteerIcon);
+            volunteerContainer = view.findViewById(R.id.volunteerContainer);
+
+            username = (TextView) view.findViewById(R.id.username);
+            placeName = (TextView) view.findViewById(R.id.placeTypeName);
+        }
     }
 }

@@ -10,7 +10,7 @@
           app:showAsAction="always"/>
     <item android:id="@+id/search_issue"
           android:title="@string/action_search"
-          android:icon="@android:drawable/ic_menu_search"
+          android:icon="@drawable/search"
           android:orderInCategory="100"
           app:showAsAction="always"/>
 </menu>

@@ -6,7 +6,9 @@
     <color name="colorPrimary">#192331</color>
     <color name="colorPrimaryDark">#101720</color>
     <color name="colorAccent">#55c4c1</color>
-    <color name="colorAccentPressed">#84d5d2</color>
+    <color name="colorAccentDisabled">#38A09E</color>
+
+    <color name="colorAccentPressed">#9EDEDD</color>
     <color name="divider">#aaaaaa</color>
     <color name="travel_mode">#F57C00</color>
     <color name="travel_mode_pressed">#FF9f40</color>
@@ -19,4 +21,5 @@
     <color name="blue_semi_transparent_pressed">#80738ffe</color>
     <color name="pink">#881010</color>
     <color name="colorAccentDark">#38A09E</color>
+    <color name="transparent_black">#99000000</color>
 </resources>
