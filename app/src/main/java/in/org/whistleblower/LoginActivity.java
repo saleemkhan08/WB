@@ -32,25 +32,56 @@ import java.util.List;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.storage.QueryResultListener;
 import in.org.whistleblower.storage.RStorageObject;
-import in.org.whistleblower.storage.RStorageQuery;
+import in.org.whistleblower.storage.RstorageQuery;
 import in.org.whistleblower.storage.StorageListener;
 import in.org.whistleblower.storage.StorageObject;
 import in.org.whistleblower.utilities.ConnectivityListener;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener, ConnectivityListener
+        View.OnClickListener,ViewPager.OnPageChangeListener, ConnectivityListener
 {
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     public static final String USER_ID = "userId";
     private MiscUtil util;
     static Typeface mFont;
+    private ViewPager mViewPager;
+    private TextView mTxtPageIndicator;
 
     @Override
     public void onInternetConnected()
     {
         signIn();
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        Log.d(TAG, "onPageScrolled");
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        Log.d(TAG, "onPageSelected :: " + position);
+        String pageIndicator = "";
+        switch (position) {
+            case 0:
+                pageIndicator = pageIndicator+getString(R.string.current_page) + " " + getString(R.string.other_page) +" " + getString(R.string.other_page);
+                break;
+            case 1:
+                pageIndicator = pageIndicator+getString(R.string.other_page) + " " + getString(R.string.current_page )+ " " + getString(R.string.other_page);
+                break;
+            case 2:
+                pageIndicator = pageIndicator+getString(R.string.other_page) + " " + getString(R.string.other_page) + " " + getString(R.string.current_page);
+                break;
+
+        }
+        mTxtPageIndicator.setText(pageIndicator);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+        Log.d(TAG, "onPageScrollStateChanged :: " + state);
     }
 
     public static class PlaceholderFragment extends Fragment
@@ -164,11 +195,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.disconnect_button).setOnClickListener(this);
 
+        mTxtPageIndicator = (TextView) findViewById(R.id.pageIndicator);
+        mTxtPageIndicator.setTypeface(mFont);
+        mTxtPageIndicator.setText(""+getString(R.string.current_page) + " " + getString(R.string.other_page) +" " + getString(R.string.other_page));
+
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOnPageChangeListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -257,7 +293,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void saveData(final String email, final String name, final String googleId, final String photo_url)
     {
-        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
+        RstorageQuery<RStorageObject> query = new RstorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
 
         query.getWhereEqualTo(Accounts.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
         {
