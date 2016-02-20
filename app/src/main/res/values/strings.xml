@@ -25,6 +25,10 @@
     <string name="issue_title_hint">Describe in brief!</string>
     <string name="anonymous">Post Anonymously</string>
 
+    <!-- Login Activity -->
+    <string name="current_page">&#xf111;</string>
+    <string name="other_page">&#xf10c;</string>
+
     <string-array name="radius">
         <item>1 Km</item>
         <item>2 Km</item>
