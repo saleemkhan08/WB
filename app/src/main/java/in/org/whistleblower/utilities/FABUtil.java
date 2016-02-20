@@ -36,7 +36,7 @@ public class FABUtil
     public static final int RECORD_VIDEO_REQUEST = 302;
     public static final int SET_REMINDER_REQUEST = 303;
     public String storagePath = "";
-    public static final String FILE_PATH = "FILE_URL";
+    public static final String FILE_PATH = "IMAGE_URL";
     public static final String IS_PHOTO = "IS_PHOTO";
     private Uri fileUri; // file url to store image/video
     // directory name to store captured images and videos

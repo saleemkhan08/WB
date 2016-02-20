@@ -282,7 +282,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
         }
 
         issue.put(Issues.USERNAME, username);
-        issue.put(Issues.FILE_URL, saveFile());
+        issue.put(Issues.IMAGE_URL, saveFile());
         issue.put(Issues.USER_DP_URL, userProfilePic);
         issue.put(Issues.USER_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
         issue.put(Issues.AREA_TYPE, preferences.getString(Issues.AREA_TYPE, "#Unknown Type"));

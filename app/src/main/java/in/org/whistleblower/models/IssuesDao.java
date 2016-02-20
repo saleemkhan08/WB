@@ -19,6 +19,7 @@ public class IssuesDao extends Issues
     public void createDatabase()
     {
         int databaseVersion =  PreferenceManager.getDefaultSharedPreferences(mContext).getInt(KEY_DATABASE_VERSION, 0);
-        DataBaseHelper dataBaseHelper = new DataBaseHelper(mContext, databaseVersion);
+      //  DataBaseHelper dataBaseHelper = new DataBaseHelper(mContext, databaseVersion);
+
     }
 }

@@ -3,9 +3,10 @@ package in.org.whistleblower.models;
 public class Issues
 {
     public static final String TABLE = "Issues";
+    public static final String ISSUE_ID = "issue_id";
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String PLACE_NAME = "PLACE_NAME";
-    public static final String FILE_URL = "FILE_URL";
+    public static final String IMAGE_URL = "FILE_URL";
     public static final String USER_DP_URL = "USER_DP_URL";
     public static final String USERNAME = "USERNAME";
 
@@ -26,7 +27,7 @@ public class Issues
             username,
             userDpUrl,
             userId,
-            zone,
+            areaType,
             issueId,
             status;
 
@@ -37,9 +38,10 @@ public class Issues
 
     public static final String TABLE_SCHEMA = "CREATE TABLE " + TABLE + "("
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ISSUE_ID + " VARCHAR(255), "
             + DESCRIPTION + " VARCHAR(255), "
             + PLACE_NAME + " VARCHAR(255), "
-            + FILE_URL + " VARCHAR(255), "
+            + IMAGE_URL + " VARCHAR(255), "
             + RADIUS + " INTEGER"
             + AREA_TYPE + " VARCHAR(255), "
             + USER_ID + " VARCHAR(255), "
@@ -48,4 +50,5 @@ public class Issues
 
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
     //TODO write a query to save the old data and just alter the table.
+
 }
