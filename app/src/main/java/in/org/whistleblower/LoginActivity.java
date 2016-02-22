@@ -32,7 +32,7 @@ import java.util.List;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.storage.QueryResultListener;
 import in.org.whistleblower.storage.RStorageObject;
-import in.org.whistleblower.storage.RstorageQuery;
+import in.org.whistleblower.storage.RStorageQuery;
 import in.org.whistleblower.storage.StorageListener;
 import in.org.whistleblower.storage.StorageObject;
 import in.org.whistleblower.utilities.ConnectivityListener;
@@ -293,7 +293,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void saveData(final String email, final String name, final String googleId, final String photo_url)
     {
-        RstorageQuery<RStorageObject> query = new RstorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
+        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
 
         query.getWhereEqualTo(Accounts.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
         {

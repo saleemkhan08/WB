@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class RstorageQuery<T extends StorageObject>
+public class RStorageQuery<T extends StorageObject>
 {
     String mTableName;
-    public RstorageQuery(String tableName)
+    public RStorageQuery(String tableName)
     {
         mTableName = tableName;
     }
