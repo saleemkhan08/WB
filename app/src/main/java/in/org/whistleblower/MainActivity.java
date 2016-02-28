@@ -26,7 +26,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import in.org.whistleblower.fragments.MapFragmentOld;
+import in.org.whistleblower.actions.Image;
+import in.org.whistleblower.actions.Place;
+import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity
     public static final int VIDEO_AND_STORAGE_REQUEST = 102;
     public static final int LOCATION_REQUEST = 103;
     private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
-
+    private LocationUpdateService locationUpdateService;
     // Activity request codes
     MiscUtil mUtil;
     NavigationUtil mNavigationUtil;
@@ -49,9 +51,9 @@ public class MainActivity extends AppCompatActivity
     //static Typeface mFont;
     DrawerLayout drawer;
     RelativeLayout mainActivityContainer;
-    private MapFragmentOld mMapFragmentOld;
     ImageView profilePic;
     TextView username, emailId;
+    private Place mPlace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity
         else
         {
             setContentView(R.layout.activity_main);
+            locationUpdateService = new LocationUpdateService();
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
@@ -72,14 +75,12 @@ public class MainActivity extends AppCompatActivity
             setSupportActionBar(toolbar);
 
             //Navigation Drawer
-
             NavigationView navigationHeader = (NavigationView) findViewById(R.id.nav_view);
-
             View header = navigationHeader.getHeaderView(0);
             profilePic = (ImageView) header.findViewById(R.id.navigationProfilePic);
             ImageUtil imageUtil = new ImageUtil(this);
             String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
-            if (dpUrl == null || dpUrl.isEmpty())
+            if (dpUrl.isEmpty())
             {
                 profilePic.setBackground(mUtil.getIcon(FontAwesomeIcon.ANONYMOUS, R.color.colorPrimary));
                 profilePic.setImageResource(android.R.color.transparent);
@@ -104,16 +105,13 @@ public class MainActivity extends AppCompatActivity
             drawer.setDrawerListener(toggle);
             toggle.syncState();
             MiscUtil.log("OnCreate");
-            mNavigationUtil = new NavigationUtil(drawer, this);
-            mMapFragmentOld = mNavigationUtil.setUp(mUtil);
+            mNavigationUtil = new NavigationUtil(this);
+            mNavigationUtil.setUp(mUtil);
             mFabUtil = new FABUtil(this);
-            mFabUtil.setUp(mUtil);
-
-
+            mFabUtil.setUp();
             if (savedInstanceState == null)
             {
                 mNavigationUtil.showMapFragment();
-                mNavigationUtil.navigationView.getMenu().getItem(0).setChecked(true);
             }
         }
     }
@@ -134,16 +132,16 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode)
         {
             // Check for the integer request code originally supplied to startResolutionForResult().
-            case MapFragmentOld.REQUEST_CODE_LOCATION_SETTINGS:
+            case LocationUpdateService.REQUEST_CODE_LOCATION_SETTINGS:
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
                         MiscUtil.log("User agreed to make required location settings changes.");
-                        mMapFragmentOld.updateCurrentLocationOnMap();
-                        mMapFragmentOld.startLocationUpdates();
+                        locationUpdateService.updateCurrentLocationOnMap();
+                        locationUpdateService.startLocationUpdates();
                         break;
                     case Activity.RESULT_CANCELED:
-                        preferences.edit().putBoolean(MapFragmentOld.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
+                        preferences.edit().putBoolean(MapFragment.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
                         MiscUtil.log("User chose not to make required location settings changes.");
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "App requires Location settings to be on!", Snackbar.LENGTH_INDEFINITE);
                         snackbar.setAction("Retry", new View.OnClickListener()
@@ -152,34 +150,34 @@ public class MainActivity extends AppCompatActivity
                             public void onClick(View v)
                             {
                                 MiscUtil.log("onActivityResult : checkLocationSettings Again - Snack Bar");
-                                mMapFragmentOld.updateCurrentLocationOnMap();
+                                locationUpdateService.updateCurrentLocationOnMap();
                             }
                         });
                         snackbar.show();
                         break;
                 }
                 break;
-            case FABUtil.RECORD_VIDEO_REQUEST:
+            case Image.RECORD_VIDEO_REQUEST:
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
-                        mFabUtil.launchIssueEditor(false);
+                        Image.launchIssueEditor(this, false);
                         break;
                     case Activity.RESULT_CANCELED:
-                        mUtil.toast("User cancelled video recording");
+                        mUtil.toast("Cancelled video recording");
                         break;
                     default:
                         mUtil.toast("Sorry! Failed to record video");
                 }
                 break;
-            case FABUtil.CAPTURE_IMAGE_REQUEST:
+            case Image.CAPTURE_IMAGE_REQUEST:
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
-                        mFabUtil.launchIssueEditor(true);
+                        Image.launchIssueEditor(this, true);
                         break;
                     case Activity.RESULT_CANCELED:
-                        mUtil.toast("User cancelled image capture");
+                        mUtil.toast("Cancelled image capture");
                         break;
                     default:
                         mUtil.toast("Sorry! Failed to capture image");
@@ -238,7 +236,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    mFabUtil.captureImage();
+                    Image.captureImage(this);
                 }
                 else
                 {
@@ -251,7 +249,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    mFabUtil.addFavoritePlace();
+                    mPlace.addFavPlace();
                 }
                 else
                 {
@@ -272,7 +270,6 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
-
         //mUtil.toast("on New Intent");
     }
 }

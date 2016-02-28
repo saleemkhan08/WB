@@ -1,6 +1,8 @@
 package in.org.whistleblower.utilities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -14,7 +16,7 @@ import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.SearchActivity;
 import in.org.whistleblower.fragments.MainFragment;
-import in.org.whistleblower.fragments.MapFragmentOld;
+import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 
 public class NavigationUtil implements NavigationView.OnNavigationItemSelectedListener
@@ -28,26 +30,26 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String FAV_PLACE = "FAV_PLACE";
 
     MiscUtil util;
-    DrawerLayout drawer;
-    private AppCompatActivity mActivity;
-    public MapFragmentOld mapFragmentOld;
+    //To get fragment manager
+    AppCompatActivity mActivity;
+
+    public MapFragment mapFragment;
+
     FragmentManager fragmentManager;
     public NavigationView navigationView;
     public MainFragment mainFragment;
-
-    public NavigationUtil(DrawerLayout drawer, AppCompatActivity activity)
+    private DrawerLayout drawer;
+    public NavigationUtil(Context context)
     {
-        this.drawer = drawer;
-        this.mActivity = activity;
-        fragmentManager = activity.getSupportFragmentManager();
+        this.mActivity = (AppCompatActivity) context;
+        fragmentManager = mActivity.getSupportFragmentManager();
+        drawer =  ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
     }
 
-    public MapFragmentOld setUp(MiscUtil util)
+    public void setUp(MiscUtil util)
     {
-        this.util = util;
         navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
         navigationView.setNavigationItemSelectedListener(this);
-
         Menu menu = navigationView.getMenu();
         menu.getItem(0).setIcon(util.getIcon(FontAwesomeIcon.MAP_MARKER));
         menu.getItem(1).setIcon(util.getIcon(FontAwesomeIcon.NEWS));
@@ -56,13 +58,6 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE_ALT));
         menu.findItem(R.id.nav_add_friend).setIcon(util.getIcon(FontAwesomeIcon.USER));
         menu.findItem(R.id.nav_logout).setIcon(util.getIcon(FontAwesomeIcon.SIGNOUT));
-        mapFragmentOld = (MapFragmentOld) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-        if(mapFragmentOld == null)
-        {
-            mapFragmentOld = new MapFragmentOld();
-            MiscUtil.log("NavigationUtilSetup : mapFragment : Created");
-        }
-        return mapFragmentOld;
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -70,6 +65,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public boolean onNavigationItemSelected(MenuItem item)
     {
         // Handle navigation view item clicks here.
+        FABUtil.closeFABMenu(mActivity);
         int id = item.getItemId();
         if (id == R.id.nav_news)
         {
@@ -114,28 +110,58 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showMapFragment()
     {
-        if (mapFragmentOld == null)
+        mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapFragment == null)
         {
-            mapFragmentOld = new MapFragmentOld();
-            MiscUtil.log("showMapFragment : mapFragment : Created");
+            mapFragment = new MapFragment();
         }
         fragmentManager
                 .beginTransaction()
-                .replace(R.id.content_layout, mapFragmentOld, MAP_FRAGMENT_TAG)
+                .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
+    }
+
+    public static void showMapFragment(AppCompatActivity mActivity, Bundle bundle)
+    {
+        FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+        MapFragment mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapFragment == null)
+        {
+            mapFragment = new MapFragment();
+        }
+
+        if(!mapFragment.isVisible())
+        {
+            mapFragment.setArguments(bundle);
+            fragmentManager
+                    .beginTransaction()
+                    .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                    .commit();
+        }
+        else
+        {
+            mapFragment.reloadMapParameters(bundle);
+        }
     }
 
     public void showNewsFeedsFragment()
     {
-        MiscUtil.log("showNewsFeedsFragment");
-        if(mainFragment == null)
+        mainFragment = (MainFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);
+        if (mainFragment == null)
         {
             mainFragment = new MainFragment();
-            MiscUtil.log("mainFragment : Created");
         }
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.content_layout, mainFragment, MAIN_FRAGMENT_TAG)
                 .commit();
+    }
+    public static void highlightMenu(AppCompatActivity mActivity, int id)
+    {
+        NavigationView navigationView = (NavigationView) mActivity.findViewById(R.id.nav_view);
+        Menu navigationMenu = navigationView.getMenu();
+        MenuItem menuItem = navigationMenu.findItem(id);
+        menuItem.setChecked(true);
+        menuItem.setEnabled(true);
     }
 }

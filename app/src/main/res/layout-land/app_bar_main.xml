@@ -31,7 +31,43 @@
         android:layout_height="wrap_content">
         <include layout="@layout/content_main"/>
     </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="80dp"
+        android:id="@+id/select_location"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:paddingBottom="10dp">
 
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="80dp"
+            android:layout_height="160dp"
+            android:layout_centerInParent="true"
+            android:paddingBottom="10dp"
+            android:src="@drawable/map_marker"/>
+
+        <RelativeLayout
+            android:layout_width="80dp"
+            android:layout_centerInParent="true"
+            android:layout_height="160dp">
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/ok_map"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                fab:fab_colorNormal="@color/colorAccent"
+                fab:fab_colorPressed="@color/colorAccentPressed"
+                fab:fab_icon="@drawable/ok"
+                fab:fab_labelStyle="@style/menu_labels_style"
+                fab:fab_labelsPosition="right"
+                fab:fab_size="mini"
+                android:layout_marginTop="29dp"
+                fab:fab_title="Label on the right"/>
+        </RelativeLayout>
+    </RelativeLayout>
     <RelativeLayout
         android:id="@+id/fab_wrapper"
         android:layout_width="wrap_content"
@@ -98,7 +134,7 @@
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
-    <com.getbase.floatingactionbutton.FloatingActionButton
+   <!-- <com.getbase.floatingactionbutton.FloatingActionButton
         android:id="@+id/my_loc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -107,5 +143,5 @@
         android:layout_toLeftOf="@+id/multiple_actions"
         android:layout_toStartOf="@+id/multiple_actions"
         fab:fab_colorNormal="@color/colorAccent"
-        fab:fab_colorPressed="@color/colorAccentPressed"/>
+        fab:fab_colorPressed="@color/colorAccentPressed"/>-->
 </RelativeLayout>

@@ -88,6 +88,16 @@
             android:name=".LocationUpdateService"
             android:exported="false" >
         </service>
+
+        <activity
+            android:name=".IssueActivity"
+            android:label="@string/title_activity_issue"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.org.whistleblower.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

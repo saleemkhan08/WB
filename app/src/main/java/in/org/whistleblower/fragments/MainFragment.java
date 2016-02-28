@@ -1,14 +1,11 @@
 package in.org.whistleblower.fragments;
 
 
-import android.app.Activity;
-import android.content.ContentValues;
-import android.content.res.Configuration;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.parse.ParseException;
@@ -29,19 +25,21 @@ import java.util.List;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.adapters.IssueAdapter;
-import in.org.whistleblower.models.Issues;
-import in.org.whistleblower.models.WBDataBase;
+import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class MainFragment extends Fragment implements View.OnTouchListener, SwipeRefreshLayout.OnRefreshListener
 {
     RecyclerView issuesRecyclerView;
     List<ParseObject> mParseObjectList;
     MiscUtil mUtil;
-    Activity mActivity;
+    AppCompatActivity mActivity;
     IssueAdapter adapter;
     FloatingActionButton addButton;
-    private ArrayList<Issues> issuesList = null;
+    private ArrayList<Issue> issuesList = null;
     RemoteDataTask mDataTask;
     LocalDataTask mLocalDataTask;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -78,7 +76,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
                              Bundle savedInstanceState)
     {
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
-        mActivity = getActivity();
+        mActivity = (AppCompatActivity)getActivity();
         mUtil = new MiscUtil(mActivity);
         swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipe_refresh_layout);
         MiscUtil.log("onCreateView");
@@ -104,25 +102,8 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
     {
         super.onResume();
         MiscUtil.log("onResume");
-        hideMyLocButton();
-    }
-
-    public void hideMyLocButton()
-    {
-        MiscUtil.log("hideMyLocButton");
-        FloatingActionButton buttonMyLoc = (FloatingActionButton) mActivity.findViewById(R.id.my_loc);
-        RelativeLayout addIssueMenu = (RelativeLayout) mActivity.findViewById(R.id.fab_wrapper);
-        if (buttonMyLoc != null && addIssueMenu != null)
-        {
-            buttonMyLoc.setVisibility(View.GONE);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) addIssueMenu.getLayoutParams();
-
-            if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            {
-                layoutParams.setMargins(0, 0, mUtil.dp(10), mUtil.dp(10));
-            }
-            addIssueMenu.setLayoutParams(layoutParams);
-        }
+        FABUtil.locationSelector.setVisibility(View.GONE);
+        NavigationUtil.highlightMenu(mActivity, R.id.nav_news);
     }
 
     @Override
@@ -134,6 +115,12 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         }
         return true;
     }
+
+    //TODO Make issueList static
+    //TODO On Scroll down at the bottom of the list, load old data to same list
+    //TODO On swipe down at the top of the list, refresh the same list but don't delete the old records
+    // data base should only have latest 30 records
+    // where as list can have as many records as user scrolls
 
     // RemoteDataTask AsyncTask
     private class RemoteDataTask extends AsyncTask<Void, Void, Void>
@@ -152,49 +139,37 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         {
             try
             {
-                ParseQuery<ParseObject> query = new ParseQuery<>(Issues.TABLE);
+                ParseQuery<ParseObject> query = new ParseQuery<>(IssuesDao.TABLE);
                 query.orderByDescending("createdAt");
                 MiscUtil.log("Try : Getting the list");
                 mParseObjectList = query.find();
                 MiscUtil.log("List Obtained, mParseObjectList : " + mParseObjectList);
-                WBDataBase wbDataBase = new WBDataBase(getActivity());
+                IssuesDao issueDao = new IssuesDao(mActivity);
                 if (mParseObjectList != null)
                 {
-                    wbDataBase.delete(Issues.TABLE, null, null);
+                    issueDao.delete();
                     for (ParseObject issueParseObj : mParseObjectList)
                     {
                         // Locate images in flag column
                         if(null == issueParseObj)
                             continue;
-                        Issues issue = new Issues();
-                        issue.imgUrl = (((ParseFile) issueParseObj.get(Issues.IMAGE_URL)).getUrl());
+                        Issue issue = new Issue();
+                        issue.imgUrl = (((ParseFile) issueParseObj.get(IssuesDao.IMAGE_URL)).getUrl());
                         issue.issueId = issueParseObj.getObjectId();
-                        issue.latitude = (((Double) issueParseObj.get(Issues.LATITUDE)).floatValue());
-                        issue.longitude = (((Double) issueParseObj.get(Issues.LONGITUDE)).floatValue());
+                        issue.latitude = (((Double) issueParseObj.get(IssuesDao.LATITUDE)).floatValue());
+                        issue.longitude = (((Double) issueParseObj.get(IssuesDao.LONGITUDE)).floatValue());
 
-                        issue.description = ((String) issueParseObj.get(Issues.DESCRIPTION));
-                        issue.placeName = ((String) issueParseObj.get(Issues.PLACE_NAME));
-                        issue.userDpUrl = ((String) issueParseObj.get(Issues.USER_DP_URL));
-                        issue.userId = ((String) issueParseObj.get(Issues.USER_ID));
-                        issue.username = ((String) issueParseObj.get(Issues.USERNAME));
+                        issue.description = ((String) issueParseObj.get(IssuesDao.DESCRIPTION));
+                        issue.placeName = ((String) issueParseObj.get(IssuesDao.PLACE_NAME));
+                        issue.userDpUrl = ((String) issueParseObj.get(IssuesDao.USER_DP_URL));
+                        issue.userId = ((String) issueParseObj.get(IssuesDao.USER_ID));
+                        issue.username = ((String) issueParseObj.get(IssuesDao.USERNAME));
 
-                        MiscUtil.log("Place Name : " + issueParseObj.get(Issues.PLACE_NAME));
-                        issue.radius = ((int) issueParseObj.get(Issues.RADIUS));
-                        issue.areaType = ((String) issueParseObj.get(Issues.AREA_TYPE));
+                        MiscUtil.log("Place Name : " + issueParseObj.get(IssuesDao.PLACE_NAME));
+                        issue.radius = ((int) issueParseObj.get(IssuesDao.RADIUS));
+                        issue.areaType = ((String) issueParseObj.get(IssuesDao.AREA_TYPE));
                         issuesList.add(issue);
-                        ContentValues values = new ContentValues();
-                        values.put(Issues.IMAGE_URL, issue.imgUrl);
-                        values.put(Issues.ISSUE_ID, issue.issueId);
-                        values.put(Issues.LATITUDE, issue.latitude);
-                        values.put(Issues.LONGITUDE, issue.longitude);
-                        values.put(Issues.DESCRIPTION, issue.description);
-                        values.put(Issues.PLACE_NAME, issue.placeName);
-                        values.put(Issues.USER_DP_URL, issue.userDpUrl);
-                        values.put(Issues.USER_ID, issue.userId);
-                        values.put(Issues.USERNAME, issue.username);
-                        values.put(Issues.RADIUS, issue.radius);
-                        values.put(Issues.AREA_TYPE, issue.areaType);
-                        wbDataBase.insert(Issues.TABLE, values);
+                        issueDao.insert(issue);
                     }
                 }
             }
@@ -238,30 +213,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         @Override
         protected Void doInBackground(Void... params)
         {
-            WBDataBase wbDataBase = new WBDataBase(getActivity());
-            Cursor cursor = wbDataBase.query(Issues.TABLE, null, null, null, null, null);
-            if (null != cursor)
-            {
-                while (cursor.moveToNext())
-                {
-                    Issues issue = new Issues();
-                    issue.issueId = cursor.getString(cursor.getColumnIndex(Issues.ISSUE_ID));
-                    issue.imgUrl = cursor.getString(cursor.getColumnIndex(Issues.IMAGE_URL));
-                    issue.latitude = cursor.getFloat(cursor.getColumnIndex(Issues.LATITUDE));
-                    issue.longitude = cursor.getFloat(cursor.getColumnIndex(Issues.LONGITUDE));
-
-                    issue.description = cursor.getString(cursor.getColumnIndex(Issues.DESCRIPTION));
-                    issue.placeName = cursor.getString(cursor.getColumnIndex(Issues.PLACE_NAME));
-                    issue.userDpUrl = cursor.getString(cursor.getColumnIndex(Issues.USER_DP_URL));
-                    issue.userId = cursor.getString(cursor.getColumnIndex(Issues.USER_ID));
-                    issue.username = cursor.getString(cursor.getColumnIndex(Issues.USERNAME));
-                    issue.radius = cursor.getInt(cursor.getColumnIndex(Issues.RADIUS));
-                    issue.areaType = cursor.getString(cursor.getColumnIndex(Issues.AREA_TYPE));
-                    issuesList.add(issue);
-                }
-                cursor.close();
-            }
-            wbDataBase.closeDb();
+            issuesList = new IssuesDao(mActivity).getIssuesList();
             return null;
         }
 

@@ -1,8 +1,11 @@
 package in.org.whistleblower.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,26 +25,32 @@ import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 
+import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.Issues;
+import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHolder>
 {
     LayoutInflater mInflater;
     Context mContext;
-    ArrayList<Issues> mIssuesArrayList;
+    AppCompatActivity mActivity;
+    ArrayList<Issue> mIssuesArrayList;
     MiscUtil mUtil;
     ImageUtil mImageUtil;
     SharedPreferences preferences;
 
-    public IssueAdapter(Context mContext, ArrayList<Issues> mIssuesList)
+    public IssueAdapter(Context mContext, ArrayList<Issue> mIssuesList)
     {
         mInflater = LayoutInflater.from(mContext);
         this.mContext = mContext;
+        mActivity = (AppCompatActivity) mContext;
         this.mIssuesArrayList = mIssuesList;
         mUtil = new MiscUtil(mContext);
         mImageUtil = new ImageUtil(mContext);
@@ -58,7 +67,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     @Override
     public void onBindViewHolder(IssueViewHolder holder, final int position)
     {
-        final Issues issue = mIssuesArrayList.get(position);
+        final Issue issue = mIssuesArrayList.get(position);
         // Set the results into TextViews
         holder.placeName.setText(issue.placeName);
         holder.username.setText(issue.username);
@@ -69,7 +78,10 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Show Location On Map : " + position);
+                Bundle bundle = new Bundle();
+                bundle.putFloat(MapFragment.LATITUDE, issue.latitude);
+                bundle.putFloat(MapFragment.LONGITUDE, issue.longitude);
+                NavigationUtil.showMapFragment(mActivity, bundle);
             }
         });
 
@@ -158,6 +170,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View arg0)
             {
+                Intent issueActivityIntent = new Intent(mContext, IssueActivity.class);
+                //issueActivityIntent.putExtra()
+                mContext.startActivity(issueActivityIntent);
                 mUtil.toast("Image : " + position + " clicked");
             }
         });
@@ -166,14 +181,14 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     private void reportIssue(String issueId)
     {
         mUtil.showIndeterminateProgressDialog("Reporting...");
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(Issues.TABLE);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(IssuesDao.TABLE);
         query.getInBackground(issueId, new GetCallback<ParseObject>()
         {
             public void done(ParseObject issue, ParseException e)
             {
                 if (e == null)
                 {
-                    issue.put(Issues.STATUS, Issues.SPAM);
+                    issue.put(IssuesDao.STATUS, IssuesDao.SPAM);
                     issue.saveInBackground(new SaveCallback()
                     {
                         @Override
@@ -194,7 +209,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     private void deleteIssue(String issueId, final int position)
     {
         mUtil.showIndeterminateProgressDialog("Deleting...");
-        ParseQuery<ParseObject> query = new ParseQuery<>(Issues.TABLE);
+        ParseQuery<ParseObject> query = new ParseQuery<>(IssuesDao.TABLE);
         query.getInBackground(issueId, new GetCallback<ParseObject>()
         {
             @Override

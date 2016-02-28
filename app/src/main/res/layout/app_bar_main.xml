@@ -29,7 +29,47 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/appBarLayout">
+
         <include layout="@layout/content_main"/>
+
+        <RelativeLayout
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/select_location"
+            android:visibility="gone"
+            android:paddingBottom="80dp">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="80dp"
+                android:layout_height="160dp"
+                android:layout_centerInParent="true"
+                android:paddingBottom="80dp"
+                android:src="@drawable/map_marker"/>
+
+            <RelativeLayout
+                android:layout_width="80dp"
+                android:layout_centerInParent="true"
+                android:layout_height="160dp">
+
+                <com.getbase.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/ok_map"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    fab:fab_colorNormal="@color/colorAccent"
+                    fab:fab_colorPressed="@color/colorAccentPressed"
+                    fab:fab_icon="@drawable/ok"
+                    fab:fab_labelStyle="@style/menu_labels_style"
+                    fab:fab_labelsPosition="right"
+                    fab:fab_size="mini"
+                    android:layout_marginTop="-6dp"
+                    fab:fab_title="Label on the right"/>
+            </RelativeLayout>
+        </RelativeLayout>
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -39,7 +79,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
         >
 
@@ -91,11 +131,11 @@
         android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
         >
-        <com.getbase.floatingactionbutton.FloatingActionButton
+        <!--<com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/my_loc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorAccent"
-            fab:fab_colorPressed="@color/colorAccentPressed"/>
+            fab:fab_colorPressed="@color/colorAccentPressed"/>-->
     </RelativeLayout>
 </RelativeLayout>

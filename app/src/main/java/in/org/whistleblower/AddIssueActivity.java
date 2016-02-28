@@ -28,17 +28,17 @@ import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 
-import in.org.whistleblower.fragments.MapFragmentOld;
+import in.org.whistleblower.actions.Image;
+import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.icon.Icon;
 import in.org.whistleblower.icon.IconicIcon;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.Issues;
+import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.storage.RStorageObject;
 import in.org.whistleblower.storage.StorageListener;
 import in.org.whistleblower.utilities.DialogUtilListener;
 import in.org.whistleblower.utilities.DialogsUtil;
-import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class AddIssueActivity extends AppCompatActivity implements View.OnClickListener, DialogUtilListener
@@ -79,7 +79,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
         displayPic = (ImageView) findViewById(R.id.displayPic);
         username = (TextView) findViewById(R.id.username);
         String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
-        if (preferences.getBoolean(Issues.ANONYMOUS, false))
+        if (preferences.getBoolean(IssuesDao.ANONYMOUS, false))
         {
             displayPic.setBackground(mUtil.getIcon(FontAwesomeIcon.ANONYMOUS, R.color.white));
             displayPic.setImageDrawable(null);
@@ -120,7 +120,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void showAreaNameAndTypeDetails()
     {
-        String placeTypeNameText = preferences.getString(MapFragmentOld.ADDRESS, "@Unknown Place");
+        String placeTypeNameText = preferences.getString(MapFragment.ADDRESS, "@Unknown Place");
         String temp = dialogsUtil.getSelectedZonesStrings();
         placeTypeNameText += ", " + temp;
         placeTypeName.setText(placeTypeNameText);
@@ -195,8 +195,8 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
             ///*
 
             Intent intent = getIntent();
-            filePath = intent.getStringExtra(FABUtil.FILE_PATH);
-            isPhoto = intent.getBooleanExtra(FABUtil.IS_PHOTO, true);
+            filePath = intent.getStringExtra(Image.FILE_PATH);
+            isPhoto = intent.getBooleanExtra(Image.IS_PHOTO, true);
             if (isPhoto)
             {
                 image = BitmapFactory.decodeFile(filePath);
@@ -267,11 +267,11 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
 
     private void addIssue()
     {
-        boolean isAnonymous = preferences.getBoolean(Issues.ANONYMOUS, false);
+        boolean isAnonymous = preferences.getBoolean(IssuesDao.ANONYMOUS, false);
 
-        RStorageObject issue = new RStorageObject(Issues.TABLE);
-        issue.put(Issues.DESCRIPTION, description.getText().toString());
-        issue.put(Issues.PLACE_NAME, placeTypeName.getText().toString());
+        RStorageObject issue = new RStorageObject(IssuesDao.TABLE);
+        issue.put(IssuesDao.DESCRIPTION, description.getText().toString());
+        issue.put(IssuesDao.PLACE_NAME, placeTypeName.getText().toString());
         String username = "Anonymous",
                 userProfilePic = "";
 
@@ -281,16 +281,16 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
             userProfilePic = preferences.getString(Accounts.PHOTO_URL, "");
         }
 
-        issue.put(Issues.USERNAME, username);
-        issue.put(Issues.IMAGE_URL, saveFile());
-        issue.put(Issues.USER_DP_URL, userProfilePic);
-        issue.put(Issues.USER_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
-        issue.put(Issues.AREA_TYPE, preferences.getString(Issues.AREA_TYPE, "#Unknown Type"));
+        issue.put(IssuesDao.USERNAME, username);
+        issue.put(IssuesDao.IMAGE_URL, saveFile());
+        issue.put(IssuesDao.USER_DP_URL, userProfilePic);
+        issue.put(IssuesDao.USER_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
+        issue.put(IssuesDao.AREA_TYPE, preferences.getString(IssuesDao.AREA_TYPE, "#Unknown Type"));
 
-        issue.put(Issues.RADIUS, preferences.getInt(Issues.RADIUS, 0));
+        issue.put(IssuesDao.RADIUS, preferences.getInt(IssuesDao.RADIUS, 0));
 
-        issue.put(Issues.LATITUDE, preferences.getFloat(MapFragmentOld.LATITUDE, 0));
-        issue.put(Issues.LONGITUDE, preferences.getFloat(MapFragmentOld.LONGITUDE, 0));
+        issue.put(IssuesDao.LATITUDE, preferences.getFloat(MapFragment.LATITUDE, 0));
+        issue.put(IssuesDao.LONGITUDE, preferences.getFloat(MapFragment.LONGITUDE, 0));
 
         issue.store(new StorageListener()
         {

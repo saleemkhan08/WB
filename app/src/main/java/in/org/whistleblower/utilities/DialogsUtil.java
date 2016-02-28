@@ -8,7 +8,7 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
 import in.org.whistleblower.R;
-import in.org.whistleblower.models.Issues;
+import in.org.whistleblower.models.IssuesDao;
 
 public class DialogsUtil
 {
@@ -34,13 +34,13 @@ public class DialogsUtil
         final AlertDialog.Builder dialog = new AlertDialog.Builder(mActivty);
         dialog.setTitle(mActivty.getResources().getString(R.string.loc_radius_dialog_title));
 
-        int selectedValue = preferences.getInt(Issues.RADIUS, radiusOptions.length - 1);
+        int selectedValue = preferences.getInt(IssuesDao.RADIUS, radiusOptions.length - 1);
         dialog.setSingleChoiceItems(radiusOptions, selectedValue, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int pos)
             {
-                preferences.edit().putInt(Issues.RADIUS, pos).apply();
+                preferences.edit().putInt(IssuesDao.RADIUS, pos).apply();
                 dialog.dismiss();
             }
         });
@@ -122,7 +122,7 @@ public class DialogsUtil
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                preferences.edit().putBoolean(Issues.ANONYMOUS, true).apply();
+                preferences.edit().putBoolean(IssuesDao.ANONYMOUS, true).apply();
                 dialog.dismiss();
                 ((DialogUtilListener) mActivty).showProfileDetails();
             }
@@ -132,7 +132,7 @@ public class DialogsUtil
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                preferences.edit().putBoolean(Issues.ANONYMOUS, false).apply();
+                preferences.edit().putBoolean(IssuesDao.ANONYMOUS, false).apply();
                 dialog.dismiss();
                 ((DialogUtilListener) mActivty).showProfileDetails();
             }

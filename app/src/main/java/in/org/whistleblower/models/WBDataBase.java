@@ -22,10 +22,10 @@ public class WBDataBase
     {
         public static final String DATABASE_NAME = "whistle_blower";
         String[] mTableSchema = {
-                Issues.TABLE_SCHEMA
+                IssuesDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
-                Issues.DROP_TABLE
+                IssuesDao.DROP_TABLE
         };
 
         Context mContext;
