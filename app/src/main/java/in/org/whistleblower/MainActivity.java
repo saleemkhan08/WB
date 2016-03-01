@@ -28,11 +28,11 @@ import java.util.List;
 
 import in.org.whistleblower.actions.Image;
 import in.org.whistleblower.actions.Place;
-import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
+import in.org.whistleblower.utilities.LocationUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity
                         locationUpdateService.startLocationUpdates();
                         break;
                     case Activity.RESULT_CANCELED:
-                        preferences.edit().putBoolean(MapFragment.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
+                        preferences.edit().putBoolean(LocationUtil.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
                         MiscUtil.log("User chose not to make required location settings changes.");
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "App requires Location settings to be on!", Snackbar.LENGTH_INDEFINITE);
                         snackbar.setAction("Retry", new View.OnClickListener()

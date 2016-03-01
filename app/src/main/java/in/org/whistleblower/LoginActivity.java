@@ -39,7 +39,7 @@ import in.org.whistleblower.utilities.ConnectivityListener;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener,ViewPager.OnPageChangeListener, ConnectivityListener
+        View.OnClickListener, ViewPager.OnPageChangeListener, ConnectivityListener
 {
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
@@ -56,23 +56,26 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+    {
         Log.d(TAG, "onPageScrolled");
     }
 
     @Override
-    public void onPageSelected(int position) {
+    public void onPageSelected(int position)
+    {
         Log.d(TAG, "onPageSelected :: " + position);
         String pageIndicator = "";
-        switch (position) {
+        switch (position)
+        {
             case 0:
-                pageIndicator = pageIndicator+getString(R.string.current_page) + " " + getString(R.string.other_page) +" " + getString(R.string.other_page);
+                pageIndicator = pageIndicator + getString(R.string.current_page) + " " + getString(R.string.other_page) + " " + getString(R.string.other_page);
                 break;
             case 1:
-                pageIndicator = pageIndicator+getString(R.string.other_page) + " " + getString(R.string.current_page )+ " " + getString(R.string.other_page);
+                pageIndicator = pageIndicator + getString(R.string.other_page) + " " + getString(R.string.current_page) + " " + getString(R.string.other_page);
                 break;
             case 2:
-                pageIndicator = pageIndicator+getString(R.string.other_page) + " " + getString(R.string.other_page) + " " + getString(R.string.current_page);
+                pageIndicator = pageIndicator + getString(R.string.other_page) + " " + getString(R.string.other_page) + " " + getString(R.string.current_page);
                 break;
 
         }
@@ -80,7 +83,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onPageScrollStateChanged(int state) {
+    public void onPageScrollStateChanged(int state)
+    {
         Log.d(TAG, "onPageScrollStateChanged :: " + state);
     }
 
@@ -192,12 +196,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
         // Button click listeners
         findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
-
         mTxtPageIndicator = (TextView) findViewById(R.id.pageIndicator);
         mTxtPageIndicator.setTypeface(mFont);
-        mTxtPageIndicator.setText(""+getString(R.string.current_page) + " " + getString(R.string.other_page) +" " + getString(R.string.other_page));
+        mTxtPageIndicator.setText("" + getString(R.string.current_page) + " " + getString(R.string.other_page) + " " + getString(R.string.other_page));
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -222,21 +223,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
 
-    private void updateUI(boolean signedIn)
-    {
-        if (signedIn)
-        {
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
-        }
-    }
-
-
     private void signOut()
     {
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
@@ -246,7 +232,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     public void onResult(Status status)
                     {
                         Log.d(TAG, "signOut:onResult:" + status);
-                        updateUI(false);
                     }
                 });
     }
@@ -260,7 +245,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     public void onResult(Status status)
                     {
                         Log.d(TAG, "revokeAccess:onResult:" + status);
-                        updateUI(false);
                     }
                 });
     }
@@ -283,10 +267,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 Uri photo_url = acct.getPhotoUrl();
                 saveData(acct.getEmail(), acct.getDisplayName(), acct.getId(), photo_url != null ? photo_url.toString() : "");
             }
-            else
-            {
-                updateUI(false);
-            }
         }
     }
 
@@ -300,8 +280,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             @Override
             public void onResult(List<StorageObject> userList)
             {
-                MiscUtil.log("List : "+userList);
-                MiscUtil.log("Len : "+ userList.size());
+                MiscUtil.log("List : " + userList);
+                MiscUtil.log("Len : " + userList.size());
                 if (userList.size() == 0)
                 {
                     final StorageObject userAccount = new RStorageObject(Accounts.TABLE);
@@ -341,8 +321,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
                 else
                 {
-                    MiscUtil.log("List : "+userList);
-                    MiscUtil.log("Values : email : "+email+", name : "+name+", googleId : "+googleId+", photo_url : "+photo_url);
+                    MiscUtil.log("List : " + userList);
+                    MiscUtil.log("Values : email : " + email + ", name : " + name + ", googleId : " + googleId + ", photo_url : " + photo_url);
 
                     StorageObject userAccount = userList.get(0);
                     userAccount.put(Accounts.EMAIL, email);
@@ -416,13 +396,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         switch (v.getId())
         {
             case R.id.sign_in_button:
-                util.isConnected((ConnectivityListener)this);
-                break;
-            case R.id.sign_out_button:
-                signOut();
-                break;
-            case R.id.disconnect_button:
-                revokeAccess();
+                util.isConnected((ConnectivityListener) this);
                 break;
         }
     }

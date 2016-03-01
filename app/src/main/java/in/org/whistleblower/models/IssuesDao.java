@@ -53,6 +53,7 @@ public class IssuesDao
 
     public void insert(Issue issue)
     {
+
         ContentValues values = new ContentValues();
         values.put(IssuesDao.IMAGE_URL, issue.imgUrl);
         values.put(IssuesDao.ISSUE_ID, issue.issueId);
@@ -101,5 +102,20 @@ public class IssuesDao
         }
         mWBDataBase.closeDb();
         return issuesList;
+    }
+
+    public boolean issueExist(String id)
+    {
+        Cursor cursor = mWBDataBase.query(IssuesDao.TABLE, new String[]{ISSUE_ID}, ISSUE_ID +" = ?", new String[]{id},null, null);
+        if (null != cursor)
+        {
+            if(cursor.getCount() <= 0){
+                cursor.close();
+                return false;
+            }
+            cursor.close();
+        }
+        mWBDataBase.closeDb();
+        return true;
     }
 }

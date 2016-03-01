@@ -10,11 +10,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -31,14 +29,13 @@ import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
-public class MainFragment extends Fragment implements View.OnTouchListener, SwipeRefreshLayout.OnRefreshListener
+public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
     RecyclerView issuesRecyclerView;
     List<ParseObject> mParseObjectList;
     MiscUtil mUtil;
     AppCompatActivity mActivity;
     IssueAdapter adapter;
-    FloatingActionButton addButton;
     private ArrayList<Issue> issuesList = null;
     RemoteDataTask mDataTask;
     LocalDataTask mLocalDataTask;
@@ -79,6 +76,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         mActivity = (AppCompatActivity)getActivity();
         mUtil = new MiscUtil(mActivity);
         swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(this);
         MiscUtil.log("onCreateView");
         return parentView;
     }
@@ -106,16 +104,6 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         NavigationUtil.highlightMenu(mActivity, R.id.nav_news);
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event)
-    {
-        if (event.getAction() == MotionEvent.ACTION_UP)
-        {
-
-        }
-        return true;
-    }
-
     //TODO Make issueList static
     //TODO On Scroll down at the bottom of the list, load old data to same list
     //TODO On swipe down at the top of the list, refresh the same list but don't delete the old records
@@ -129,14 +117,14 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         protected void onPreExecute()
         {
             super.onPreExecute();
-            // showing refresh animation before making http call
-            swipeRefreshLayout.setRefreshing(true);
-            // mUtil.showIndeterminateProgressDialog("Loading...");
+            MiscUtil.log("RemoteDataTask : onPreExecute");
+            mUtil.toast("Updating...");
         }
 
         @Override
         protected Void doInBackground(Void... params)
         {
+            MiscUtil.log("RemoteDataTask : doInBackground");
             try
             {
                 ParseQuery<ParseObject> query = new ParseQuery<>(IssuesDao.TABLE);
@@ -148,6 +136,8 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
                 if (mParseObjectList != null)
                 {
                     issueDao.delete();
+                    issuesList = new ArrayList<>();
+
                     for (ParseObject issueParseObj : mParseObjectList)
                     {
                         // Locate images in flag column
@@ -184,19 +174,12 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         @Override
         protected void onPostExecute(Void result)
         {
-            // Locate the listview in listview_main.xml
-//            issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
-//            // Pass the results into ListViewAdapter.java
-//            adapter = new IssueAdapter(mActivity, issuesList);
-//            // Binds the Adapter to the ListView
-//            issuesRecyclerView.setAdapter(adapter);
-//            issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-//            // Close the progressdialog
-////            mUtil.hideProgressDialog();
-//            // hiding refresh animation after making http call
-            if(null != adapter)
-                adapter.notifyDataSetChanged();
+            issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
+            adapter = new IssueAdapter(mActivity, issuesList);
+            issuesRecyclerView.setAdapter(adapter);
+            issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
             swipeRefreshLayout.setRefreshing(false);
+            mUtil.toast("Updated.");
         }
     }
 
@@ -206,13 +189,22 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         @Override
         protected void onPreExecute()
         {
-            swipeRefreshLayout.setRefreshing(true);
+            MiscUtil.log("LocalDataTask : onPreExecute");
+            swipeRefreshLayout.post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    swipeRefreshLayout.setRefreshing(true);
+                }
+            });
             super.onPreExecute();
         }
 
         @Override
         protected Void doInBackground(Void... params)
         {
+            MiscUtil.log("LocalDataTask : doInBackground");
             issuesList = new IssuesDao(mActivity).getIssuesList();
             return null;
         }
@@ -220,23 +212,19 @@ public class MainFragment extends Fragment implements View.OnTouchListener, Swip
         @Override
         protected void onPostExecute(Void aVoid)
         {
+            MiscUtil.log("LocalDataTask : onPostExecute - > "+issuesList);
             if(null != issuesList && issuesList.size() <= 0)
             {
                 onRefresh();
-               // return;
             }
-            // Locate the listview in listview_main.xml
-            issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
-            // Pass the results into ListViewAdapter.java
-
-            adapter = new IssueAdapter(mActivity, issuesList);
-            // Binds the Adapter to the ListView
-            issuesRecyclerView.setAdapter(adapter);
-            issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-            // Close the progressdialog
-//            mUtil.hideProgressDialog();
-            // hiding refresh animation after making http call
-            swipeRefreshLayout.setRefreshing(false);
+            else
+            {
+                issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
+                adapter = new IssueAdapter(mActivity, issuesList);
+                issuesRecyclerView.setAdapter(adapter);
+                issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+                swipeRefreshLayout.setRefreshing(false);
+            }
         }
     }
 
