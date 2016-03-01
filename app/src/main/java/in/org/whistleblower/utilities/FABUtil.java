@@ -2,7 +2,10 @@ package in.org.whistleblower.utilities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -77,12 +80,19 @@ public class FABUtil
         Bundle bundle = new Bundle();
         bundle.putString(ACTION, action);
         NavigationUtil.showMapFragment(mActivity, bundle);
+        Toast toast = Toast.makeText(mActivity, "Adjust the map & click on marker to select the location!", Toast.LENGTH_LONG);
+        TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+        if (v != null)
+        {
+            v.setGravity(Gravity.CENTER);
+        }
+        toast.show();
         locationSelector.setVisibility(View.VISIBLE);
     }
 
     public static void closeFABMenu(AppCompatActivity mActivity)
     {
-        if(null == FABUtil.fabMenu)
+        if (null == FABUtil.fabMenu)
         {
             FABUtil.fabMenu = (FloatingActionsMenu) mActivity.findViewById(R.id.multiple_actions);
         }

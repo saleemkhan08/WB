@@ -37,7 +37,7 @@ public class SaveLocationTask extends AsyncTask<Void, Void, Void>
             List<Address> addresses = gcd.getFromLocation(mLatLng.latitude, mLatLng.longitude, 1);
             if (addresses.size() > 0)
             {
-                address = "@" + addresses.get(0).getFeatureName();
+                address = "@"+ addresses.get(0).getAddressLine(1);
             }
         }
         catch (IOException e)
