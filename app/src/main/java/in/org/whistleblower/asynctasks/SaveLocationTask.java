@@ -6,19 +6,22 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
-import java.util.List;
 
 import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.utilities.FABUtil;
 
-public class SaveLocationTask extends AsyncTask<Void, Void, Void>
+public class SaveLocationTask extends AsyncTask<String, Void, String>
 {
     Context mContext;
     LatLng mLatLng;
-    String address = "@Unknown Place";
+    String placeName = "@Unknown Place";
     private SharedPreferences preferences;
 
     public SaveLocationTask(Context mContext, LatLng latLng)
@@ -29,20 +32,37 @@ public class SaveLocationTask extends AsyncTask<Void, Void, Void>
     }
 
     @Override
-    protected Void doInBackground(Void... params)
+    protected String doInBackground(String... params)
     {
         Geocoder gcd = new Geocoder(mContext);
         try
         {
-            List<Address> addresses = gcd.getFromLocation(mLatLng.latitude, mLatLng.longitude, 1);
-            if (addresses.size() > 0)
+            Address address = gcd.getFromLocation(mLatLng.latitude, mLatLng.longitude, 1).get(0);
+            if (address != null)
             {
-                String addr = addresses.get(0).getAddressLine(1);
-                if(addr.contains(addresses.get(0).getAdminArea()))
+                String addr = address.getAddressLine(1);
+                if (addr.contains(address.getAdminArea()))
                 {
-                    addr = addresses.get(0).getAddressLine(0);
+                    addr = address.getAddressLine(0);
                 }
-                address = "@"+ addr;
+                placeName = "@" + addr;
+                if(params[0].equals(FABUtil.ADD_FAV_PLACE))
+                {
+                    FavPlacesDao favPlacesDao = new FavPlacesDao(mContext);
+                    FavPlaces favPlace = new FavPlaces();
+                    favPlace.featureName = address.getFeatureName();
+                    favPlace.addressLine0 = address.getAddressLine(0);
+                    favPlace.addressLine1 = address.getAddressLine(1);
+                    favPlace.subLocality = address.getSubLocality();
+                    favPlace.locality = address.getLocality();
+                    favPlace.subAdminArea = address.getSubAdminArea();
+                    favPlace.adminArea = address.getAdminArea();
+                    favPlace.country = address.getCountryName();
+                    favPlace.postalCode = address.getPostalCode();
+                    favPlace.latitude = (float) mLatLng.latitude;
+                    favPlace.longitude = (float) mLatLng.longitude;
+                    return favPlacesDao.insert(favPlace);
+                }
             }
         }
         catch (IOException e)
@@ -54,13 +74,16 @@ public class SaveLocationTask extends AsyncTask<Void, Void, Void>
     }
 
     @Override
-    protected void onPostExecute(Void aVoid)
+    protected void onPostExecute(String result)
     {
         preferences.edit()
                 .putFloat(MapFragment.LATITUDE, (float) mLatLng.latitude)
                 .putFloat(MapFragment.LONGITUDE, (float) mLatLng.longitude)
-                .putString(MapFragment.ADDRESS, address.trim())
+                .putString(MapFragment.ADDRESS, placeName.trim())
                 .apply();
-        super.onPostExecute(aVoid);
+        if(result != null)
+        {
+            Toast.makeText(mContext, result,Toast.LENGTH_SHORT).show();
+        }
     }
 }

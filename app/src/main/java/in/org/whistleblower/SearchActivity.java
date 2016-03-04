@@ -3,8 +3,6 @@ package in.org.whistleblower;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -22,12 +20,10 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import in.org.whistleblower.adapters.PlaceSearchAdapter;
 import in.org.whistleblower.adapters.UserSearchAdapter;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.FavPlaces;
@@ -154,7 +150,7 @@ public class SearchActivity extends AppCompatActivity
         }
 
         private void loadFavPlacesList(String text)
-        {
+        {/*
             try
             {
                 ParseQuery<ParseObject> query = new ParseQuery<>(FavPlaces.TABLE);
@@ -185,7 +181,7 @@ public class SearchActivity extends AppCompatActivity
             {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
-            }
+            }*/
         }
 
         @Override
@@ -196,11 +192,11 @@ public class SearchActivity extends AppCompatActivity
             mProgressBar = mContext.findViewById(R.id.progressBar);
             if (category.equals(NavigationUtil.ADD_FAV_PLACE))
             {
-                searchResultView.setAdapter(new PlaceSearchAdapter(mContext, mAddressList, mFavPlacesList, false));
+                //searchResultView.setAdapter(new PlaceSearchAdapter(mContext, mAddressList, mFavPlacesList, false));
             }
             else if (category.equals(NavigationUtil.FAV_PLACE))
             {
-                searchResultView.setAdapter(new PlaceSearchAdapter(mContext, mAddressList, mFavPlacesList, true));
+                //searchResultView.setAdapter(new PlaceSearchAdapter(mContext, mAddressList, mFavPlacesList, true));
             }
             else
             {
@@ -265,7 +261,7 @@ public class SearchActivity extends AppCompatActivity
         }
 
         private void loadPlacesList(String text)
-        {
+        {/*
             try
             {
                 ParseQuery<ParseObject> favPlacesQuery = new ParseQuery<>(FavPlaces.TABLE);
@@ -323,7 +319,7 @@ public class SearchActivity extends AppCompatActivity
             catch (IOException e)
             {
                 e.printStackTrace();
-            }
+            }*/
         }
 
         private void loadFriendList(String text)

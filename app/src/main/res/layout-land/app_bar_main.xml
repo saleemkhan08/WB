@@ -109,7 +109,7 @@
         fab:fab_expandDirection="up">
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/video"
+            android:id="@+id/favPlace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/white"

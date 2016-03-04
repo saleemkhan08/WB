@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.SearchActivity;
+import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
@@ -28,6 +29,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String FRIEND_LIST = "FRIEND_LIST";
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
     public static final String FAV_PLACE = "FAV_PLACE";
+    public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
 
     MiscUtil util;
     //To get fragment manager
@@ -39,11 +41,12 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public NavigationView navigationView;
     public MainFragment mainFragment;
     private DrawerLayout drawer;
+
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
         fragmentManager = mActivity.getSupportFragmentManager();
-        drawer =  ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
+        drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
     }
 
     public void setUp(MiscUtil util)
@@ -77,7 +80,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
         else if (id == R.id.nav_fav)
         {
-            util.toast("Not Implemented");
+            showFavPlacesList(mActivity);
         }
         else if (id == R.id.nav_friends)
         {
@@ -108,6 +111,20 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         return true;
     }
 
+    public static void showFavPlacesList(AppCompatActivity mActivity)
+    {
+        FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+        FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
+        if (favoritePlacesFragment == null)
+        {
+            favoritePlacesFragment = new FavoritePlacesFragment();
+        }
+        fragmentManager
+                .beginTransaction()
+                .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
+                .commit();
+    }
+
     public void showMapFragment()
     {
         mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
@@ -130,7 +147,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             mapFragment = new MapFragment();
         }
 
-        if(!mapFragment.isVisible())
+        if (!mapFragment.isVisible())
         {
             mapFragment.setArguments(bundle);
             fragmentManager
@@ -156,6 +173,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 .replace(R.id.content_layout, mainFragment, MAIN_FRAGMENT_TAG)
                 .commit();
     }
+
     public static void highlightMenu(AppCompatActivity mActivity, int id)
     {
         NavigationView navigationView = (NavigationView) mActivity.findViewById(R.id.nav_view);

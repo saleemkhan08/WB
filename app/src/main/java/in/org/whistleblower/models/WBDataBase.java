@@ -22,10 +22,12 @@ public class WBDataBase
     {
         public static final String DATABASE_NAME = "whistle_blower";
         String[] mTableSchema = {
-                IssuesDao.TABLE_SCHEMA
+                IssuesDao.TABLE_SCHEMA,
+                FavPlacesDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
-                IssuesDao.DROP_TABLE
+                IssuesDao.DROP_TABLE,
+                FavPlacesDao.TABLE_SCHEMA
         };
 
         Context mContext;
@@ -80,6 +82,11 @@ public class WBDataBase
     public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String groupBy, String orderBy)
     {
         return db.query(tableName, columns, selection, selectionArgs, groupBy, null, orderBy, null);
+    }
+
+    public Cursor query(String query)
+    {
+        return db.rawQuery(query, null);
     }
 
     public long update(String tblname, ContentValues values, String whereClause, String[] whereArgs)

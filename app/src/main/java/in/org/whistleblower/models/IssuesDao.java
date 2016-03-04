@@ -53,7 +53,6 @@ public class IssuesDao
 
     public void insert(Issue issue)
     {
-
         ContentValues values = new ContentValues();
         values.put(IssuesDao.IMAGE_URL, issue.imgUrl);
         values.put(IssuesDao.ISSUE_ID, issue.issueId);

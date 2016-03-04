@@ -27,7 +27,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import in.org.whistleblower.actions.Image;
-import in.org.whistleblower.actions.Place;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
@@ -53,8 +52,6 @@ public class MainActivity extends AppCompatActivity
     RelativeLayout mainActivityContainer;
     ImageView profilePic;
     TextView username, emailId;
-    private Place mPlace;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -249,7 +246,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    mPlace.addFavPlace();
+                    //mPlace.addFavPlace();
                 }
                 else
                 {

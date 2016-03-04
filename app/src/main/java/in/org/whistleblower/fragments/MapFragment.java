@@ -11,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,7 +26,6 @@ import java.util.Set;
 import in.org.whistleblower.R;
 import in.org.whistleblower.actions.Alarm;
 import in.org.whistleblower.actions.Image;
-import in.org.whistleblower.actions.Place;
 import in.org.whistleblower.asynctasks.SaveLocationTask;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -246,12 +246,12 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
                     break;
 
                 case FABUtil.ADD_FAV_PLACE:
-                    new Place(mActivity).addFavPlace();
+                    Toast.makeText(mActivity, "Adding...",Toast.LENGTH_SHORT).show();
                     break;
 
             }
             mLocationSelector.setVisibility(View.GONE);
-            new SaveLocationTask(mActivity, latLng).execute();
+            new SaveLocationTask(mActivity, latLng).execute(action);
         }
     }
 

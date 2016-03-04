@@ -2,10 +2,7 @@ package in.org.whistleblower.utilities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -36,7 +33,7 @@ public class FABUtil
         locationSelector = mActivity.findViewById(R.id.select_location);
 
         FloatingActionButton buttonAlarm = (FloatingActionButton) mActivity.findViewById(R.id.alarm);
-        buttonAlarm.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL));
+        buttonAlarm.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT));
         buttonAlarm.setStrokeVisible(false);
         buttonAlarm.setOnClickListener(new View.OnClickListener()
         {
@@ -61,10 +58,10 @@ public class FABUtil
             }
         });
 
-        FloatingActionButton buttonVideo = (FloatingActionButton) mActivity.findViewById(R.id.video);
-        buttonVideo.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.MAP_MARKER));
-        buttonVideo.setStrokeVisible(false);
-        buttonVideo.setOnClickListener(new View.OnClickListener()
+        FloatingActionButton buttonFavPlace = (FloatingActionButton) mActivity.findViewById(R.id.favPlace);
+        buttonFavPlace.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.STAR));
+        buttonFavPlace.setStrokeVisible(false);
+        buttonFavPlace.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -80,13 +77,28 @@ public class FABUtil
         Bundle bundle = new Bundle();
         bundle.putString(ACTION, action);
         NavigationUtil.showMapFragment(mActivity, bundle);
-        Toast toast = Toast.makeText(mActivity, "Adjust the map & click on marker to select the location!", Toast.LENGTH_LONG);
+        FloatingActionButton okButton = (FloatingActionButton) mActivity.findViewById(R.id.ok_map);
+        switch (action)
+        {
+            case ADD_FAV_PLACE:
+                okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.STAR,R.color.white));
+                break;
+            case ADD_ISSUE:
+                okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.CAMERA,R.color.white));
+                break;
+            case SET_ALARM:
+                okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT,R.color.white));
+                break;
+
+        }
+        okButton.setStrokeVisible(false);
+        /*Toast toast = Toast.makeText(mActivity, "Adjust the map & click on marker to select the location!", Toast.LENGTH_LONG);
         TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
         if (v != null)
         {
             v.setGravity(Gravity.CENTER);
         }
-        toast.show();
+        toast.show();*/
         locationSelector.setVisibility(View.VISIBLE);
     }
 

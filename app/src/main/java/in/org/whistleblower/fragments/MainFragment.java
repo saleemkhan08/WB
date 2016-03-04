@@ -185,7 +185,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private class LocalDataTask extends AsyncTask<Void, Void, Void>
     {
-
         @Override
         protected void onPreExecute()
         {
