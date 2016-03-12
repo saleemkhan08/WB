@@ -6,6 +6,7 @@
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp">
+
     <RelativeLayout
         android:id="@+id/userRow"
         android:layout_width="match_parent"
@@ -18,14 +19,25 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/featureName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:text="Feature Name"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="25sp"
+                />
+
+            <TextView
                 android:id="@+id/subLocality"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:gravity="center_vertical"
-                android:text="Sub Locality"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="20sp"
+                android:text="Admin Area"
+                android:textColor="#999"
+                android:textSize="15sp"
                 />
 
             <TextView
@@ -40,6 +52,7 @@
                 />
         </LinearLayout>
     </RelativeLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

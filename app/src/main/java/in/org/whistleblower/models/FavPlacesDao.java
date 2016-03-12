@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class FavPlacesDao
 {
+    public static final String ADD_SUCCESS_MSG = "Added to Favorite Places";
     public static final String TABLE = "FavPlaces";
     public static final String COUNTRY = "COUNTRY";
 
@@ -42,7 +43,8 @@ public class FavPlacesDao
             + LATITUDE + " REAL );";
 
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
-    private static final float OFFSET = 0.005f;
+    private static final float OFFSET_LAT = 0.008983f;
+    private static final float OFFSET_LNG = 0.015060f;
     //TODO write a query to save the old data and just alter the table.
     Context mContext;
     WBDataBase mWBDataBase;
@@ -69,20 +71,29 @@ public class FavPlacesDao
             values.put(FavPlacesDao.POSTAL_CODE, favPlaces.postalCode);
             values.put(FavPlacesDao.LONGITUDE, favPlaces.longitude);
             values.put(FavPlacesDao.LATITUDE, favPlaces.latitude);
-            if(-1 == mWBDataBase.insert(FavPlacesDao.TABLE, values))
+            if(-1 == mWBDataBase.insert(TABLE, values))
             {
                 return "Couldn't Add to Favorite Places";
             }
-            return "Added to Favorite Places";
+            return ADD_SUCCESS_MSG;
         }
-        return "This Place is Already added to Favorites";
+        return "Already added to Favorites";
     }
 
     public void delete()
     {
-        mWBDataBase.delete(FavPlacesDao.TABLE, null, null);
+        mWBDataBase.delete(TABLE, null, null);
     }
 
+    public void delete(String whereClause)
+    {
+        mWBDataBase.delete(TABLE, whereClause, null);
+    }
+
+    public void update(ContentValues cv, String whereClause)
+    {
+        mWBDataBase.update(TABLE, cv, whereClause, null);
+    }
     public ArrayList<FavPlaces> getFavPlacesList()
     {
         ArrayList<FavPlaces> favPlacesArrayList = new ArrayList<>();
@@ -114,9 +125,9 @@ public class FavPlacesDao
     public boolean favPlaceExists(float longitude, float latitude)
     {
         String query = "SELECT * FROM " + TABLE + " WHERE " +
-                LONGITUDE + " < " + (longitude+ OFFSET) + " AND " +LONGITUDE + " > " + (longitude - OFFSET) +
+                LONGITUDE + " < " + (longitude+ OFFSET_LNG) + " AND " +LONGITUDE + " > " + (longitude - OFFSET_LNG) +
                 " AND "+
-                LATITUDE + " < " + (latitude+ OFFSET) + " AND " +LATITUDE + " > " + (latitude - OFFSET) ;
+                LATITUDE + " < " + (latitude+ OFFSET_LAT) + " AND " +LATITUDE + " > " + (latitude - OFFSET_LAT) ;
         Cursor cursor = mWBDataBase.query(query);
         if (null != cursor)
         {
@@ -127,5 +138,19 @@ public class FavPlacesDao
             cursor.close();
         }
         return true;
+    }
+
+    public static float distFrom(float lat1, float lng1, float lat2, float lng2)
+    {
+        double earthRadius = 6371000; //meters
+
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        float dist = (float) (earthRadius * c);
+        return dist;
     }
 }

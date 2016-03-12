@@ -89,7 +89,7 @@ public enum FontAwesomeIcon implements Icon
     ADJUST(0xF042),
     TINT(0xF043),
     EDIT(0xF044),
-    SHARE(0xF045),
+    SHARE(0xf1e0),
     CHECK(0xF046),
     MOVE(0xF047),
     STEP_BACKWARD(0xF048),

@@ -56,6 +56,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     @Override
+    public void onCancelled()
+    {
+
+    }
+
+    @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
     {
         Log.d(TAG, "onPageScrolled");

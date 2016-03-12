@@ -2,14 +2,13 @@
 <RelativeLayout
     android:id="@+id/mainActivityContainer"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="in.org.whistleblower.MainActivity"
-    >
+    tools:context="in.org.whistleblower.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -34,12 +33,12 @@
         <include layout="@layout/content_main"/>
 
         <RelativeLayout
+            android:id="@+id/select_location"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:id="@+id/select_location"
-            android:visibility="gone"
-            android:paddingBottom="80dp">
+            android:paddingBottom="80dp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/imageView"
@@ -47,12 +46,12 @@
                 android:layout_height="160dp"
                 android:layout_centerInParent="true"
                 android:paddingBottom="80dp"
-                android:src="@drawable/map_marker"/>
+                android:src="@drawable/marker"/>
 
             <RelativeLayout
                 android:layout_width="80dp"
-                android:layout_centerInParent="true"
-                android:layout_height="160dp">
+                android:layout_height="160dp"
+                android:layout_centerInParent="true">
 
                 <com.getbase.floatingactionbutton.FloatingActionButton
                     android:id="@+id/ok_map"
@@ -60,11 +59,11 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginTop="-6dp"
                     fab:fab_colorNormal="@color/colorAccent"
                     fab:fab_colorPressed="@color/colorAccentPressed"
                     fab:fab_labelsPosition="right"
                     fab:fab_size="mini"
-                    android:layout_marginTop="-6dp"
                     />
             </RelativeLayout>
         </RelativeLayout>
@@ -72,15 +71,13 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/fab_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/map_fab_buttons"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginRight="10dp"
-        >
+        android:visibility="gone"
+        android:layout_alignParentRight="true">
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/multiple_actions"
@@ -92,53 +89,46 @@
             fab:fab_addButtonStrokeVisible="false"
             fab:fab_expandDirection="up"
             fab:fab_labelStyle="@style/menu_labels_style"
-            >
+            android:layout_above="@+id/my_loc"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/favPlace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:fab_title="Add Favorite Place"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
-                app:fab_title="Add Favorite Place"
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:fab_title="Add Issue"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
-                app:fab_title="Add Issue"
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/alarm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                fab:fab_colorNormal="@color/white"
                 app:fab_title="Add Location Alarm"
+                fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
                 fab:fab_size="mini"/>
 
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/location_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginRight="10dp"
-        >
-        <!--<com.getbase.floatingactionbutton.FloatingActionButton
+        <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/my_loc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorAccent"
-            fab:fab_colorPressed="@color/colorAccentPressed"/>-->
+            fab:fab_colorPressed="@color/colorAccentPressed"
+            android:layout_alignParentBottom="true"
+            android:layout_alignRight="@+id/multiple_actions"
+            android:layout_alignEnd="@+id/multiple_actions"/>
     </RelativeLayout>
 </RelativeLayout>

@@ -4,19 +4,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_map"
-            android:icon="@android:drawable/ic_dialog_map"
+            android:icon="@drawable/map_marker_icon_accent"
             android:title="Map"/>
         <item
             android:id="@+id/nav_news"
-            android:icon="@android:drawable/ic_menu_slideshow"
+            android:icon="@drawable/newsfeeds_icon_accent"
             android:title="News Feeds"/>
         <item
             android:id="@+id/nav_fav"
-            android:icon="@android:drawable/btn_star"
+            android:icon="@drawable/star_icon_accent"
             android:title="Favorite Places"/>
         <item
             android:id="@+id/nav_friends"
-            android:icon="@android:drawable/ic_menu_myplaces"
+            android:icon="@drawable/friends_icon_accent"
             android:title="Friends List"/>
     </group>
 
@@ -24,11 +24,11 @@
         <menu>
             <item
                 android:id="@+id/nav_share_loc"
-                android:icon="@android:drawable/ic_menu_share"
+                android:icon="@drawable/share_icon_accent"
                 android:title="Share Location"/>
             <item
                 android:id="@+id/nav_add_friend"
-                android:icon="@android:drawable/ic_menu_add"
+                android:icon="@drawable/user_icon_accent"
                 android:title="Add Friend"/>
         </menu>
     </item>
@@ -37,9 +37,8 @@
         <menu>
             <item
                 android:id="@+id/nav_logout"
-                android:icon="@android:drawable/ic_menu_revert"
+                android:icon="@drawable/logout_icon_accent"
                 android:title="Logout"/>
         </menu>
     </item>
-
 </menu>

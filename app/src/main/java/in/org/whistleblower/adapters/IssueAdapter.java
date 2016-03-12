@@ -81,6 +81,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
                 Bundle bundle = new Bundle();
                 bundle.putFloat(MapFragment.LATITUDE, issue.latitude);
                 bundle.putFloat(MapFragment.LONGITUDE, issue.longitude);
+
                 NavigationUtil.showMapFragment(mActivity, bundle);
             }
         });

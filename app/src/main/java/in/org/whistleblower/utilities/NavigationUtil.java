@@ -1,5 +1,6 @@
 package in.org.whistleblower.utilities;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +12,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
@@ -30,14 +35,13 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
     public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
-
+    private static final int GPS_ERROR_DIALOG_REQUEST = 1989;
     MiscUtil util;
     //To get fragment manager
     AppCompatActivity mActivity;
-
     public MapFragment mapFragment;
 
-    FragmentManager fragmentManager;
+    static FragmentManager fragmentManager;
     public NavigationView navigationView;
     public MainFragment mainFragment;
     private DrawerLayout drawer;
@@ -58,7 +62,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         menu.getItem(1).setIcon(util.getIcon(FontAwesomeIcon.NEWS));
         menu.getItem(2).setIcon(util.getIcon(FontAwesomeIcon.STAR));
         menu.getItem(3).setIcon(util.getIcon(FontAwesomeIcon.GROUP));
-        menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE_ALT));
+        menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE));
         menu.findItem(R.id.nav_add_friend).setIcon(util.getIcon(FontAwesomeIcon.USER));
         menu.findItem(R.id.nav_logout).setIcon(util.getIcon(FontAwesomeIcon.SIGNOUT));
     }
@@ -125,42 +129,73 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 .commit();
     }
 
-    public void showMapFragment()
+    public static boolean isGoogleServicesOk(AppCompatActivity mActivity)
     {
-        mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapFragment == null)
+        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
+        if(isAvailable == ConnectionResult.SUCCESS)
         {
-            mapFragment = new MapFragment();
+            return true;
         }
-        fragmentManager
-                .beginTransaction()
-                .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
-                .commit();
+        else if(GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
+        {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable, mActivity, GPS_ERROR_DIALOG_REQUEST);
+            dialog.show();
+        }else {
+            Toast.makeText(mActivity, "Can't Connect to Google Play Services", Toast.LENGTH_SHORT).show();
+        }
+        return false;
     }
 
-    public static void showMapFragment(AppCompatActivity mActivity, Bundle bundle)
+    public void showMapFragment()
     {
-        FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
-        MapFragment mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapFragment == null)
+        if(isGoogleServicesOk(mActivity))
         {
-            mapFragment = new MapFragment();
-        }
-
-        if (!mapFragment.isVisible())
-        {
-            mapFragment.setArguments(bundle);
+            mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+            if (mapFragment == null)
+            {
+                mapFragment = new MapFragment();
+            }
             fragmentManager
                     .beginTransaction()
                     .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
                     .commit();
         }
-        else
+    }
+
+    public static void showMapFragment(AppCompatActivity mActivity, Bundle bundle)
+    {
+        if(isGoogleServicesOk(mActivity))
         {
-            mapFragment.reloadMapParameters(bundle);
+            MapFragment mapFragment = getMapFragment(mActivity);
+            if (!mapFragment.isVisible())
+            {
+                mapFragment.setArguments(bundle);
+                fragmentManager
+                        .beginTransaction()
+                        .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                        .commit();
+            }
+            else
+            {
+                mapFragment.reloadMapParameters(bundle);
+            }
         }
     }
 
+    public static MapFragment getMapFragment(AppCompatActivity mActivity)
+    {
+        if(fragmentManager == null)
+        {
+            fragmentManager = mActivity.getSupportFragmentManager();
+        }
+
+        MapFragment mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapFragment == null)
+        {
+            mapFragment = new MapFragment();
+        }
+        return mapFragment;
+    }
     public void showNewsFeedsFragment()
     {
         mainFragment = (MainFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);
