@@ -2,8 +2,10 @@ package in.org.whistleblower.fragments;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -34,6 +36,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -54,11 +57,12 @@ import in.org.whistleblower.utilities.NavigationUtil;
 public class MapFragment extends SupportMapFragment implements View.OnClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,
+        LocationListener,LocationSource.OnLocationChangedListener,
         ResultCallback<LocationSettingsResult>
 {
     public static final String LATITUDE = "LATITUDE";
     public static final String LONGITUDE = "LONGITUDE";
+    public static final String LOCATION = "LOCATION";
     public static final String ZOOM = "ZOOM";
     public static final String TILT = "TILT";
     public static final String BEARING = "BEARING";
@@ -96,6 +100,7 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     private boolean mTravelModeOn;
     public static boolean permissionAsked = false;
     static boolean isFirstTime;
+    private BroadcastReceiver mLocationReceiver;
 
     Bundle bundle;
 
@@ -122,8 +127,8 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     {
         MiscUtil.log("createLocationRequest");
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(60000);
-        mLocationRequest.setFastestInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000")));
+        mLocationRequest.setInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ,"30000")));
+        mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -135,7 +140,6 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
         builder.setAlwaysShow(true);
         mLocationSettingsRequest = builder.build();
     }
-
 
     private void initializeMap()
     {
@@ -313,13 +317,35 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
+        registerLocationReceiver();
     }
+
+    private void registerLocationReceiver()
+    {
+        mLocationReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                mCurrentLocation = intent.getParcelableExtra(MapFragment.LOCATION);
+                updateCurrentLocationOnMap();
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("LOCATION_UPDATE");
+        getActivity().registerReceiver(mLocationReceiver, intentFilter);
+    }
+
 
     @Override
     public void onStop()
     {
         super.onStop();
         map_fab_buttons.setVisibility(View.GONE);
+        if(null != mLocationReceiver)
+        {
+            getActivity().unregisterReceiver(mLocationReceiver);
+        }
     }
 
     @Override
@@ -612,6 +638,7 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     public void onLocationChanged(Location location)
     {
         MiscUtil.log("Location Changed : " + location);
+        Toast.makeText(mActivity, "Longitude : "+ location.getLongitude(), Toast.LENGTH_SHORT).show();
         mCurrentLocation = location;
         if (!mTravelModeOn)
         {

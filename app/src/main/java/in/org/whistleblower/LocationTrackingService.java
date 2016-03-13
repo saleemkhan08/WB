@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -31,7 +32,6 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         super.onCreate();
         Intent intent = new Intent(this, MainActivity.class);
-
         PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
         PendingIntent dismissIntent = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), new Intent(this, NotificationReceiver.class), 0);
 
@@ -78,6 +78,14 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onLocationChanged(Location location)
     {
+        Toast.makeText(this, "Longitude : "+ location.getLongitude(), Toast.LENGTH_SHORT).show();
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        Intent intent = new Intent();
+        intent.setAction("LOCATION_UPDATE");
+        intent.putExtra(MapFragment.LOCATION, location);
+        intent.putExtra(MapFragment.LATITUDE, location.getLatitude());
+        intent.putExtra(MapFragment.LONGITUDE, location.getLongitude());
+        manager.sendBroadcast(new Intent());
         float expLat = preferences.getFloat(MapFragment.LATITUDE, 0),
                 expLng = preferences.getFloat(MapFragment.LONGITUDE, 0),
                 actLat = (float) location.getLatitude(),
@@ -87,7 +95,7 @@ public class LocationTrackingService extends Service implements LocationListener
                 &&
                 expLat < (actLat + OFFSET_LAT) && expLat < (actLat - OFFSET_LAT))
         {
-            startActivity(new Intent(this, AlarmActivity.class));
+            startActivity(new Intent(this, AlarmActivity.class));// Make it Notification with audio and vibration.
             stopSelf();
             notificationManager.cancel(ALARM_NOTIFICATION);
         }
