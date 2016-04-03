@@ -27,7 +27,8 @@ public class WBDataBase
         };
         String[] mDropTable = {
                 IssuesDao.DROP_TABLE,
-                FavPlacesDao.TABLE_SCHEMA
+                FavPlacesDao.TABLE_SCHEMA,
+                AccountsDao.TABLE_SCHEMA
         };
 
         Context mContext;
