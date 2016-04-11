@@ -55,7 +55,7 @@ public class FavoritePlaceEditActivity extends AppCompatActivity implements View
         }
         mContext = this;
         latLng = getIntent().getParcelableExtra("LatLang");
-        progressBar = findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.uploadProgressBar);
         retryButton = findViewById(R.id.retry);
         retryButton.setOnClickListener(this);
         favPlacesDao = new FavPlacesDao(FavoritePlaceEditActivity.this);

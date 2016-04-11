@@ -24,4 +24,6 @@
     <color name="transparent_black">#99000000</color>
     <color name="colorPrimaryDarkTransparent">#d0101720</color>
     <color name="my_location_radius">#6055c4c1</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>

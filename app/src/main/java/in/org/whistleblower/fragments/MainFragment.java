@@ -8,36 +8,41 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
+import com.android.volley.VolleyError;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.adapters.IssueAdapter;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.storage.ResultListener;
+import in.org.whistleblower.storage.VolleyUtil;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
 public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
+    private static final String GET_ISSUES = "getIssues";
+    private static final String LIMIT = "limit";
+    private static final String OFFSET = "offset";
     RecyclerView issuesRecyclerView;
-    List<ParseObject> mParseObjectList;
     MiscUtil mUtil;
     AppCompatActivity mActivity;
     IssueAdapter adapter;
     private ArrayList<Issue> issuesList = null;
-    RemoteDataTask mDataTask;
     LocalDataTask mLocalDataTask;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -45,21 +50,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
 
     }
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-        if (mDataTask != null && mDataTask.getStatus().equals(AsyncTask.Status.RUNNING))
-        {
-            mDataTask.cancel(true);
-        }
-        if (mLocalDataTask != null && mLocalDataTask.getStatus().equals(AsyncTask.Status.RUNNING))
-        {
-            mLocalDataTask.cancel(true);
-        }
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -73,7 +63,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                              Bundle savedInstanceState)
     {
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
-        mActivity = (AppCompatActivity)getActivity();
+        mActivity = (AppCompatActivity) getActivity();
         mUtil = new MiscUtil(mActivity);
         swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -82,17 +72,17 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public void onStart()
     {
         mLocalDataTask = new LocalDataTask();
         mLocalDataTask.execute();
         super.onStart();
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -110,85 +100,11 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     // data base should only have latest 30 records
     // where as list can have as many records as user scrolls
 
-    // RemoteDataTask AsyncTask
-    private class RemoteDataTask extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-            MiscUtil.log("RemoteDataTask : onPreExecute");
-            mUtil.toast("Updating...");
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-            MiscUtil.log("RemoteDataTask : doInBackground");
-            try
-            {
-                ParseQuery<ParseObject> query = new ParseQuery<>(IssuesDao.TABLE);
-                query.orderByDescending("createdAt");
-                MiscUtil.log("Try : Getting the list");
-                mParseObjectList = query.find();
-                MiscUtil.log("List Obtained, mParseObjectList : " + mParseObjectList);
-                IssuesDao issueDao = new IssuesDao(mActivity);
-                if (mParseObjectList != null)
-                {
-                    issueDao.delete();
-                    issuesList = new ArrayList<>();
-
-                    for (ParseObject issueParseObj : mParseObjectList)
-                    {
-                        // Locate images in flag column
-                        if(null == issueParseObj)
-                            continue;
-                        Issue issue = new Issue();
-                        issue.imgUrl = (((ParseFile) issueParseObj.get(IssuesDao.IMAGE_URL)).getUrl());
-                        issue.issueId = issueParseObj.getObjectId();
-                        issue.latitude = (((Double) issueParseObj.get(IssuesDao.LATITUDE)).floatValue());
-                        issue.longitude = (((Double) issueParseObj.get(IssuesDao.LONGITUDE)).floatValue());
-
-                        issue.description = ((String) issueParseObj.get(IssuesDao.DESCRIPTION));
-                        issue.placeName = ((String) issueParseObj.get(IssuesDao.PLACE_NAME));
-                        issue.userDpUrl = ((String) issueParseObj.get(IssuesDao.USER_DP_URL));
-                        issue.userId = ((String) issueParseObj.get(IssuesDao.USER_ID));
-                        issue.username = ((String) issueParseObj.get(IssuesDao.USERNAME));
-
-                        MiscUtil.log("Place Name : " + issueParseObj.get(IssuesDao.PLACE_NAME));
-                        issue.radius = ((int) issueParseObj.get(IssuesDao.RADIUS));
-                        issue.areaType = ((String) issueParseObj.get(IssuesDao.AREA_TYPE));
-                        issuesList.add(issue);
-                        issueDao.insert(issue);
-                    }
-                }
-            }
-            catch (ParseException e)
-            {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
-            adapter = new IssueAdapter(mActivity, issuesList);
-            issuesRecyclerView.setAdapter(adapter);
-            issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-            swipeRefreshLayout.setRefreshing(false);
-            mUtil.toast("Updated.");
-        }
-    }
-
     private class LocalDataTask extends AsyncTask<Void, Void, Void>
     {
         @Override
         protected void onPreExecute()
         {
-            MiscUtil.log("LocalDataTask : onPreExecute");
             swipeRefreshLayout.post(new Runnable()
             {
                 @Override
@@ -211,8 +127,8 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            MiscUtil.log("LocalDataTask : onPostExecute - > "+issuesList);
-            if(null != issuesList && issuesList.size() <= 0)
+            MiscUtil.log("LocalDataTask : onPostExecute - > " + issuesList);
+            if (null != issuesList && issuesList.size() <= 0)
             {
                 onRefresh();
             }
@@ -230,7 +146,76 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onRefresh()
     {
-        mDataTask = new RemoteDataTask();
-        mDataTask.execute();
+        MiscUtil.log("RemoteDataTask : doInBackground");
+        Map<String, String> getParams = new HashMap<>();
+        getParams.put(ResultListener.ACTION, GET_ISSUES);
+        getParams.put(LIMIT, "10");
+        getParams.put(OFFSET, "0");
+
+        VolleyUtil.sendGetData(getParams, new ResultListener<String>()
+        {
+            @Override
+            public void onSuccess(String result)
+            {
+                Toast.makeText(mActivity, "Success : " + result, Toast.LENGTH_LONG).show();
+                try
+                {
+                    JSONArray array = new JSONArray(result);
+                    IssuesDao issueDao = new IssuesDao(mActivity);
+
+                    if (array != null)
+                    {
+                        issueDao.delete();//TODO Find a better Logic to do this
+                        issuesList = new ArrayList<>();
+                        int totalNoOfIssues = array.length();
+                        for (int issueIndex = 0; issueIndex < totalNoOfIssues; issueIndex++)
+                        {
+                            Issue issue = new Issue();
+                            JSONObject json = (JSONObject) array.get(issueIndex);
+                            issue.issueId = json.getString(IssuesDao.ISSUE_ID);
+                            issue.imgUrl = VolleyUtil.IMAGE_URL + issue.issueId + ".png";
+                            issue.userDpUrl = json.getString(IssuesDao.USER_DP_URL);
+                            issue.userId = json.getString(IssuesDao.USER_ID);
+                            issue.username = json.getString(IssuesDao.USERNAME);
+                            issue.description = json.getString(IssuesDao.DESCRIPTION);
+                            issue.areaType = json.getString(IssuesDao.AREA_TYPE);
+                            issue.radius = json.getInt(IssuesDao.RADIUS);
+                            issue.latitude = ((Double) json.getDouble(IssuesDao.LATITUDE)).floatValue();
+                            issue.longitude = (((Double) json.getDouble(IssuesDao.LONGITUDE)).floatValue());
+                            issuesList.add(issue);
+                            issueDao.insert(issue);
+                        }
+                    }
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+
+                //TODO find how to check if UI is available and the update it
+                issuesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.issuesList);
+                adapter = new IssueAdapter(mActivity, issuesList);
+                issuesRecyclerView.setAdapter(adapter);
+                issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+                swipeRefreshLayout.setRefreshing(false);
+                mUtil.toast("Updated.");
+            }
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                Toast.makeText(mActivity, "Error : " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        if (mLocalDataTask != null && mLocalDataTask.getStatus().equals(AsyncTask.Status.RUNNING))
+        {
+            mLocalDataTask.cancel(true);
+        }
     }
 }

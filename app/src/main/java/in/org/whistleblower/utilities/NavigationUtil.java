@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,7 +46,6 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public NavigationView navigationView;
     public MainFragment mainFragment;
     private DrawerLayout drawer;
-
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
@@ -69,49 +69,70 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item)
+    public boolean onNavigationItemSelected(final MenuItem item)
     {
         // Handle navigation view item clicks here.
-        FABUtil.closeFABMenu(mActivity);
-        int id = item.getItemId();
-        if (id == R.id.nav_news)
-        {
-            showNewsFeedsFragment();
-        }
-        else if (id == R.id.nav_map)
-        {
-            showMapFragment();
-        }
-        else if (id == R.id.nav_fav)
-        {
-            showFavPlacesList(mActivity);
-        }
-        else if (id == R.id.nav_friends)
-        {
-            Intent intent = new Intent(mActivity, SearchActivity.class);
-            intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
-            mActivity.startActivity(intent);
-        }
-        else if (id == R.id.nav_share_loc)
-        {
-            util.toast("Not Implemented");
-        }
-        else if (id == R.id.nav_add_friend)
-        {
-            Intent intent = new Intent(mActivity, SearchActivity.class);
-            intent.putExtra(KEY_CATEGORY, ADD_FRIEND);
-            mActivity.startActivity(intent);
-        }
-        else if (id == R.id.nav_logout)
-        {
-            mActivity.startActivity(new Intent(mActivity, LoginActivity.class));
-            PreferenceManager.getDefaultSharedPreferences(mActivity)
-                    .edit()
-                    .putBoolean(LoginActivity.LOGIN_STATUS, false)
-                    .commit();
-            mActivity.finish();
-        }
         drawer.closeDrawer(GravityCompat.START);
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener()
+        {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset)
+            {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView)
+            {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView)
+            {
+                FABUtil.closeFABMenu(mActivity);
+                int id = item.getItemId();
+                switch (id)
+                {
+                    case R.id.nav_news:
+                        showNewsFeedsFragment();
+                        break;
+                    case R.id.nav_logout:
+                        mActivity.startActivity(new Intent(mActivity, LoginActivity.class));
+                        PreferenceManager.getDefaultSharedPreferences(mActivity)
+                                .edit()
+                                .putBoolean(LoginActivity.LOGIN_STATUS, false)
+                                .commit();
+                        mActivity.finish();
+                        break;
+                    case R.id.nav_add_friend:
+                        Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.nav_share_loc:
+                        Toast.makeText(mActivity, "Real time Location", Toast.LENGTH_SHORT).show();
+                        //showNewsFeedsFragment();
+                        break;
+                    case R.id.nav_friends:
+                        Intent intent = new Intent(mActivity, SearchActivity.class);
+                        intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
+                        mActivity.startActivity(intent);
+                        break;
+                    case R.id.nav_fav:
+                        showFavPlacesList(mActivity);
+                        break;
+                    case R.id.nav_map:
+                        showMapFragment();
+                        break;
+                }
+                drawer.removeDrawerListener(this);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState)
+            {
+
+            }
+        });
         return true;
     }
 
@@ -132,15 +153,17 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static boolean isGoogleServicesOk(AppCompatActivity mActivity)
     {
         int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
-        if(isAvailable == ConnectionResult.SUCCESS)
+        if (isAvailable == ConnectionResult.SUCCESS)
         {
             return true;
         }
-        else if(GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
+        else if (GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
         {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable, mActivity, GPS_ERROR_DIALOG_REQUEST);
             dialog.show();
-        }else {
+        }
+        else
+        {
             Toast.makeText(mActivity, "Can't Connect to Google Play Services", Toast.LENGTH_SHORT).show();
         }
         return false;
@@ -148,7 +171,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showMapFragment()
     {
-        if(isGoogleServicesOk(mActivity))
+        if (isGoogleServicesOk(mActivity))
         {
             mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
             if (mapFragment == null)
@@ -164,7 +187,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public static void showMapFragment(AppCompatActivity mActivity, Bundle bundle)
     {
-        if(isGoogleServicesOk(mActivity))
+        if (isGoogleServicesOk(mActivity))
         {
             MapFragment mapFragment = getMapFragment(mActivity);
             if (!mapFragment.isVisible())
@@ -184,7 +207,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public static MapFragment getMapFragment(AppCompatActivity mActivity)
     {
-        if(fragmentManager == null)
+        if (fragmentManager == null)
         {
             fragmentManager = mActivity.getSupportFragmentManager();
         }
@@ -196,6 +219,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
         return mapFragment;
     }
+
     public void showNewsFeedsFragment()
     {
         mainFragment = (MainFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);

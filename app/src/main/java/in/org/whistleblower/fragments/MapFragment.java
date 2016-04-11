@@ -1,42 +1,34 @@
 package in.org.whistleblower.fragments;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.transition.Slide;
+import android.transition.TransitionManager;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -53,12 +45,12 @@ import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
+import in.org.whistleblower.utilities.PermissionUtil;
+import in.org.whistleblower.utilities.TouchableWrapper;
 
-public class MapFragment extends SupportMapFragment implements View.OnClickListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,LocationSource.OnLocationChangedListener,
-        ResultCallback<LocationSettingsResult>
+public class MapFragment extends SupportMapFragment implements
+        View.OnClickListener,
+        TouchableWrapper.OnMapTouchListener
 {
     public static final String LATITUDE = "LATITUDE";
     public static final String LONGITUDE = "LONGITUDE";
@@ -68,18 +60,14 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     public static final String BEARING = "BEARING";
     public static final String MAP_TYPE = "mapType";
     public static final String ADDRESS = "ADDRESS";
-    private static final String KEY_IS_SNACK_BAR_SHOWN = "KEY_IS_SNACK_BAR_SHOWN";
-    public static final String KEY_LOCATION_SETTINGS_DIALOG_SHOWN = "locationSettingsDialogShown";
     private static final String KEY_TRAVEL_MODE = "KEY_TRAVEL_MODE";
-    private static final String KEY_PERMISSION_ASKED = "permissionAsked";
-    private static final String KEY_UPDATE_COUNTER = "KEY_UPDATE_COUNTER";
-    private static final String KEY_TRAVELLING_MODE_INFO = "KEY_TRAVELLING_MODE_INFO";
-    public static final int REQUEST_CODE_LOCATION_SETTINGS = 0x92;
+    private static final String KEY_TRAVELLING_MODE_DISP_COUNTER = "KEY_TRAVELLING_MODE_DISP_COUNTER";
     public static final String MARKER = "MARKER";
     public static final String RADIUS = "RADIUS";
     public static final String SHOW_MARKER = "SHOW_MARKER";
     public static final String ANIMATE = "ANIMATE";
     public static final int OVERLAY_DRAW_PERMISSION_CODE = 9900;
+    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
     private GoogleMap mGoogleMap;
     static float accuracy;
     public static Location mCurrentLocation;
@@ -87,217 +75,19 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     static SharedPreferences preferences;
     View mLocationSelector;
     static String action;
-    private static boolean isLocationPermissionAsked;
-    protected LocationRequest mLocationRequest;
-    protected GoogleApiClient mGoogleApiClient;
-    protected LocationSettingsRequest mLocationSettingsRequest;
-    public static final String KEY_LOCATION_UPDATE_FREQ = "updateFreq";
-
-    View map_fab_buttons;
+    ViewGroup map_fab_buttons;
+    RelativeLayout searchBar;
     private FloatingActionButton buttonMyLoc;
     private MiscUtil mUtil;
-    private static int updateCounter;
-    private boolean mTravelModeOn;
-    public static boolean permissionAsked = false;
-    static boolean isFirstTime;
+    private static boolean mTravelModeOn;
     private BroadcastReceiver mLocationReceiver;
-
+    int travelModeColor, normalModeColor;
     Bundle bundle;
+    private AppBarLayout mToolbar;
+    private TextView searchText;
 
     public MapFragment()
     {
-    }
-
-    protected synchronized void buildGoogleApiClient()
-    {
-        MiscUtil.log("Building GoogleApiClient");
-        if (mGoogleApiClient == null)
-        {
-            MiscUtil.log("mGoogleApiClient == null");
-            mGoogleApiClient = new GoogleApiClient.Builder(mActivity)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .build();
-        }
-        mGoogleApiClient.connect();
-        MiscUtil.log("Building GoogleApiClient Exit");
-    }
-
-    protected void createLocationRequest()
-    {
-        MiscUtil.log("createLocationRequest");
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ,"30000")));
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    protected void buildLocationSettingsRequest()
-    {
-        MiscUtil.log("buildLocationSettingsRequest");
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(mLocationRequest);
-        builder.setAlwaysShow(true);
-        mLocationSettingsRequest = builder.build();
-    }
-
-    private void initializeMap()
-    {
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        map_fab_buttons = mActivity.findViewById(R.id.map_fab_buttons);
-        map_fab_buttons.setVisibility(View.VISIBLE);
-        buttonMyLoc = (FloatingActionButton) mActivity.findViewById(R.id.my_loc);
-        bundle = getArguments();
-        reloadMapParameters(bundle);
-        mUtil = new MiscUtil(mActivity);
-        setUpMyLocationButton();
-    }
-
-    public boolean isLocationSettingsOn()
-    {
-        MiscUtil.log("isLocationSettingsOn");
-        LocationManager locationManager = (LocationManager) mActivity.getSystemService(Context.LOCATION_SERVICE);
-        try
-        {
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                    && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-            {
-                MiscUtil.log("Location Settings On");
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            MiscUtil.log("Exception : " + ex.getMessage());
-            MiscUtil.log("Location Settings OFF");
-            return false;
-        }
-        MiscUtil.log("Location Settings OFF");
-        return false;
-    }
-
-    public void startLocationUpdates()
-    {
-        MiscUtil.log("startLocationUpdates");
-        mLocationRequest.setFastestInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000")));
-        MiscUtil.log(mLocationRequest.getFastestInterval() + "");
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-    }
-
-    protected void stopLocationUpdates()
-    {
-        MiscUtil.log("stopLocationUpdates");
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
-
-
-    @SuppressLint("CommitPrefEdits")
-    public void updateCurrentLocationOnMap()
-    {
-        MiscUtil.log("updateCurrentLocationOnMap");
-        if (isLocationPermissionAvailable())
-        {
-            if (isLocationSettingsOn())
-            {
-                if (mGoogleApiClient.isConnected())
-                {
-                    if (mCurrentLocation == null)
-                    {
-                        mCurrentLocation = LocationServices.FusedLocationApi
-                                .getLastLocation(mGoogleApiClient);
-                    }
-                    if (mCurrentLocation != null)
-                    {
-                        accuracy = mCurrentLocation.getAccuracy();
-                        saveLocationInPreference(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
-                    }
-                }
-                gotoPos(true, true);
-            }
-            else
-            {
-                checkLocationSettings();
-            }
-        }
-        else
-        {
-            requestLocationPermission();
-        }
-    }
-
-    protected void checkLocationSettings()
-    {
-        MiscUtil.log("checkLocationSettings");
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi
-                .checkLocationSettings(mGoogleApiClient, mLocationSettingsRequest);
-        result.setResultCallback(this);
-    }
-
-    public void setUpMyLocationButton()
-    {
-        buttonMyLoc.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.SCREENSHOT, R.color.white));
-        buttonMyLoc.setStrokeVisible(false);
-        buttonMyLoc.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                preferences.edit().putBoolean(KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
-                MiscUtil.log("My Location Button Clicked: updateCurrentLoc");
-                int travellingModeInfoCounter = preferences.getInt(KEY_TRAVELLING_MODE_INFO, 0);
-                if (travellingModeInfoCounter < 5)
-                {
-                    mUtil.toast("Click and hold to turn \"On\" Travelling Mode");
-                    preferences.edit().putInt(KEY_TRAVELLING_MODE_INFO, ++travellingModeInfoCounter).apply();
-                }
-                startLocationUpdates();
-                updateCurrentLocationOnMap();
-                updateCounter = 0;
-            }
-        });
-
-        buttonMyLoc.setOnLongClickListener(new View.OnLongClickListener()
-        {
-            @Override
-            public boolean onLongClick(View v)
-            {
-
-                MiscUtil.log("My Location Button Long clicked");
-
-                int travelModeColor = getActivity().getResources().getColor(R.color.travel_mode, null);
-                int normalModeColor = getActivity().getResources().getColor(R.color.colorAccent, null);
-
-                if (buttonMyLoc.getColorNormal() == normalModeColor)
-                {
-                    mUtil.toast("Travelling Mode : On");
-                    buttonMyLoc.setColorNormal(travelModeColor);
-                    buttonMyLoc.setColorPressedResId(R.color.travel_mode_pressed);
-                    mTravelModeOn = true;
-                    int travellingModeInfoCounter = preferences.getInt(KEY_TRAVELLING_MODE_INFO, 5);
-                    if (travellingModeInfoCounter < 5)
-                    {
-                        travellingModeInfoCounter = 5;
-                    }
-                    preferences.edit().putInt(KEY_TRAVELLING_MODE_INFO, ++travellingModeInfoCounter).apply();
-
-                    if (travellingModeInfoCounter < 8)
-                    {
-                        mUtil.toast("Click and hold to turn \"Off\" Travelling Mode");
-                    }
-                    startLocationUpdates();
-                }
-                else
-                {
-                    buttonMyLoc.setColorNormal(normalModeColor);
-                    buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
-                    mTravelModeOn = false;
-                    mUtil.toast("Travelling Mode : Off");
-                    preferences.edit().putInt(KEY_TRAVELLING_MODE_INFO, 9).apply();
-                    stopLocationUpdates();
-                }
-                return true;
-            }
-        });
 
     }
 
@@ -306,6 +96,19 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     {
         super.onActivityCreated(savedInstanceState);
         setRetainInstance(true);
+        travelModeColor = getResources().getColor(R.color.travel_mode, null);
+        normalModeColor = getResources().getColor(R.color.colorAccent, null);
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState)
+    {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null)
+        {
+            MiscUtil.log("savedInstanceState not null");
+            mTravelModeOn = savedInstanceState.getBoolean(KEY_TRAVEL_MODE);
+        }
     }
 
     @Override
@@ -313,79 +116,9 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     {
         super.onStart();
         mActivity = (AppCompatActivity) getActivity();
+        mToolbar = (AppBarLayout) mActivity.findViewById(R.id.appBarLayout);
         initializeMap();
-        buildGoogleApiClient();
-        createLocationRequest();
-        buildLocationSettingsRequest();
         registerLocationReceiver();
-    }
-
-    private void registerLocationReceiver()
-    {
-        mLocationReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                mCurrentLocation = intent.getParcelableExtra(MapFragment.LOCATION);
-                updateCurrentLocationOnMap();
-            }
-        };
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("LOCATION_UPDATE");
-        getActivity().registerReceiver(mLocationReceiver, intentFilter);
-    }
-
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-        map_fab_buttons.setVisibility(View.GONE);
-        if(null != mLocationReceiver)
-        {
-            getActivity().unregisterReceiver(mLocationReceiver);
-        }
-    }
-
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState)
-    {
-        super.onViewStateRestored(savedInstanceState);
-        if (preferences != null)
-        {
-            preferences.edit().putBoolean(MapFragment.KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false).apply();
-        }
-
-        if (savedInstanceState != null)
-        {
-            MiscUtil.log("savedInstanceState not null");
-            mTravelModeOn = savedInstanceState.getBoolean(KEY_TRAVEL_MODE);
-            permissionAsked = savedInstanceState.getBoolean(KEY_PERMISSION_ASKED);
-            isFirstTime = false;
-            updateCounter = savedInstanceState.getInt(KEY_UPDATE_COUNTER);
-        }
-        else
-        {
-            MiscUtil.log("savedInstanceState null");
-            isFirstTime = true;
-            permissionAsked = false;
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-        MiscUtil.log("Map Fragment onSaveInstanceState");
-        outState.putBoolean(KEY_PERMISSION_ASKED, permissionAsked);
-        CameraPosition pos = mGoogleMap.getCameraPosition();
-        outState.putFloat(LATITUDE, (float) pos.target.latitude);
-        outState.putFloat(LONGITUDE, (float) pos.target.longitude);
-        outState.putFloat(TILT, pos.tilt);
-        outState.putFloat(BEARING, pos.bearing);
-        outState.putFloat(ZOOM, pos.zoom);
-        outState.putInt(KEY_UPDATE_COUNTER, updateCounter);
     }
 
     @Override
@@ -402,21 +135,11 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
             gotoPos(false, false);
         }
         NavigationUtil.highlightMenu(mActivity, R.id.nav_map);
-        mapFragmentContainer = mActivity.findViewById(android.R.id.content);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
-        if (isLocationPermissionAvailable())
+        if (PermissionUtil.isLocationPermissionAvailable())
         {
             mGoogleMap.setMyLocationEnabled(false);
-
             // mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        }
-        else
-        {
-            if (!isLocationPermissionAsked)
-            {
-                requestLocationPermission();
-                isLocationPermissionAsked = true;
-            }
         }
         mGoogleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
         {
@@ -428,12 +151,166 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
         });
         mActivity.findViewById(R.id.ok_map).setOnClickListener(this);
         mLocationSelector = mActivity.findViewById(R.id.select_location);
-        mLocationRequest.setFastestInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000")));//TODO need to check Why this line is required
+        searchBar.setOnClickListener(this);
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        MiscUtil.log("Map Fragment onSaveInstanceState");
+        CameraPosition pos = mGoogleMap.getCameraPosition();
+        outState.putFloat(LATITUDE, (float) pos.target.latitude);
+        outState.putFloat(LONGITUDE, (float) pos.target.longitude);
+        outState.putFloat(TILT, pos.tilt);
+        outState.putFloat(BEARING, pos.bearing);
+        outState.putFloat(ZOOM, pos.zoom);
+    }
+
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        map_fab_buttons.setVisibility(View.GONE);
+        searchBar.setVisibility(View.GONE);
+        if (null != mLocationReceiver)
+        {
+            mActivity.unregisterReceiver(mLocationReceiver);
+        }
+    }
+
+    private void initializeMap()
+    {
+        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        map_fab_buttons = (ViewGroup) mActivity.findViewById(R.id.map_fab_buttons);
+        searchBar = (RelativeLayout) mActivity.findViewById(R.id.searchBar);
+        searchBar.setVisibility(View.VISIBLE);
+        searchText =(TextView) mActivity.findViewById(R.id.hoverPlaceName);
+        map_fab_buttons.setVisibility(View.VISIBLE);
+        buttonMyLoc = (FloatingActionButton) mActivity.findViewById(R.id.my_loc);
+        bundle = getArguments();
+        reloadMapParameters(bundle);
+        mUtil = new MiscUtil(mActivity);
+        setUpMyLocationButton();
+    }
+
+    private void updateTravellingModeUI()
+    {
+        if (mTravelModeOn)
+        {
+            buttonMyLoc.setColorNormal(travelModeColor);
+            buttonMyLoc.setColorPressedResId(R.color.travel_mode_pressed);
+        }
+        else
+        {
+            buttonMyLoc.setColorNormal(normalModeColor);
+            buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
+        }
+    }
+
+    public void setUpMyLocationButton()
+    {
+        //TODO set the icon in xml
+        buttonMyLoc.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.SCREENSHOT, R.color.white));
+        buttonMyLoc.setStrokeVisible(false);
+        buttonMyLoc.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                showTravellingModeHint();
+                preferences.edit()
+                        .putBoolean(LocationTrackingService.KEY_GET_LOCATION, true)
+                        .commit();
+                startService(LocationTrackingService.GET_LOCATION_ACTION);
+            }
+        });
+
+        buttonMyLoc.setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v)
+            {
+                MiscUtil.log("My Location Button Long clicked");
+                if (!mTravelModeOn)
+                {
+                    mUtil.toast("Travelling Mode : On");
+                    updateTravellingModeUI();
+                    mTravelModeOn = true;
+                    showTravellingModeHint();
+                    preferences.edit()
+                            .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, true)
+                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 6)
+                            .commit();
+                    startService(LocationTrackingService.KEY_TRAVELLING_MODE);
+                }
+                else
+                {
+                    mUtil.toast("Travelling Mode : Off");
+                    updateTravellingModeUI();
+                    mTravelModeOn = false;
+                    preferences.edit()
+                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
+                            .apply();
+                }
+                return true;
+            }
+        });
+        updateTravellingModeUI();
+    }
+
+    private void startService(String extra)
+    {
+        Intent getLocationIntent = new Intent(mActivity, LocationTrackingService.class);
+        getLocationIntent.putExtra(extra, true);
+        mActivity.startService(getLocationIntent);
+    }
+
+    private void showTravellingModeHint()
+    {
+        int travellingModeInfoCounter = preferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
+        if (travellingModeInfoCounter < 5)
+        {
+            mUtil.toast("Click and hold to turn \"On\" Travelling Mode");
+            preferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
+                    , ++travellingModeInfoCounter).apply();
+        }
+        else if (travellingModeInfoCounter > 5 && travellingModeInfoCounter < 8)
+        {
+            mUtil.toast("Click and hold to turn \"Off\" Travelling Mode");
+            preferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
+                    , ++travellingModeInfoCounter).apply();
+        }
+    }
+
+
+    private void registerLocationReceiver()
+    {
+        mLocationReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                mCurrentLocation = intent.getParcelableExtra(MapFragment.LOCATION);
+                gotoPos(true, true);
+                if (!mTravelModeOn)
+                {
+                    if (null != mLocationReceiver)
+                    {
+                        mActivity.unregisterReceiver(mLocationReceiver);
+                    }
+                }
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LocationTrackingService.GET_LOCATION_ACTION);
+        mActivity.registerReceiver(mLocationReceiver, intentFilter);
+    }
+
 
     public void gotoPos(boolean animate, boolean addMarker)
     {
-        MiscUtil.log("gotoLastKnownPos, animate : " + animate + ", addMarker : " + addMarker);
         CameraUpdate update = CameraUpdateFactory.newCameraPosition(getLastKnownPos());
         int mapType = Integer.parseInt(preferences.getString(MAP_TYPE, "1"));
         if (mGoogleMap.getMapType() != mapType)
@@ -515,30 +392,49 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     {
         if (MiscUtil.isConnected(mActivity))
         {
-            if (mGoogleMap != null)
+            switch (v.getId())
             {
-                LatLng latLng = mGoogleMap.getCameraPosition().target;
-                setLatLng(latLng);
-                Log.d("Lucifer", action);
-                switch (action)
-                {
-                    case FABUtil.SET_ALARM:
-                        mActivity.startService(new Intent(mActivity, LocationTrackingService.class));
-                        break;
+                case R.id.searchBar:
+                    try
+                    {
+                        PlaceAutocomplete.IntentBuilder builder = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN);
+                        startActivityForResult(builder.build(mActivity), PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                    }
+                    catch (GooglePlayServicesRepairableException e)
+                    {
+                    }
+                    catch (GooglePlayServicesNotAvailableException e)
+                    {
+                    }
+                    break;
+                default:
+                    if (mGoogleMap != null)
+                    {
+                        LatLng latLng = mGoogleMap.getCameraPosition().target;
+                        setLatLng(latLng);
+                        //Log.d("Lucifer", action);
 
-                    case FABUtil.ADD_ISSUE:
-                        Image.captureImage(mActivity);
-                        break;
+                        switch (action)
+                        {
+                            case FABUtil.SET_ALARM:
+                                mActivity.startService(new Intent(mActivity, LocationTrackingService.class));
+                                break;
 
-                    case FABUtil.ADD_FAV_PLACE:
-                        Intent intent = new Intent(mActivity, FavoritePlaceEditActivity.class);
-                        intent.putExtra("LatLang", latLng);
-                        startActivity(intent);
-                        break;
+                            case FABUtil.ADD_ISSUE:
+                                Image.captureImage(mActivity);
+                                break;
 
-                }
-                saveLocationInPreference(latLng);
-                mLocationSelector.setVisibility(View.GONE);
+                            case FABUtil.ADD_FAV_PLACE:
+                                Intent intent = new Intent(mActivity, FavoritePlaceEditActivity.class);
+                                intent.putExtra("LatLang", latLng);
+                                startActivity(intent);
+                                break;
+
+                        }
+                        saveLocationInPreference(latLng);
+                        mLocationSelector.setVisibility(View.GONE);
+                    }
+                    break;
             }
         }
         else
@@ -551,148 +447,18 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
     {
         if (bundle != null)
         {
-            if (bundle != null)
+            Set<String> keys = bundle.keySet();
+            if (keys.contains(LATITUDE) && keys.contains(LONGITUDE))
             {
-                Set<String> keys = bundle.keySet();
-                if (keys.contains(LATITUDE) && keys.contains(LONGITUDE))
-                {
-                    preferences.edit()
-                            .putFloat(LATITUDE, bundle.getFloat(LATITUDE, 0))
-                            .putFloat(LONGITUDE, bundle.getFloat(LONGITUDE, 0))
-                            .apply();
-                }
-                if (keys.contains(FABUtil.ACTION))
-                {
-                    action = bundle.getString(FABUtil.ACTION);
-                }
+                preferences.edit()
+                        .putFloat(LATITUDE, bundle.getFloat(LATITUDE, 0))
+                        .putFloat(LONGITUDE, bundle.getFloat(LONGITUDE, 0))
+                        .apply();
             }
-        }
-    }
-
-    public static final int REQUEST_CODE_LOCATION_PERMISSION = 0x91;
-
-    private static View mapFragmentContainer;
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        MiscUtil.log("onRequestPermissionsResult");
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_LOCATION_PERMISSION)
-        {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            if (keys.contains(FABUtil.ACTION))
             {
-                MiscUtil.log("REQUEST_CODE_LOCATION_PERMISSION");
-                updateCurrentLocationOnMap();
+                action = bundle.getString(FABUtil.ACTION);
             }
-            else
-            {
-                Snackbar snackbar = Snackbar.make(mapFragmentContainer, "App Can't be used without this permission!", Snackbar.LENGTH_INDEFINITE);
-                snackbar.setAction("Retry", new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        MiscUtil.log("onActivityResult : checkLocationSettings Again - Snack Bar");
-                        updateCurrentLocationOnMap();
-                    }
-                });
-                snackbar.show();
-            }
-        }
-    }
-
-    private void requestLocationPermission()
-    {
-        MiscUtil.log("requestLocationPermission");
-        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
-    }
-
-    public boolean isLocationPermissionAvailable()
-    {
-        return ContextCompat.checkSelfPermission(mActivity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(mActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult)
-    {
-
-    }
-
-    @Override
-    public void onConnected(Bundle bundle)
-    {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i)
-    {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        MiscUtil.log("Location Changed : " + location);
-        Toast.makeText(mActivity, "Longitude : "+ location.getLongitude(), Toast.LENGTH_SHORT).show();
-        mCurrentLocation = location;
-        if (!mTravelModeOn)
-        {
-            MiscUtil.log("mTravelModeOn : false");
-            stopLocationUpdates();
-            if (updateCounter < 2)
-            {
-                updateCurrentLocationOnMap();
-                updateCounter++;
-            }
-        }
-        else
-        {
-            updateCurrentLocationOnMap();
-        }
-    }
-
-    @Override
-    public void onResult(LocationSettingsResult locationSettingsResult)
-    {
-        final Status status = locationSettingsResult.getStatus();
-        MiscUtil.log("LocationSettingsStatusCodes.SUCCESS : " +
-                LocationSettingsStatusCodes.SUCCESS + " = " + status.getStatusCode());
-
-        switch (status.getStatusCode())
-        {
-            case LocationSettingsStatusCodes.SUCCESS:
-                MiscUtil.log("All location settings are satisfied.");
-                updateCurrentLocationOnMap();
-                break;
-            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                MiscUtil.log("Location settings are not satisfied. Show the user a dialog to" +
-                        " upgrade location settings ");
-                try
-                {
-                    boolean isLocationSettingsDialogShown = preferences.getBoolean(KEY_LOCATION_SETTINGS_DIALOG_SHOWN, false);
-                    MiscUtil.log("isLocationSettingsDialogShown : " + isLocationSettingsDialogShown);
-                    if (!isLocationSettingsDialogShown)
-                    {
-                        MiscUtil.log("Showing Location Settings Dialog");
-                        status.startResolutionForResult(mActivity, REQUEST_CODE_LOCATION_SETTINGS);
-                        preferences.edit().putBoolean(KEY_LOCATION_SETTINGS_DIALOG_SHOWN, true).apply();
-                    }
-                }
-                catch (IntentSender.SendIntentException e)
-                {
-                    MiscUtil.log("PendingIntent unable to execute request.");
-                }
-
-                break;
-            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                MiscUtil.log("Location settings are inadequate, and cannot be fixed here. Dialog " +
-                        "not created.");
-                break;
         }
     }
 
@@ -702,5 +468,87 @@ public class MapFragment extends SupportMapFragment implements View.OnClickListe
                 .putFloat(MapFragment.LATITUDE, (float) mLatLng.latitude)
                 .putFloat(MapFragment.LONGITUDE, (float) mLatLng.longitude)
                 .apply();
+    }
+
+    public View mOriginalContentView;
+    public TouchableWrapper mTouchView;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
+    {
+        mOriginalContentView = super.onCreateView(inflater, parent, savedInstanceState);
+        mTouchView = new TouchableWrapper(getActivity(), this);
+        mTouchView.addView(mOriginalContentView);
+        return mTouchView;
+    }
+
+    @Override
+    public View getView()
+    {
+        return mOriginalContentView;
+    }
+
+    long upTime, downTime;
+    int searchBarMargin;
+
+    @Override
+    public void onActionUp()
+    {
+        upTime = System.currentTimeMillis();
+        Slide slide = new Slide();
+        TransitionManager.beginDelayedTransition(map_fab_buttons, slide);
+        map_fab_buttons.setVisibility(View.VISIBLE);
+
+
+        TransitionManager.beginDelayedTransition(searchBar);
+
+        RelativeLayout.LayoutParams searchBarLayoutParams = (RelativeLayout.LayoutParams) searchBar.getLayoutParams();
+        searchBarLayoutParams.topMargin = searchBarMargin;
+        searchBar.setLayoutParams(searchBarLayoutParams);
+
+        mToolbar.animate().translationY(0).start();
+    }
+
+    @Override
+    public void onActionDown()
+    {
+        downTime = System.currentTimeMillis();
+        Slide slide = new Slide();
+        TransitionManager.beginDelayedTransition(map_fab_buttons, slide);
+
+        map_fab_buttons.setVisibility(View.GONE);
+        mToolbar.animate().translationY(-mToolbar.getBottom()).start();
+
+        TransitionManager.beginDelayedTransition(searchBar);
+
+        RelativeLayout.LayoutParams searchBarLayoutParams = (RelativeLayout.LayoutParams) searchBar.getLayoutParams();
+        searchBarMargin = searchBarLayoutParams.topMargin;
+        searchBarLayoutParams.topMargin = 0;
+        searchBar.setLayoutParams(searchBarLayoutParams);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Toast.makeText(mActivity, "requestCode : "+requestCode, Toast.LENGTH_SHORT).show();
+        switch (requestCode)
+        {
+            case MapFragment.PLACE_AUTOCOMPLETE_REQUEST_CODE:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                        Place place = PlaceAutocomplete.getPlace(mActivity, data);
+                        setLatLng(place.getLatLng());
+                        gotoPos(true, true);
+                        searchText.setText(place.getAddress());
+                        break;
+                    case PlaceAutocomplete.RESULT_ERROR:
+                        Status status = PlaceAutocomplete.getStatus(mActivity, data);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        break;
+                }
+                break;
+        }
     }
 }

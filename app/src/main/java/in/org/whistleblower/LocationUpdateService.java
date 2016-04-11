@@ -9,8 +9,7 @@ public class LocationUpdateService extends IntentService
     {
         super("LocationUpdateService");
     }
-    public static final int REQUEST_CODE_LOCATION_PERMISSION = 0x91;
-    public static final int REQUEST_CODE_LOCATION_SETTINGS = 0x92;
+
     @Override
     protected void onHandleIntent(Intent intent)
     {
@@ -19,10 +18,12 @@ public class LocationUpdateService extends IntentService
 
         }
     }
+
     public void updateCurrentLocationOnMap()
     {
 
     }
+
     public void startLocationUpdates()
     {
 

@@ -47,7 +47,6 @@ public class FABUtil
         });
 
         FloatingActionButton buttonPhoto = (FloatingActionButton) mActivity.findViewById(R.id.photo);
-        buttonPhoto.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.CAMERA));
         buttonPhoto.setStrokeVisible(false);
         buttonPhoto.setOnClickListener(new View.OnClickListener()
         {
@@ -87,7 +86,7 @@ public class FABUtil
                     okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.STAR,R.color.white));
                     break;
                 case ADD_ISSUE:
-                    okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.CAMERA,R.color.white));
+                    okButton.setIconDrawable(mActivity.getDrawable(R.drawable.bullhorn_white));
                     break;
                 case SET_ALARM:
                     okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT,R.color.white));

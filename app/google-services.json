@@ -1,0 +1,52 @@
+{
+  "project_info": {
+    "project_id": "whistleblower-org",
+    "project_number": "372242022464",
+    "name": "Whistle Blower"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:372242022464:android:dc8c36c1dc610484",
+        "client_id": "android:in.org.whistleblower",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "in.org.whistleblower",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "372242022464-5mfk2arisqiqoaosggqmhr7qjf3k4tvt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.org.whistleblower",
+            "certificate_hash": "57649986BA02A78D32C58A2776458CBA6582E82D"
+          }
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

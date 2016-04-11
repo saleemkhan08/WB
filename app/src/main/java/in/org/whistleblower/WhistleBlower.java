@@ -1,20 +1,21 @@
 package in.org.whistleblower;
 
-import com.parse.Parse;
+import android.content.Context;
 
-/**
- * Created by Saleem Khan on 11/26/2015.
- */
 public class WhistleBlower extends android.app.Application
 {
+    private static WhistleBlower sInstance;
+
     @Override
     public void onCreate()
     {
         super.onCreate();
+        sInstance = this;
+    }
 
-        // initialize parse
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, "q3ehyRaszu34hd9mrFp2rwxIoYP2WmPVLO1Aojhp", "xb4VdvieLAwlPQ9meXSWSzmrkZ0mu2GGgaGzHiV6");
+    public static Context getAppContext()
+    {
+        return sInstance.getApplicationContext();
     }
 }
 

@@ -22,7 +22,7 @@ public class ImageUtil
         mImageLoader = ImageLoader.getInstance();
         mImageLoader.init(ImageLoaderConfiguration.createDefault(mContext));
         issueOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_stub)
+                .showImageOnLoading(R.drawable.loading)
                 .showImageForEmptyUri(R.drawable.ic_empty)
                 .showImageOnFail(R.drawable.ic_error)
                 .cacheInMemory(true)
@@ -32,7 +32,7 @@ public class ImageUtil
                 .build();
 
         dpOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_stub)
+                .showImageOnLoading(R.drawable.anonymous_white_primary_dark)
                 .showImageForEmptyUri(R.drawable.ic_empty)
                 .showImageOnFail(R.drawable.ic_error)
                 .cacheInMemory(true)
@@ -53,5 +53,38 @@ public class ImageUtil
         {
             mImageLoader.displayImage(photo_url, view, issueOptions);
         }
+    }
+
+    public static void displayImage(Context context,String photo_url, ImageView view, boolean isRounded)
+    {
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        imageLoader.init(ImageLoaderConfiguration.createDefault(context));
+        DisplayImageOptions imageOptions;
+        if(isRounded)
+        {
+            imageOptions = new DisplayImageOptions.Builder()
+                    .showImageOnLoading(R.drawable.anonymous_white_primary_dark)
+                    .showImageForEmptyUri(R.drawable.ic_empty)
+                    .showImageOnFail(R.drawable.ic_error)
+                    .cacheInMemory(true)
+                    .cacheOnDisk(true)
+                    .considerExifParams(true)
+                    .bitmapConfig(Bitmap.Config.RGB_565)
+                    .displayer(new RoundedBitmapDisplayer(100))
+                    .build();
+        }
+        else
+        {
+            imageOptions = new DisplayImageOptions.Builder()
+                    .showImageOnLoading(R.drawable.loading)
+                    .showImageForEmptyUri(R.drawable.ic_empty)
+                    .showImageOnFail(R.drawable.ic_error)
+                    .cacheInMemory(true)
+                    .cacheOnDisk(true)
+                    .considerExifParams(true)
+                    .bitmapConfig(Bitmap.Config.RGB_565)
+                    .build();
+        }
+        imageLoader.displayImage(photo_url, view, imageOptions);
     }
 }

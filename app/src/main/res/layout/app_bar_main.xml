@@ -27,10 +27,45 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/appBarLayout">
+        android:layout_height="match_parent">
 
         <include layout="@layout/content_main"/>
+
+        <RelativeLayout
+            android:id="@+id/searchBar"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/search_bar_bg"
+                >
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/search_primary_dark"
+                android:layout_height="50dp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:paddingLeft="45dp"
+                    android:textSize="18sp"
+                    android:textAlignment="center"
+                    android:paddingRight="45dp"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:gravity="center"
+                    android:text="Sample."
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    android:ellipsize="end"
+                    android:id="@+id/hoverPlaceName"
+                    android:background="@android:color/transparent"
+                    android:layout_height="match_parent"/>
+            </RelativeLayout>
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/select_location"
@@ -71,27 +106,26 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/map_fab_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/map_fab_buttons"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:visibility="gone"
         android:layout_alignParentRight="true">
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/multiple_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/my_loc"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             fab:fab_addButtonColorNormal="@color/colorAccent"
             fab:fab_addButtonColorPressed="@color/colorAccentPressed"
             fab:fab_addButtonPlusIconColor="@color/white"
             fab:fab_addButtonStrokeVisible="false"
             fab:fab_expandDirection="up"
-            fab:fab_labelStyle="@style/menu_labels_style"
-            android:layout_above="@+id/my_loc"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
+            fab:fab_labelStyle="@style/menu_labels_style">
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/favPlace"
@@ -109,6 +143,7 @@
                 app:fab_title="Add Issue"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
+                fab:fab_icon="@drawable/bullhorn"
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
@@ -121,14 +156,15 @@
                 fab:fab_size="mini"/>
 
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/my_loc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fab:fab_colorNormal="@color/colorAccent"
-            fab:fab_colorPressed="@color/colorAccentPressed"
+            android:layout_alignEnd="@+id/multiple_actions"
             android:layout_alignParentBottom="true"
             android:layout_alignRight="@+id/multiple_actions"
-            android:layout_alignEnd="@+id/multiple_actions"/>
+            fab:fab_colorNormal="@color/colorAccent"
+            fab:fab_colorPressed="@color/colorAccentPressed"/>
     </RelativeLayout>
 </RelativeLayout>

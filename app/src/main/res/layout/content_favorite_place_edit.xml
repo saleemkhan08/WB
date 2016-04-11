@@ -71,7 +71,7 @@
                     android:src="@drawable/refresh_accent"
                     />
                 <ProgressBar
-                    android:id="@+id/progressBar"
+                    android:id="@+id/uploadProgressBar"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     />

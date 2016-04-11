@@ -1,28 +1,28 @@
 package in.org.whistleblower.actions;
 
-import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
+import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
 import in.org.whistleblower.AddIssueActivity;
-import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.PermissionResultListener;
+import in.org.whistleblower.utilities.PermissionUtil;
 
 public class Image
 {
+    public static final int LOAD_GALLERY_REQUEST = 303;
     AppCompatActivity mActivity;
     MiscUtil mUtil;
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -40,27 +40,34 @@ public class Image
         mUtil = new MiscUtil(activity);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static boolean isCameraAndStoragePermissionsAvailable(AppCompatActivity mActivity)
+    public static void captureImage(final AppCompatActivity mActivity)
     {
-        return ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public static void captureImage(AppCompatActivity mActivity)
-    {
-        if (!isCameraAndStoragePermissionsAvailable(mActivity))
+        if (!PermissionUtil.isCameraAndStoragePermissionsAvailable())
         {
             MiscUtil.log("Permission Not Available");
-            requestCameraAndStoragePermissions(MainActivity.IMAGE_AND_STORAGE_REQUEST, mActivity);
+            PermissionUtil.requestPermission(PermissionUtil.SDCARD_PERMISSION, new PermissionResultListener()
+            {
+                @Override
+                public void onGranted()
+                {
+                    MiscUtil.log("Permission Obtained");
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, getOutputMediaFileUri(MEDIA_TYPE_IMAGE));
+                    mActivity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST);
+                }
+
+                @Override
+                public void onDenied()
+                {
+                    Toast.makeText(mActivity, "This Permission is required", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         else
         {
             MiscUtil.log("Permission Available");
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, getOutputMediaFileUri(MEDIA_TYPE_IMAGE));
-            // start the image capture Intent
             mActivity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST);
         }
     }
@@ -116,14 +123,18 @@ public class Image
         mActivity.startActivity(intent);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static void requestCameraAndStoragePermissions(int requestCode, AppCompatActivity mActivity)
+    public static void getImageFromGallery(AppCompatActivity activity)
     {
-        MainActivity.requestPermission(
-                Arrays.asList(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.READ_EXTERNAL_STORAGE),
-                requestCode, mActivity);
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        activity.startActivityForResult(intent, LOAD_GALLERY_REQUEST);
     }
 
+    public static String getStringImage(Bitmap bmp)
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }
 }

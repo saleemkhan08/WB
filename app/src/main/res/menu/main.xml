@@ -3,14 +3,10 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
 
-      <item android:id="@+id/settings"
-            android:title="@string/action_settings"
-          android:icon="@drawable/ic_setting_dark"
-          android:orderInCategory="200"
-          app:showAsAction="always"/>
-    <item android:id="@+id/search_issue"
-          android:title="@string/action_search"
-          android:icon="@drawable/search_icon"
-          android:orderInCategory="100"
-          app:showAsAction="always"/>
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_setting_dark"
+        android:orderInCategory="200"
+        android:title="@string/action_settings"
+        app:showAsAction="always"/>
 </menu>

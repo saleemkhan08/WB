@@ -12,22 +12,14 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import in.org.whistleblower.adapters.UserSearchAdapter;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.UserConnections;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 
@@ -48,7 +40,7 @@ public class SearchActivity extends AppCompatActivity
         mUtil = new MiscUtil(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        mProgressBar = findViewById(R.id.progressBar);
+        mProgressBar = findViewById(R.id.uploadProgressBar);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         searchInput = (EditText) findViewById(R.id.searchInput);
@@ -189,7 +181,7 @@ public class SearchActivity extends AppCompatActivity
         {
             super.onPostExecute(category);
             searchResultView = (RecyclerView) mContext.findViewById(R.id.searchResultView);
-            mProgressBar = mContext.findViewById(R.id.progressBar);
+            mProgressBar = mContext.findViewById(R.id.uploadProgressBar);
             if (category.equals(NavigationUtil.ADD_FAV_PLACE))
             {
                 //searchResultView.setAdapter(new PlaceSearchAdapter(mContext, mAddressList, mFavPlacesList, false));
@@ -200,7 +192,7 @@ public class SearchActivity extends AppCompatActivity
             }
             else
             {
-                searchResultView.setAdapter(new UserSearchAdapter(mContext, mUserList, mFriendList, isFriendList));
+                //searchResultView.setAdapter(new UserListAdapter(mContext, mUserList, mFriendList, isFriendList));
             }
             searchResultView.setLayoutManager(new LinearLayoutManager(mContext));
             mProgressBar.setVisibility(View.GONE);
@@ -217,7 +209,7 @@ public class SearchActivity extends AppCompatActivity
 
         private void loadUserList(String text)
         {
-            try
+            /*try
             {
                 ParseQuery<ParseObject> friendsQuery = new ParseQuery<>(UserConnections.TABLE);
                 friendsQuery.whereEqualTo(UserConnections.USER_GOOGLE_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
@@ -257,7 +249,7 @@ public class SearchActivity extends AppCompatActivity
             {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
-            }
+            }*/
         }
 
         private void loadPlacesList(String text)
@@ -324,7 +316,7 @@ public class SearchActivity extends AppCompatActivity
 
         private void loadFriendList(String text)
         {
-            try
+           /* try
             {
                 ParseQuery<ParseObject> query = new ParseQuery<>(UserConnections.TABLE);
                 query.whereEqualTo(UserConnections.USER_GOOGLE_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
@@ -344,7 +336,7 @@ public class SearchActivity extends AppCompatActivity
                     {
                         Accounts account = new Accounts();
                         account.name = ((String) connectionsParseObj.get(UserConnections.FRIEND_NAME));
-                        account.photo_url = ((String) connectionsParseObj.get(UserConnections.FRIEND_DP_URL));
+                        account.photo_url = ((String) connectionsParseObj.get(UserConnections.FRIENDS_PHOTO));
                         account.googleId = ((String) connectionsParseObj.get(UserConnections.FRIEND_GOOGLE_ID));
                         mUserList.add(account);
                     }
@@ -354,7 +346,7 @@ public class SearchActivity extends AppCompatActivity
             {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
-            }
+            }*/
         }
     }
 
@@ -366,5 +358,12 @@ public class SearchActivity extends AppCompatActivity
         {
             mSearchTask.cancel(true);
         }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        overridePendingTransition(R.anim.move_to_right, R.anim.move_to_right);
+        super.onDestroy();
     }
 }

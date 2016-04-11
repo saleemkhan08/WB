@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/white">
+
+    <RelativeLayout
+        android:id="@+id/mainContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        >
+
+        <ImageView
+            android:id="@+id/notificationIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="12.5dp"
+            android:layout_marginRight="12.5dp"
+            android:src="@drawable/bullhorn_invert"/>
+
+        <TextView
+            android:id="@+id/contextTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/notificationIcon"
+            android:layout_toRightOf="@+id/notificationIcon"
+            android:text="Issue Posted."
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="16sp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:id="@+id/contextText"
+            android:text="Click on Notification to View it"
+            android:layout_toEndOf="@+id/notificationIcon"
+            android:layout_toRightOf="@+id/notificationIcon"
+            android:layout_below="@+id/contextTitle"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+</RelativeLayout>

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import android.widget.Toast;
 
 public class WBDataBase
@@ -23,11 +24,13 @@ public class WBDataBase
         public static final String DATABASE_NAME = "whistle_blower";
         String[] mTableSchema = {
                 IssuesDao.TABLE_SCHEMA,
-                FavPlacesDao.TABLE_SCHEMA
+                FavPlacesDao.TABLE_SCHEMA,
+                AccountsDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
                 IssuesDao.DROP_TABLE,
-                FavPlacesDao.TABLE_SCHEMA
+                FavPlacesDao.TABLE_SCHEMA,
+                AccountsDao.TABLE_SCHEMA
         };
 
         Context mContext;
@@ -76,7 +79,8 @@ public class WBDataBase
 
     public long insert(String tblname, ContentValues values)
     {
-        return db.insert(tblname, null, values);
+        Log.d("DatabaseProblem","insert : tblname : "+tblname +", values : "+values );
+        return db.insertWithOnConflict(tblname, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String groupBy, String orderBy)

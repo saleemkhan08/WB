@@ -1,57 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="in.org.whistleblower"
-    android:versionCode="1"
-    android:versionName="1.0" >
+<manifest package="in.org.whistleblower"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:versionCode="1"
+          android:versionName="1.0">
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="23"/>
 
-    <uses-feature android:name="android.hardware.camera2" />
+    <uses-feature android:name="android.hardware.camera2"/>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- [START gcm_permission] -->
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <permission
+        android:name="in.org.whistleblower.permission.C2D_MESSAGE"
+        android:protectionLevel="signature"/>
+
+    <uses-permission android:name="in.org.whistleblower.permission.C2D_MESSAGE"/>
+    <!-- [END gcm_permission] -->
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:name=".WhistleBlower"
         android:allowBackup="true"
         android:icon="@drawable/bullhorn_invert"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:supportsRtl="true"        android:label="@string/app_name"
+
+        android:theme="@style/AppTheme">
+
+        <!-- [START gcm_receiver] -->
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+
+                <category android:name="info.androidhive.gcm"/>
+            </intent-filter>
+        </receiver>
+        <!-- [END gcm_receiver] -->
+
+        <service
+            android:name=".gcm.MyGcmPushReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+            </intent-filter>
+        </service>
+        <service
+            android:name=".gcm.MyInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID"/>
+            </intent-filter>
+        </service>
+        <service
+            android:name=".gcm.RegistrationIntentService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID"/>
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:launchMode="singleInstance" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:launchMode="singleInstance">
         </activity>
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/AppTheme2" >
+            android:theme="@style/AppTheme2">
         </activity>
 
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+            android:value="@integer/google_play_services_version"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="@string/google_maps_key"/>
 
         <activity
             android:name=".AddIssueActivity"
+            android:label="Add Issue"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme2" >
+            android:theme="@style/AppTheme2">
 
             <!--
             <intent-filter>
@@ -65,64 +109,116 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity" />
+                android:value="in.org.whistleblower.MainActivity"/>
         </activity>
         <activity
             android:name=".SearchActivity"
             android:label="@string/title_activity_search"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity" />
+                android:value="in.org.whistleblower.MainActivity"/>
         </activity>
 
         <service
             android:name=".LocationTrackingService"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="false">
         </service>
         <service
             android:name=".LocationUpdateService"
-            android:exported="false" >
+            android:exported="false">
         </service>
 
         <activity
             android:name=".IssueActivity"
             android:label="@string/title_activity_issue"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity" />
+                android:value="in.org.whistleblower.MainActivity"/>
         </activity>
         <activity
             android:name=".FavoritePlaceEditActivity"
             android:label="@string/title_activity_favorite_place_edit"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity" />
+                android:value="in.org.whistleblower.MainActivity"/>
         </activity>
         <activity
             android:name=".AlarmActivity"
             android:label="@string/title_activity_alarm_acivity"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity" />
+                android:value="in.org.whistleblower.MainActivity"/>
         </activity>
 
         <receiver
             android:name=".NotificationReceiver"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
         </receiver>
+
+        <service
+            android:name=".UploadIssueService"
+            android:exported="false">
+        </service>
+
+        <receiver
+            android:name=".utilities.StopRetryReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+
+        <service
+            android:name=".utilities.AddIssueService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <activity
+            android:name=".utilities.PermissionUtil"
+            android:theme="@style/DialogTheme">
+        </activity>
+
+        <receiver
+            android:name=".LocationProviderChangedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.location.PROVIDERS_CHANGED"/>
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".MapActivity"
+            android:label="@string/title_activity_map_activity"
+            android:theme="@style/AppTheme">
+        </activity>
+        <activity
+            android:name=".FriendListActivity"
+            android:label="@string/title_activity_friend_list"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
+
+            <!--<meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.org.whistleblower.MainActivity"/>-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

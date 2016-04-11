@@ -30,7 +30,7 @@
                 app:layout_collapseMode="parallax"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="match_parent"
                 map:cameraZoom="14"
                 map:uiRotateGestures="false"
                 map:uiScrollGestures="false"

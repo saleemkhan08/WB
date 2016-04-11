@@ -1,6 +1,10 @@
 package in.org.whistleblower;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -27,27 +33,23 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
-import java.util.List;
-
+import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.storage.QueryResultListener;
-import in.org.whistleblower.storage.RStorageObject;
-import in.org.whistleblower.storage.RStorageQuery;
-import in.org.whistleblower.storage.StorageListener;
-import in.org.whistleblower.storage.StorageObject;
 import in.org.whistleblower.utilities.ConnectivityListener;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener, ViewPager.OnPageChangeListener, ConnectivityListener
 {
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
-    public static final String USER_ID = "userId";
     private MiscUtil util;
     static Typeface mFont;
     private ViewPager mViewPager;
     private TextView mTxtPageIndicator;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private boolean isReceiverRegistered;
 
     @Override
     public void onInternetConnected()
@@ -226,8 +228,57 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setScopes(gso.getScopeArray());
+
+        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                SharedPreferences sharedPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(context);
+                boolean sentToken = sharedPreferences
+                        .getBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER, false);
+                if (sentToken)
+                {
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    util.hideProgressDialog();
+                    finish();
+                }
+                else
+                {
+                    Toast.makeText(LoginActivity.this, "Please Try Again Later!", Toast.LENGTH_SHORT).show();
+                    util.hideProgressDialog();
+                    signOut();
+                }
+            }
+        };
+        registerReceiver();
     }
 
+    private void registerReceiver()
+    {
+        if (!isReceiverRegistered)
+        {
+            LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                    new IntentFilter(RegistrationIntentService.REGISTRATION_COMPLETE));
+            isReceiverRegistered = true;
+        }
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        registerReceiver();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        isReceiverRegistered = false;
+        super.onPause();
+    }
 
     private void signOut()
     {
@@ -269,111 +320,23 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             if (result.isSuccess())
             {
                 GoogleSignInAccount acct = result.getSignInAccount();
-                // updateUI(true);
-                Uri photo_url = acct.getPhotoUrl();
-                saveData(acct.getEmail(), acct.getDisplayName(), acct.getId(), photo_url != null ? photo_url.toString() : "");
-            }
-        }
-    }
-
-
-    public void saveData(final String email, final String name, final String googleId, final String photo_url)
-    {
-        RStorageQuery<RStorageObject> query = new RStorageQuery<>(Accounts.TABLE);//ParseQuery.getQuery(Account.TABLE);
-
-        query.getWhereEqualTo(Accounts.GOOGLE_ID, googleId, new QueryResultListener<StorageObject>()
-        {
-            @Override
-            public void onResult(List<StorageObject> userList)
-            {
-                MiscUtil.log("List : " + userList);
-                MiscUtil.log("Len : " + userList.size());
-                if (userList.size() == 0)
+                if (NavigationUtil.isGoogleServicesOk(LoginActivity.this))
                 {
-                    final StorageObject userAccount = new RStorageObject(Accounts.TABLE);
-                    userAccount.put(Accounts.EMAIL, email);
-                    userAccount.put(Accounts.NAME, name);
-                    userAccount.put(Accounts.GOOGLE_ID, googleId);
-                    userAccount.put(Accounts.PHOTO_URL, photo_url);
-                    userAccount.store(new StorageListener()
-                    {
-                        @Override
-                        public void onSuccess()
-                        {
-                            MiscUtil.log("Saved");
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            util.hideProgressDialog();
-                            PreferenceManager.getDefaultSharedPreferences(LoginActivity.this)
-                                    .edit()
-                                    .putBoolean(LOGIN_STATUS, true)
-                                    .putString(Accounts.EMAIL, email)
-                                    .putString(Accounts.NAME, name)
-                                    .putString(Accounts.GOOGLE_ID, googleId)
-                                    .putString(Accounts.PHOTO_URL, photo_url)
-                                    .putString(USER_ID, userAccount.getPrimaryKey())
-                                    .commit();
-                            finish();
-                        }
-
-                        @Override
-                        public void onError(String e)
-                        {
-                            util.hideProgressDialog();
-                            util.toast(e);
-                            util.toast("Please Try again!");
-                            signOut();
-                        }
-                    });
-                }
-                else
-                {
-                    MiscUtil.log("List : " + userList);
-                    MiscUtil.log("Values : email : " + email + ", name : " + name + ", googleId : " + googleId + ", photo_url : " + photo_url);
-
-                    StorageObject userAccount = userList.get(0);
-                    userAccount.put(Accounts.EMAIL, email);
-                    userAccount.put(Accounts.NAME, name);
-                    userAccount.put(Accounts.PHOTO_URL, photo_url);
-
-                    userAccount.update(new StorageListener()
-                    {
-                        @Override
-                        public void onSuccess()
-                        {
-                            MiscUtil.log("Updated");
-                        }
-
-                        @Override
-                        public void onError(String e)
-                        {
-                            MiscUtil.log("Couldn't Update");
-                        }
-                    });
-
-                    PreferenceManager.getDefaultSharedPreferences(LoginActivity.this)
-                            .edit()
-                            .putBoolean(LOGIN_STATUS, true)
-                            .putString(Accounts.EMAIL, email)
-                            .putString(Accounts.NAME, name)
-                            .putString(Accounts.GOOGLE_ID, googleId)
-                            .putString(Accounts.PHOTO_URL, photo_url)
+                    Uri photo_url = acct.getPhotoUrl();
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    preferences.edit()
+                            .putString(Accounts.NAME, acct.getDisplayName())
+                            .putBoolean(LoginActivity.LOGIN_STATUS, true)
+                            .putString(Accounts.EMAIL, acct.getEmail())
+                            .putString(Accounts.PHOTO_URL, photo_url != null ? photo_url.toString() : "")
+                            .putString(Accounts.GOOGLE_ID, acct.getId())
                             .commit();
 
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    util.hideProgressDialog();
-                    finish();
+                    Intent intent = new Intent(this, RegistrationIntentService.class);
+                    startService(intent);
                 }
             }
-
-            @Override
-            public void onError(String e)
-            {
-                util.hideProgressDialog();
-                util.toast(e);
-                util.toast("Please Try again!");
-                signOut();
-            }
-        });
+        }
     }
 
     @Override
@@ -390,7 +353,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     {
         signOut();
         revokeAccess();
-
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_GET_TOKEN);
         util.showIndeterminateProgressDialog(SIGNING_IN);
@@ -406,5 +368,4 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 break;
         }
     }
-
 }
