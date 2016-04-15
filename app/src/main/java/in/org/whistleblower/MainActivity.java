@@ -22,7 +22,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.utilities.ConnectivityListener;
+import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity
     RelativeLayout mainActivityContainer;
     ImageView profilePic;
     TextView username, emailId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -81,7 +82,6 @@ public class MainActivity extends AppCompatActivity
 
             username = (TextView) header.findViewById(R.id.username);
             username.setText(preferences.getString(Accounts.NAME, "Anonymous"));
-
 
             drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

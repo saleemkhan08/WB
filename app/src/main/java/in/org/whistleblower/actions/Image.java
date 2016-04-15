@@ -17,7 +17,7 @@ import java.util.Locale;
 
 import in.org.whistleblower.AddIssueActivity;
 import in.org.whistleblower.utilities.MiscUtil;
-import in.org.whistleblower.utilities.PermissionResultListener;
+import in.org.whistleblower.interfaces.PermissionResultListener;
 import in.org.whistleblower.utilities.PermissionUtil;
 
 public class Image

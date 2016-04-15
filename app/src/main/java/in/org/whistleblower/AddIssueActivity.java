@@ -33,7 +33,7 @@ import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.utilities.AddIssueService;
-import in.org.whistleblower.utilities.DialogUtilListener;
+import in.org.whistleblower.interfaces.DialogUtilListener;
 import in.org.whistleblower.utilities.DialogsUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -107,7 +107,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
         {
-            String LocationUpdateServiceName = getPackageName() + "LocationUpdateService";
+            String LocationUpdateServiceName = getPackageName() + "LocationDetailsService";
 
             if (LocationUpdateServiceName.equals(service.service.getClassName()))
             {

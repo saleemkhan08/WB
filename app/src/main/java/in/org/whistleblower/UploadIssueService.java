@@ -26,7 +26,7 @@ import java.io.File;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.storage.ResultListener;
+import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.utilities.AndroidMultiPartEntity;
 import in.org.whistleblower.utilities.StopRetryReceiver;
 

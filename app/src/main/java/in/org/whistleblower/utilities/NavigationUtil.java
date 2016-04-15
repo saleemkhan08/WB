@@ -18,9 +18,9 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
-import in.org.whistleblower.SearchActivity;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
@@ -63,7 +63,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         menu.getItem(2).setIcon(util.getIcon(FontAwesomeIcon.STAR));
         menu.getItem(3).setIcon(util.getIcon(FontAwesomeIcon.GROUP));
         menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE));
-        menu.findItem(R.id.nav_add_friend).setIcon(util.getIcon(FontAwesomeIcon.USER));
+        menu.findItem(R.id.nav_notify_loc).setIcon(util.getIcon(FontAwesomeIcon.COMMENT));
         menu.findItem(R.id.nav_logout).setIcon(util.getIcon(FontAwesomeIcon.SIGNOUT));
     }
 
@@ -105,7 +105,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                                 .commit();
                         mActivity.finish();
                         break;
-                    case R.id.nav_add_friend:
+                    case R.id.nav_notify_loc:
                         Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.nav_share_loc:
@@ -113,7 +113,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                         //showNewsFeedsFragment();
                         break;
                     case R.id.nav_friends:
-                        Intent intent = new Intent(mActivity, SearchActivity.class);
+                        Intent intent = new Intent(mActivity, FriendListActivity.class);
                         intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
                         mActivity.startActivity(intent);
                         break;
@@ -233,7 +233,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 .commit();
     }
 
-    public static void highlightMenu(AppCompatActivity mActivity, int id)
+    public static void highlightNavigationDrawerMenu(AppCompatActivity mActivity, int id)
     {
         NavigationView navigationView = (NavigationView) mActivity.findViewById(R.id.nav_view);
         Menu navigationMenu = navigationView.getMenu();

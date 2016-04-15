@@ -24,8 +24,8 @@ import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
-import in.org.whistleblower.storage.ResultListener;
-import in.org.whistleblower.storage.VolleyUtil;
+import in.org.whistleblower.interfaces.ResultListener;
+import in.org.whistleblower.utilities.VolleyUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserSearchViewHolder>

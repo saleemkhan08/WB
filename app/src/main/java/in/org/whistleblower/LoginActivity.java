@@ -35,7 +35,7 @@ import com.google.android.gms.common.api.Status;
 
 import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.utilities.ConnectivityListener;
+import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 

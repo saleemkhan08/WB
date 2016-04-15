@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import in.org.whistleblower.services.LocationTrackingService;
+
 public class NotificationReceiver extends BroadcastReceiver
 {
     public NotificationReceiver()

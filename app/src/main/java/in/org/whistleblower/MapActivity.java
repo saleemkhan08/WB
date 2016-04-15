@@ -17,7 +17,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.utilities.ConnectivityListener;
+import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;

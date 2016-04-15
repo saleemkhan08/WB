@@ -27,8 +27,8 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.adapters.IssueAdapter;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.storage.ResultListener;
-import in.org.whistleblower.storage.VolleyUtil;
+import in.org.whistleblower.interfaces.ResultListener;
+import in.org.whistleblower.utilities.VolleyUtil;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
@@ -91,7 +91,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onResume();
         MiscUtil.log("onResume");
         FABUtil.locationSelector.setVisibility(View.GONE);
-        NavigationUtil.highlightMenu(mActivity, R.id.nav_news);
+        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_news);
     }
 
     //TODO Make issueList static

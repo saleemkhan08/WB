@@ -26,6 +26,8 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.interfaces.PermissionResultListener;
+import in.org.whistleblower.interfaces.SettingsResultListener;
 
 public class PermissionUtil extends AppCompatActivity implements ResultCallback<LocationSettingsResult>
 {

@@ -1,15 +1,15 @@
-package in.org.whistleblower;
+package in.org.whistleblower.services;
 
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -17,16 +17,14 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 
-import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.interfaces.LocationChangeListener;
+import in.org.whistleblower.interfaces.SettingsResultListener;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.PermissionUtil;
-import in.org.whistleblower.utilities.SettingsResultListener;
 
 public class LocationTrackingService extends Service implements LocationListener,
         GoogleApiClient.ConnectionCallbacks
 {
-    public static final String GET_LOCATION_ACTION = "GET_LOCATION_ACTION";
-    public static final String REQUEST_TYPE = "REQUEST_TYPE";
     protected LocationRequest mLocationRequest;
     protected GoogleApiClient mGoogleApiClient;
     protected LocationSettingsRequest mLocationSettingsRequest;
@@ -36,14 +34,42 @@ public class LocationTrackingService extends Service implements LocationListener
     public static final String KEY_NOTIFY_ARRIVAL = "KEY_NOTIFY_ARRIVAL";
     public static final String KEY_SHARE_LOCATION = "KEY_SHARE_LOCATION";
     public static final String KEY_ALARM_SET = "KEY_ALARM_SET";
-    public static final String KEY_GET_LOCATION = "KEY_GET_LOCATION";
     public static final String KEY_LOCATION_UPDATE_FREQ = "updateFreq";
     private static final float OFFSET_LAT = 0.008983f;
     private static final float OFFSET_LNG = 0.015060f;
     private boolean mStartLocationUpdates;
+    private boolean isLocationListenerRegistered;
+    private LocationChangeListener mListener;
+    Location mCurrentLocation;
+    private final IBinder iBinder = new LocalBinder();
 
     public LocationTrackingService()
     {
+        Log.d("FlowLogs", "Service : Constructor");
+    }
+
+    public void registerLocationChangedListener(LocationChangeListener listener)
+    {
+        mListener = listener;
+        isLocationListenerRegistered = true;
+        Log.d("FlowLogs", "Service : registerLocationChangedListener");
+
+    }
+
+    public void unRegisterLocationChangedListener()
+    {
+        Log.d("FlowLogs", "Service : unRegisterLocationChangedListener");
+        isLocationListenerRegistered = false;
+    }
+
+
+    public class LocalBinder extends Binder
+    {
+        public LocationTrackingService getService()
+        {
+            Log.d("FlowLogs", "Service : getService");
+            return LocationTrackingService.this;
+        }
     }
 
     NotificationManager notificationManager;
@@ -52,7 +78,8 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public IBinder onBind(Intent intent)
     {
-        throw new UnsupportedOperationException("Not yet implemented");
+        Log.d("FlowLogs", "Service : onBind");
+        return iBinder;
     }
 
     @Override
@@ -63,12 +90,13 @@ public class LocationTrackingService extends Service implements LocationListener
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
+        Log.d("FlowLogs", "Service : onCreate");
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId)
     {
-        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+        Log.d("FlowLogs", "Service : onStartCommand");
         if (PermissionUtil.isLocationPermissionAvailable() && PermissionUtil.isLocationSettingsOn())
         {
             startLocationUpdates();
@@ -80,32 +108,26 @@ public class LocationTrackingService extends Service implements LocationListener
                 @Override
                 public void onLocationSettingsTurnedOn()
                 {
-                    Toast.makeText(LocationTrackingService.this, "Turned On", Toast.LENGTH_SHORT).show();
+                    startLocationUpdates();
                 }
 
                 @Override
                 public void onLocationSettingsCancelled()
                 {
-                    Toast.makeText(LocationTrackingService.this, "Cancelled", Toast.LENGTH_SHORT).show();
                 }
             });
-        }
-        if (intent.hasExtra(REQUEST_TYPE))
-        {
-            switch (intent.getStringExtra(REQUEST_TYPE))
-            {
-                case KEY_GET_LOCATION:
-                    return START_NOT_STICKY;
-            }
         }
         return START_STICKY;
     }
 
     private void startLocationUpdates()
     {
+        Log.d("FlowLogs", "Service : startLocationUpdates");
         if (mGoogleApiClient.isConnected())
         {
-            mLocationRequest.setFastestInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000")));
+            int interval = Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000"));
+            mLocationRequest.setInterval(interval);
+            mLocationRequest.setFastestInterval(interval);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
         else
@@ -116,14 +138,18 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void stopLocationUpdates()
     {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
+        Log.d("FlowLogs", "Service : stopLocationUpdates");
 
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        mStartLocationUpdates = false;
+    }
 
     @Override
     public void onDestroy()
     {
         super.onDestroy();
+        Log.d("FlowLogs", "Service : onDestroy");
+
         stopLocationUpdates();
     }
 
@@ -163,6 +189,8 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onConnected(Bundle bundle)
     {
+        Log.d("FlowLogs", "Service  : onConnected : mStartLocationUpdates : "+mStartLocationUpdates);
+
         if (mStartLocationUpdates)
         {
             startLocationUpdates();
@@ -172,19 +200,29 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onConnectionSuspended(int i)
     {
+        Log.d("FlowLogs", "Service  : onConnectionSuspended");
+
         stopLocationUpdates();
+    }
+
+    public Location getCurrentLocation()
+    {
+        Log.d("FlowLogs", "Service  : getCurrentLocation");
+        return mCurrentLocation;
     }
 
     @Override
     public void onLocationChanged(Location location)
     {
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        Intent intent = new Intent();
-        intent.setAction(GET_LOCATION_ACTION);
-        intent.putExtra(MapFragment.LOCATION, location);
-        manager.sendBroadcast(new Intent());
+        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : "+isLocationListenerRegistered);
+        mCurrentLocation = location;
+        if (isLocationListenerRegistered)
+        {
+            mListener.onLocationChanged(location);
+        }
 
-        /*float expLat = preferences.getFloat(MapFragment.LATITUDE, 0),
+        /*
+        float expLat = preferences.getFloat(MapFragment.LATITUDE, 0),
                 expLng = preferences.getFloat(MapFragment.LONGITUDE, 0),
 
                 actLat = (float) location.getLatitude(),
@@ -198,21 +236,24 @@ public class LocationTrackingService extends Service implements LocationListener
             stopSelf();
             notificationManager.cancel(ALARM_NOTIFICATION);
         }*/
+        stopService();
+    }
 
-        boolean getLocation = preferences.getBoolean(KEY_GET_LOCATION, true);
+    public void stopService()
+    {
+        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : "+isLocationListenerRegistered);
+
         boolean alarmSet = preferences.getBoolean(KEY_ALARM_SET, false);
         boolean notifyArrival = preferences.getBoolean(KEY_NOTIFY_ARRIVAL, false);
         boolean shareLocation = preferences.getBoolean(KEY_SHARE_LOCATION, false);
         boolean travellingMode = preferences.getBoolean(KEY_TRAVELLING_MODE, false);
-
-        if (getLocation && !alarmSet && !notifyArrival && !shareLocation && !travellingMode)
+        Log.d("FlowLogs", "Service  : alarmSet "+alarmSet+", notifyArrival "+notifyArrival+", shareLocation "+shareLocation+", travellingMode :"+travellingMode);
+        if (!alarmSet && !notifyArrival && !shareLocation && !travellingMode)
         {
-            preferences.edit().putBoolean(KEY_GET_LOCATION, false).apply();
+
             stopLocationUpdates();
             stopSelf();
-        }
-        else
-        {
+            Log.d("FlowLogs", "Service  : stopSelf");
 
         }
     }

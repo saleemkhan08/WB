@@ -25,6 +25,7 @@ import in.org.whistleblower.FontDrawable;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.icon.Icon;
+import in.org.whistleblower.interfaces.ConnectivityListener;
 
 public class MiscUtil
 {

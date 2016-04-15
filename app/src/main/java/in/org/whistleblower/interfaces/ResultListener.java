@@ -1,4 +1,4 @@
-package in.org.whistleblower.storage;
+package in.org.whistleblower.interfaces;
 
 import com.android.volley.VolleyError;
 

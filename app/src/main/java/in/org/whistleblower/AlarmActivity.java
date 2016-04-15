@@ -18,7 +18,7 @@ public class AlarmActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addFriendFab);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override

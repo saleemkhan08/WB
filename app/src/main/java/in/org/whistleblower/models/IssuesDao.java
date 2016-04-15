@@ -7,7 +7,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-import in.org.whistleblower.storage.VolleyUtil;
+import in.org.whistleblower.utilities.VolleyUtil;
 
 public class IssuesDao
 {

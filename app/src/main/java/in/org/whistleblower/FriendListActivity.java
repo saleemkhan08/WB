@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,23 +33,24 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import in.org.whistleblower.adapters.FriendListAdapter;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
-import in.org.whistleblower.storage.ResultListener;
-import in.org.whistleblower.storage.VolleyUtil;
+import in.org.whistleblower.interfaces.ResultListener;
+import in.org.whistleblower.utilities.VolleyUtil;
 
-public class FriendListActivity extends AppCompatActivity
+public class FriendListActivity extends AppCompatActivity implements TextWatcher, View.OnClickListener
 {
     private static final String KEY_USERS_FETCHED = "KEY_USERS_FETCHED";
     private static final String IS_FRIEND_LIST = "IS_FRIEND_LIST";
     private static final String IS_SEARCH_ENABLE = "IS_SEARCH_ENABLE";
     private static GetUserListTask mTask;
     SharedPreferences preferences;
-    static Context context;
+    static FriendListActivity mStaticContext;
     public static ArrayList<Accounts> mUserList;
     public static ArrayList<Accounts> mFriendList;
     private static ArrayList<Accounts> mShowList;
@@ -62,47 +64,79 @@ public class FriendListActivity extends AppCompatActivity
     private boolean isFriendList;
     FloatingActionButton fab;
     private View fabWrapper;
+    String currentUserMail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_list);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if(mFriendList!=null)
+        progress = findViewById(R.id.progressFab);
+        mFriendAndUserRecyclerView = (RecyclerView) findViewById(R.id.friendAndUserList);
+        mStaticContext = this;
+        currentUserMail = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
+        fabWrapper = findViewById(R.id.fab_wrapper);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        searchToolBar = findViewById(R.id.searchToolBar);
+        searchUser = (EditText) findViewById(R.id.searchUser);
+        if (searchUser != null)
         {
-            for (Accounts account : mFriendList)
+            searchUser.addTextChangedListener(this);
+        }
+        setSupportActionBar(toolbar);
+        fab = (FloatingActionButton) findViewById(R.id.addFriendFab);
+        if (fab != null)
+        {
+            fab.setOnClickListener(this);
+        }
+        if (savedInstanceState != null)
+        {
+            isFriendList = savedInstanceState.getBoolean(IS_FRIEND_LIST, true);
+            isSearchEnabled = savedInstanceState.getBoolean(IS_SEARCH_ENABLE, false);
+        }
+        else
+        {
+            isFriendList = true;
+            isSearchEnabled = false;
+        }
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null)
+        {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        if (mFriendList != null)
+        {
+            for (Iterator<Accounts> iterator = mFriendList.iterator(); iterator.hasNext(); )
             {
-                if(account!=null)
+                Accounts account = iterator.next();
+                if (account != null)
                 {
                     if (!account.relation.equals(Accounts.FRIEND))
                     {
-                        mFriendList.remove(account);
+                        iterator.remove();
                     }
                 }
             }
+
         }
-        if(mUserList!=null)
+        if (mUserList != null)
         {
-            for (Accounts account : mUserList)
+            for (Iterator<Accounts> iterator = mUserList.iterator(); iterator.hasNext(); )
             {
-                if(account!=null)
+                Accounts account = iterator.next();
+                if (account != null)
                 {
                     if (account.relation.equals(Accounts.FRIEND))
                     {
-                        mUserList.remove(account);
+                        iterator.remove();
                     }
                 }
             }
         }
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        progress = findViewById(R.id.progressFab);
-        isFriendList = true;
-        Log.d("Doodle", "On create");
-        mFriendAndUserRecyclerView = (RecyclerView) findViewById(R.id.friendAndUserList);
-        context = this;
-        fabWrapper = findViewById(R.id.fab_wrapper);
         if (!preferences.getBoolean(KEY_USERS_FETCHED, false))
         {
             getUserListFromServer();
@@ -111,53 +145,6 @@ public class FriendListActivity extends AppCompatActivity
         {
             showUserListFromDatabase();
         }
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        searchToolBar = findViewById(R.id.searchToolBar);
-        searchUser = (EditText) findViewById(R.id.searchUser);
-        searchUser.addTextChangedListener(new TextWatcher()
-        {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after)
-            {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence query, int start, int before, int count)
-            {
-                if (isFriendList)
-                {
-                    changeList(mFriendList, query.toString());
-                }
-                else
-                {
-                    changeList(mUserList, query.toString());
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s)
-            {
-
-            }
-        });
-        setSupportActionBar(toolbar);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        if (fab != null)
-        {
-            fab.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    isFriendList = false;
-                    fabWrapper.setVisibility(View.GONE);
-                    changeList(mUserList, "");
-                }
-            });
-        }
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void changeList(List<Accounts> list, String query)
@@ -173,6 +160,19 @@ public class FriendListActivity extends AppCompatActivity
         mTask.execute();
     }
 
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.addFriendFab:
+                isFriendList = false;
+                fabWrapper.setVisibility(View.GONE);
+                changeList(mUserList, "");
+                break;
+        }
+    }
+
     private static class GetUserListTask extends AsyncTask<Void, Void, Void>
     {
         @Override
@@ -186,7 +186,7 @@ public class FriendListActivity extends AppCompatActivity
         protected Void doInBackground(Void... params)
         {
             Log.d("Doodle", "Do in backgrnd");
-            AccountsDao dao = new AccountsDao(context);
+            AccountsDao dao = new AccountsDao(mStaticContext);
             if (mFriendList == null || mFriendList.size() <= 0)
             {
                 mFriendList = dao.getFriendsList();
@@ -210,8 +210,8 @@ public class FriendListActivity extends AppCompatActivity
         protected void onPostExecute(Void result)
         {
             Log.d("Doodle", "Post exe");
-            mAdapter = new FriendListAdapter(context, mShowList);
-            mFriendAndUserRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mAdapter = new FriendListAdapter(mStaticContext, mShowList);
+            mFriendAndUserRecyclerView.setLayoutManager(new LinearLayoutManager(mStaticContext));
             mFriendAndUserRecyclerView.setAdapter(mAdapter);
             hideProgressFab();
         }
@@ -359,6 +359,7 @@ public class FriendListActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
+        Log.d("onBackPressed", "isSearchEnabled : " + isSearchEnabled + ", isFriendList : " + isFriendList);
         if (isSearchEnabled)
         {
             showToolBar();
@@ -413,4 +414,100 @@ public class FriendListActivity extends AppCompatActivity
         }
 
     }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after)
+    {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence query, int start, int before, int count)
+    {
+        if (isFriendList)
+        {
+            changeList(mFriendList, query.toString());
+        }
+        else
+        {
+            changeList(mUserList, query.toString());
+        }
+    }
+
+    @Override
+    public void afterTextChanged(Editable s)
+    {
+
+    }
+
+    public void removeFriend(final Accounts account, final int position)
+    {
+        FriendListActivity.showProgressFab();
+        Map<String, String> data = new HashMap<>();
+        data.put(VolleyUtil.KEY_ACTION, "removeFriend");
+        data.put(Accounts.USER_EMAIL, currentUserMail);
+        data.put(Accounts.FRIENDS_EMAIL, account.email);
+        VolleyUtil.sendPostData(data, new ResultListener<String>()
+        {
+            @Override
+            public void onSuccess(String result)
+            {
+                Log.d("removeFriend", "removeFriend result : " + result);
+                if (result.equals("1"))
+                {
+                    new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
+                    account.relation = Accounts.NOT_A_FRIEND;
+                    mAdapter.removeUser(position, account);
+                    FriendListActivity.hideProgressFab();
+                }
+                else
+                {
+                    Toast.makeText(FriendListActivity.this, "Please Try Again!", Toast.LENGTH_SHORT).show();
+                    Log.d("ToastMsg", result + " : Please Try again!");
+                }
+            }
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                FriendListActivity.hideProgressFab();
+                Toast.makeText(FriendListActivity.this, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
+                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
+            }
+        });
+    }
+
+    public void addFriend(final Accounts account, final int position)
+    {
+        FriendListActivity.showProgressFab();
+        Map<String, String> data = new HashMap<>();
+        data.put(Accounts.FRIENDS_PHOTO, account.photo_url);
+        data.put(Accounts.FRIENDS_NAME, account.name);
+        data.put(Accounts.FRIENDS_EMAIL, account.email);
+        data.put(Accounts.USER_EMAIL, currentUserMail);
+        data.put(VolleyUtil.KEY_ACTION, "addFriend");
+        VolleyUtil.sendPostData(data, new ResultListener<String>()
+        {
+            @Override
+            public void onSuccess(String result)
+            {
+                Log.d("addFriend", "Result : " + result);
+                new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.FRIEND);
+                account.relation = Accounts.FRIEND;
+                mAdapter.addUser(position, account);
+                FriendListActivity.hideProgressFab();
+            }
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                FriendListActivity.hideProgressFab();
+                Toast.makeText(FriendListActivity.this, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
+                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
+            }
+        });
+
+    }
+
+
 }

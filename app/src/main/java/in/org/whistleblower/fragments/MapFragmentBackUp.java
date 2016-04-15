@@ -47,8 +47,8 @@ import java.util.Set;
 
 import in.org.whistleblower.AddIssueActivity;
 import in.org.whistleblower.FavoritePlaceEditActivity;
-import in.org.whistleblower.LocationTrackingService;
-import in.org.whistleblower.LocationUpdateService;
+import in.org.whistleblower.services.LocationDetailsService;
+import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.R;
 import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.utilities.FABUtil;
@@ -403,7 +403,7 @@ public class MapFragmentBackUp extends SupportMapFragment implements View.OnClic
         {
             gotoPos(false, false);
         }
-        NavigationUtil.highlightMenu(mActivity, R.id.nav_map);
+        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
         mapFragmentContainer = mActivity.findViewById(android.R.id.content);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         if (isLocationPermissionAvailable())
@@ -437,7 +437,7 @@ public class MapFragmentBackUp extends SupportMapFragment implements View.OnClic
             @Override
             public void onCameraChange(CameraPosition cameraPosition)
             {
-                Intent intent = new Intent(mActivity, LocationUpdateService.class);
+                Intent intent = new Intent(mActivity, LocationDetailsService.class);
                 intent.putExtra(LATLANG, cameraPosition.target);
                 mActivity.startService(intent);
             }

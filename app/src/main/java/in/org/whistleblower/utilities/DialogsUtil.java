@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
 import in.org.whistleblower.R;
+import in.org.whistleblower.interfaces.DialogUtilListener;
 import in.org.whistleblower.models.IssuesDao;
 
 public class DialogsUtil

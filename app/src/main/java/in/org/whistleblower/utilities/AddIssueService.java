@@ -28,7 +28,7 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.storage.ResultListener;
+import in.org.whistleblower.interfaces.ResultListener;
 
 public class AddIssueService extends Service
 {

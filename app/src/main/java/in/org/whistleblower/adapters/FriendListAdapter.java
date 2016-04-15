@@ -1,50 +1,38 @@
 package in.org.whistleblower.adapters;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.volley.VolleyError;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
-import in.org.whistleblower.storage.ResultListener;
-import in.org.whistleblower.storage.VolleyUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 
 public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.FriendListViewHolder>
 {
-    static Context mContext;
     LayoutInflater inflater;
     private ImageUtil mImageUtil;
     SharedPreferences preferences;
-    String userMail;
     int dividerPos;
-    private static List<Accounts> mAccountsList;
+    List<Accounts> mAccountsList;
+    FriendListActivity mActivity;
 
-    public FriendListAdapter(Context context, List<Accounts> accountsList)
+    public FriendListAdapter(FriendListActivity activity, List<Accounts> accountsList)
     {
-        mContext = context;
+        mActivity = activity;
         mAccountsList = accountsList;
-        inflater = LayoutInflater.from(context);
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mImageUtil = new ImageUtil(mContext);
-        userMail = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
+        inflater = LayoutInflater.from(mActivity);
+        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        mImageUtil = new ImageUtil(mActivity);
     }
 
     @Override
@@ -89,7 +77,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
                     @Override
                     public void onClick(View v)
                     {
-                        removeFriend(account, position);
+                        mActivity.removeFriend(account, position);
                     }
                 });
             }
@@ -103,10 +91,33 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
                     @Override
                     public void onClick(View v)
                     {
-                        addFriend(account, position);
+                        mActivity.addFriend(account, position);
                     }
                 });
             }
+        }
+    }
+
+    public void removeUser(int position, Accounts account)
+    {
+        removeAt(position, account);
+        int size = mAccountsList.size();
+        if (dividerPos >= size)
+        {
+            mAccountsList.add(size, null);
+        }
+        addAt(dividerPos, account);
+        dividerPos--;
+    }
+
+    public void addUser(int position, Accounts account)
+    {
+        removeAt(position, account);
+        addAt(dividerPos, account);
+        dividerPos++;
+        if (dividerPos >= (mAccountsList.size() - 1))
+        {
+            removeAt(dividerPos, null);
         }
     }
 
@@ -141,90 +152,6 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
         {
             FriendListActivity.mUserList.add(account);
         }
-    }
-
-    private void removeFriend(final Accounts account, final int position)
-    {
-        FriendListActivity.showProgressFab();
-        Map<String, String> data = new HashMap<>();
-        data.put(VolleyUtil.KEY_ACTION, "removeFriend");
-        data.put(Accounts.USER_EMAIL, userMail);
-        data.put(Accounts.FRIENDS_EMAIL, account.email);
-        VolleyUtil.sendPostData(data, new ResultListener<String>()
-        {
-            @Override
-            public void onSuccess(String result)
-            {
-                Log.d("removeFriend", "removeFriend result : " + result);
-                if (result.equals("1"))
-                {
-                    new AccountsDao(mContext).update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
-                    account.relation = Accounts.NOT_A_FRIEND;
-
-                    removeAt(position, account);
-                    int size = mAccountsList.size();
-                    if (dividerPos >= size)
-                    {
-                        mAccountsList.add(size, null);
-                    }
-                    addAt(dividerPos, account);
-                    dividerPos--;
-                    FriendListActivity.hideProgressFab();
-                }
-                else
-                {
-                    Toast.makeText(mContext, "Please Try Again!", Toast.LENGTH_SHORT).show();
-                    Log.d("ToastMsg", result + " : Please Try again!");
-                }
-            }
-
-            @Override
-            public void onError(VolleyError error)
-            {
-                FriendListActivity.hideProgressFab();
-                Toast.makeText(mContext, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
-                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
-            }
-        });
-    }
-
-    private void addFriend(final Accounts account, final int position)
-    {
-        FriendListActivity.showProgressFab();
-        Map<String, String> data = new HashMap<>();
-        data.put(Accounts.FRIENDS_PHOTO, account.photo_url);
-        data.put(Accounts.FRIENDS_NAME, account.name);
-        data.put(Accounts.FRIENDS_EMAIL, account.email);
-        data.put(Accounts.USER_EMAIL, userMail);
-        data.put(VolleyUtil.KEY_ACTION, "addFriend");
-        VolleyUtil.sendPostData(data, new ResultListener<String>()
-        {
-            @Override
-            public void onSuccess(String result)
-            {
-                Log.d("addFriend", "Result : " + result);
-                new AccountsDao(mContext).update(account.email, Accounts.RELATION, Accounts.FRIEND);
-                account.relation = Accounts.FRIEND;
-                removeAt(position, account);
-                addAt(dividerPos, account);
-                dividerPos++;
-                if (dividerPos >= (mAccountsList.size() - 1))
-                {
-                    removeAt(dividerPos, null);
-                }
-                FriendListActivity.hideProgressFab();
-                //FriendListActivity.showUserListFromDatabase();
-            }
-
-            @Override
-            public void onError(VolleyError error)
-            {
-                FriendListActivity.hideProgressFab();
-                Toast.makeText(mContext, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
-                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
-            }
-        });
-
     }
 
     @Override

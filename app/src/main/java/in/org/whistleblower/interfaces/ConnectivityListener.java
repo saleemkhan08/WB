@@ -1,4 +1,4 @@
-package in.org.whistleblower.utilities;
+package in.org.whistleblower.interfaces;
 
 public interface ConnectivityListener
 {

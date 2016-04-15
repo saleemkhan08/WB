@@ -1,4 +1,4 @@
-package in.org.whistleblower.storage;
+package in.org.whistleblower.utilities;
 
 import android.util.Log;
 
@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
-import in.org.whistleblower.utilities.VolleySingleton;
+import in.org.whistleblower.interfaces.ResultListener;
 
 public class VolleyUtil
 {
@@ -89,6 +89,32 @@ public class VolleyUtil
         }
         customURL = customURL.substring(0, customURL.length() - 1);
         Log.d("sendGetData", customURL);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, customURL,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        listener.onSuccess(response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        listener.onError(error);
+                    }
+                });
+
+        RequestQueue requestQueue = VolleySingleton.getInstance().getRequestQueue();
+        requestQueue.add(stringRequest);
+    }
+
+    public static void sendGetData(final String url, final ResultListener<String> listener)
+    {
+        String customURL = url;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, customURL,
                 new Response.Listener<String>()

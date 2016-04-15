@@ -16,8 +16,7 @@ import java.util.Map;
 
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.storage.ResultListener;
-import in.org.whistleblower.storage.VolleyUtil;
+import in.org.whistleblower.interfaces.ResultListener;
 
 public class GCMUtil
 {

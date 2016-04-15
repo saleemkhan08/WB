@@ -191,4 +191,5 @@
     <string name="title_activity_map_activity">MapAcivity</string>
     <string name="title_activity_friend_list">FriendList</string>
     <string name="search">Search</string>
+    <string name="server_key">AIzaSyAF1X4WKvN-5gBdpkAHpvC8ynLlyGmdwNU</string>
 </resources>

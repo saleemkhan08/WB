@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="in.org.whistleblower"
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          android:versionCode="1"
-          android:versionName="1.0">
+<manifest
+    package="in.org.whistleblower"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -35,7 +36,8 @@
         android:name=".WhistleBlower"
         android:allowBackup="true"
         android:icon="@drawable/bullhorn_invert"
-        android:supportsRtl="true"        android:label="@string/app_name"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
 
         android:theme="@style/AppTheme">
 
@@ -77,7 +79,13 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:launchMode="singleInstance">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
         <activity
             android:name=".LoginActivity"
@@ -125,12 +133,12 @@
         </activity>
 
         <service
-            android:name=".LocationTrackingService"
+            android:name=".services.LocationTrackingService"
             android:enabled="true"
             android:exported="false">
         </service>
         <service
-            android:name=".LocationUpdateService"
+            android:name=".services.LocationDetailsService"
             android:exported="false">
         </service>
 
@@ -210,14 +218,10 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme">
 
-            <!--<meta-data
+            <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity"/>-->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                android:value="in.org.whistleblower.MainActivity"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
     </application>
 

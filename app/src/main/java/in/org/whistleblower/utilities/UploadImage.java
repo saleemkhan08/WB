@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import in.org.whistleblower.R;
-import in.org.whistleblower.storage.ResultListener;
+import in.org.whistleblower.interfaces.ResultListener;
 
 public class UploadImage extends AsyncTask<Void, Integer, String>
 {
