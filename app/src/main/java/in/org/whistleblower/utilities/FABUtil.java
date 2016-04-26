@@ -1,6 +1,5 @@
 package in.org.whistleblower.utilities;
 
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
@@ -9,7 +8,9 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.icon.FontAwesomeIcon;
+import in.org.whistleblower.singletons.Otto;
 
 public class FABUtil
 {
@@ -19,20 +20,19 @@ public class FABUtil
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
     AppCompatActivity mActivity;
     MiscUtil mUtil;
-    public static View locationSelector;
+
     public static FloatingActionsMenu fabMenu;
 
     public FABUtil(AppCompatActivity activity)
     {
         this.mActivity = activity;
         mUtil = new MiscUtil(activity);
+        WhistleBlower.getComponent().inject(this);
     }
 
     public void setUp()
     {
         fabMenu = (FloatingActionsMenu) mActivity.findViewById(R.id.multiple_actions);
-        locationSelector = mActivity.findViewById(R.id.select_location);
-
         FloatingActionButton buttonAlarm = (FloatingActionButton) mActivity.findViewById(R.id.alarm);
         buttonAlarm.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT));
         buttonAlarm.setStrokeVisible(false);
@@ -74,28 +74,11 @@ public class FABUtil
 
     public void fabAction(String action)
     {
-        if(MiscUtil.isConnected(mActivity))
+        if (MiscUtil.isConnected(mActivity))
         {
-            Bundle bundle = new Bundle();
-            bundle.putString(ACTION, action);
-            NavigationUtil.showMapFragment(mActivity, bundle);
-            FloatingActionButton okButton = (FloatingActionButton) mActivity.findViewById(R.id.ok_map);
-            switch (action)
-            {
-                case ADD_FAV_PLACE:
-                    okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.STAR,R.color.white));
-                    break;
-                case ADD_ISSUE:
-                    okButton.setIconDrawable(mActivity.getDrawable(R.drawable.bullhorn_white));
-                    break;
-                case SET_ALARM:
-                    okButton.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT,R.color.white));
-                    break;
-
-            }
-            okButton.setStrokeVisible(false);
-            locationSelector.setVisibility(View.VISIBLE);
-        }else
+            Otto.getBus().post(action);
+        }
+        else
         {
             Toast.makeText(mActivity, "No Internet!", Toast.LENGTH_SHORT).show();
         }

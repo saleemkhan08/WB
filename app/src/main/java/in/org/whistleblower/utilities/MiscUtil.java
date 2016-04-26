@@ -1,5 +1,6 @@
 package in.org.whistleblower.utilities;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,11 +14,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
@@ -39,6 +43,26 @@ public class MiscUtil
         this.mContext = mContext;
         resources = mContext.getResources();
     }
+    private static final int GPS_ERROR_DIALOG_REQUEST = 1989;
+    public static boolean isGoogleServicesOk(AppCompatActivity mActivity)
+    {
+        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
+        if (isAvailable == ConnectionResult.SUCCESS)
+        {
+            return true;
+        }
+        else if (GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
+        {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable, mActivity, GPS_ERROR_DIALOG_REQUEST);
+            dialog.show();
+        }
+        else
+        {
+            Toast.makeText(mActivity, "Can't Connect to Google Play Services", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
+
     public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight)
     {
         int width = bm.getWidth();
@@ -70,6 +94,7 @@ public class MiscUtil
 
         return BitmapDescriptorFactory.fromBitmap(resized);
     }
+
     public void toast(String msg)
     {
         Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
@@ -278,6 +303,14 @@ public class MiscUtil
     }
 
     public int dp(double value)
+    {
+        DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+        double dp = (float) value;
+        double fpixels = metrics.density * dp;
+        return (int) fpixels;
+    }
+
+    public static int dp(Context mContext, double value)
     {
         DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
         double dp = (float) value;

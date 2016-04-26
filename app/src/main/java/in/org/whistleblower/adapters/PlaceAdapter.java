@@ -2,22 +2,22 @@ package in.org.whistleblower.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import in.org.whistleblower.R;
-import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
-import in.org.whistleblower.utilities.NavigationUtil;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>
 {
@@ -47,24 +47,78 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     public void onBindViewHolder(PlaceViewHolder holder, final int position)
     {
         final FavPlaces address = mAddressList.get(position);
-        holder.adminAreaView.setText(address.addressLine1);
-        holder.subLocalityView.setText(address.addressLine0);
-        holder.featureName.setText(address.featureName);
+        holder.addressLine.setText(address.addressLine);
+        holder.placeTypeName.setText(address.placeType);
+        holder.placeTypeImg.setImageResource(getDrawableResId(address.placeTypeIndex));
         holder.item.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                Bundle bundle = new Bundle();
-                bundle.putFloat(MapFragment.LONGITUDE,address.longitude);
-                bundle.putFloat(MapFragment.LATITUDE, address.latitude);
-                bundle.putBoolean(MapFragment.SHOW_MARKER, true);
+                Otto.getBus().post(address);
+                /*Bundle bundle = new Bundle();
+                bundle.putString(MapFragment.LONGITUDE, address.longitude + "");
+                bundle.putString(MapFragment.LATITUDE, address.latitude + "");
                 bundle.putBoolean(MapFragment.ANIMATE, true);
-                bundle.putInt(MapFragment.RADIUS, 1000);
-                bundle.putInt(MapFragment.MARKER, R.drawable.star_marker);
-                NavigationUtil.showMapFragment((AppCompatActivity)mContext, bundle);
+                bundle.putInt(MapFragment.ACCURACY, address.radius);
+                bundle.putInt(MapFragment.MARKER, address.placeTypeIndex);
+                NavigationUtil.showMapFragment((AppCompatActivity) mContext, bundle);*/
             }
         });
+    }
+
+    int getDrawableResId(int index)
+    {
+        /*
+        <item>Home</item>
+        <item>Friends Place</item>
+        <item>Work Place</item>
+        <item>School / College</item>
+        <item>Shopping Mall</item>
+        <item>Cinema Hall</item>
+        <item>Library</item>
+        <item>Play Ground</item>
+        <item>Hospital</item>
+        <item>Jogging Place</item>
+        <item>Gym</item>
+        <item>Restaurant</item>
+        <item>Coffee Shop</item>
+        <item>Pub</item>
+        <item>Others</item>
+        */
+        switch (index)
+        {
+            case 0:
+                return R.mipmap.home_primary_dark;
+            case 1:
+                return R.mipmap.friends_place_primary_dark;
+            case 2:
+                return R.mipmap.work_primary_dark;
+            case 3:
+                return R.mipmap.school_primary_dark;
+            case 4:
+                return R.mipmap.shopping_primary_dark;
+            case 5:
+                return R.mipmap.movie_primary_dark;
+            case 6:
+                return R.mipmap.library_primay_dark;
+            case 7:
+                return R.mipmap.play_ground_primary_dark;
+            case 8:
+                return R.mipmap.hospital_primary_dark;
+            case 9:
+                return R.mipmap.jogging_primary_dark;
+            case 10:
+                return R.mipmap.gym_primary_dark;
+            case 11:
+                return R.mipmap.hotel_primary_dark;
+            case 12:
+                return R.mipmap.coffee_shop_primay_dark;
+            case 13:
+                return R.mipmap.bar_primary_dark;
+            default:
+                return R.mipmap.others_primary_dark;
+        }
     }
 
     @Override
@@ -75,16 +129,31 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
 
     class PlaceViewHolder extends RecyclerView.ViewHolder
     {
-        TextView adminAreaView, subLocalityView, featureName;
         View item;
+
+        @Bind(R.id.addressLine)
+        TextView addressLine;
+
+        @Bind(R.id.placeTypeName)
+        TextView placeTypeName;
+
+        @Bind(R.id.deleteFavPlace)
+        View deleteFavPlace;
+
+        @Bind(R.id.setAlarm)
+        View setAlarm;
+
+        @Bind(R.id.arrivalNotification)
+        View arrivalNotification;
+
+        @Bind(R.id.placeTypeImg)
+        ImageView placeTypeImg;
 
         public PlaceViewHolder(View itemView)
         {
             super(itemView);
-            adminAreaView = (TextView) itemView.findViewById(R.id.adminArea);
-            subLocalityView = (TextView) itemView.findViewById(R.id.subLocality);
-            featureName = (TextView) itemView.findViewById(R.id.featureName);
             item = itemView;
+            ButterKnife.bind(this, itemView);
         }
     }
 }

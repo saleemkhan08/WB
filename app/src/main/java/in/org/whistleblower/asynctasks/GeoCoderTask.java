@@ -28,7 +28,7 @@ public class GeoCoderTask extends AsyncTask<Integer, Void, String>
     @Override
     protected String doInBackground(Integer... params)
     {
-        String address = "";
+        String favPlaces = "";
         try
         {
             if(MiscUtil.isConnected(mContext))
@@ -41,29 +41,32 @@ public class GeoCoderTask extends AsyncTask<Integer, Void, String>
                     if (addresses.size() > 0)
                     {
                         Address addressObj = addresses.get(0);
-                        String addressLine = addressObj.getAddressLine(0);
-                        if (null != addressLine)
+                        if(addressObj!=null)
                         {
-                            address = addressLine;
-                            addressLine = addressObj.getAddressLine(1);
-                            if (addressLine != null)
+                            String addressLine = addressObj.getAddressLine(0);
+                            if (null != addressLine)
                             {
-                                address += ", " + addressLine;
+                                favPlaces = addressLine;
+                                addressLine = addressObj.getAddressLine(1);
+                                if (addressLine != null)
+                                {
+                                    favPlaces += ", " + addressLine;
+                                }
                             }
+                        }
+                        else
+                        {
+                            return null;
                         }
                     }
                 }
-            }
-            else
-            {
-                address = "No Internet...";
             }
         }
         catch (Exception e)
         {
             return null;
         }
-        return address;
+        return favPlaces;
     }
 
     @Override
@@ -74,15 +77,15 @@ public class GeoCoderTask extends AsyncTask<Integer, Void, String>
     }
 
     @Override
-    protected void onPostExecute(String address)
+    protected void onPostExecute(String  favPlace)
     {
-        if (address == null)
+        if (favPlace == null)
         {
             mListener.onGeoCodingFailed();
         }
         else
         {
-            mListener.onAddressObtained(address);
+            mListener.onAddressObtained(favPlace);
         }
     }
 }

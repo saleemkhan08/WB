@@ -28,7 +28,7 @@ public class GCMUtil
 
     public static void registerInBackground(final AppCompatActivity mActivity)
     {
-        if (NavigationUtil.isGoogleServicesOk(mActivity))
+        if (MiscUtil.isGoogleServicesOk(mActivity))
         {
             new AsyncTask<Void, Void, String>()
             {

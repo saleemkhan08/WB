@@ -24,10 +24,12 @@ public class FavoritePlacesFragment extends Fragment
     public FavoritePlacesFragment()
     {
     }
+
     RecyclerView favPlacesRecyclerView;
     ArrayList<FavPlaces> favPlacesList;
     AppCompatActivity mActivity;
     PlaceAdapter adapter;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
@@ -63,7 +65,7 @@ public class FavoritePlacesFragment extends Fragment
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            if(null != favPlacesList)
+            if (null != favPlacesList)
             {
                 favPlacesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.favoritePlaceList);
                 adapter = new PlaceAdapter(mActivity, favPlacesList);
@@ -72,5 +74,4 @@ public class FavoritePlacesFragment extends Fragment
             }
         }
     }
-
 }

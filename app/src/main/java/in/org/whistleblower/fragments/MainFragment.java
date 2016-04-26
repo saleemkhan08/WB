@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.IssueAdapter;
+import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.interfaces.ResultListener;
-import in.org.whistleblower.utilities.VolleyUtil;
-import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
+import in.org.whistleblower.utilities.VolleyUtil;
 
 public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
@@ -50,6 +50,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
 
     }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -64,6 +65,8 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
         mActivity = (AppCompatActivity) getActivity();
+        WhistleBlower.getComponent().inject(this);
+
         mUtil = new MiscUtil(mActivity);
         swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -90,7 +93,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
         super.onResume();
         MiscUtil.log("onResume");
-        FABUtil.locationSelector.setVisibility(View.GONE);
         NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_news);
     }
 
@@ -180,8 +182,8 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                             issue.description = json.getString(IssuesDao.DESCRIPTION);
                             issue.areaType = json.getString(IssuesDao.AREA_TYPE);
                             issue.radius = json.getInt(IssuesDao.RADIUS);
-                            issue.latitude = ((Double) json.getDouble(IssuesDao.LATITUDE)).floatValue();
-                            issue.longitude = (((Double) json.getDouble(IssuesDao.LONGITUDE)).floatValue());
+                            issue.latitude = json.getDouble(IssuesDao.LATITUDE) + "";
+                            issue.longitude = json.getDouble(IssuesDao.LONGITUDE) + "";
                             issuesList.add(issue);
                             issueDao.insert(issue);
                         }

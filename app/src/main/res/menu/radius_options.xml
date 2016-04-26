@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/radius_mts"
+        android:orderInCategory="100"
+        android:title="@string/action_mts"
+        />
+    <item
+        android:id="@+id/radius_km"
+        android:orderInCategory="200"
+        android:title="@string/action_km"
+        />
+</menu>

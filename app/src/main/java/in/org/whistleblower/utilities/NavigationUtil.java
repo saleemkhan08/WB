@@ -1,10 +1,9 @@
 package in.org.whistleblower.utilities;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -15,16 +14,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.squareup.otto.Subscribe;
+
+import javax.inject.Inject;
 
 import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.icon.FontAwesomeIcon;
+import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.singletons.Otto;
 
 public class NavigationUtil implements NavigationView.OnNavigationItemSelectedListener
 {
@@ -36,23 +40,79 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
     public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
-    private static final int GPS_ERROR_DIALOG_REQUEST = 1989;
-    MiscUtil util;
     //To get fragment manager
     AppCompatActivity mActivity;
     public MapFragment mapFragment;
 
-    static FragmentManager fragmentManager;
+    FragmentManager fragmentManager;
     public NavigationView navigationView;
     public MainFragment mainFragment;
     private DrawerLayout drawer;
+
+    @Inject
+    SharedPreferences mPreferences;
+
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
         fragmentManager = mActivity.getSupportFragmentManager();
+        WhistleBlower.getComponent().inject(this);
         drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
+        Otto.getBus().register(this);
     }
 
+    @Subscribe
+    public void showIssue(Issue address)
+    {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(MapFragment.SHOW_ISSUE, address);
+        showMapFragment(bundle);
+    }
+
+    @Subscribe
+    public void showFavPlace(FavPlaces address)
+    {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(MapFragment.SHOW_FAV_PLACE, address);
+        showMapFragment(bundle);
+    }
+
+    @Subscribe
+    public void handleAction(String action)
+    {
+        Bundle bundle = new Bundle();
+        bundle.putString(MapFragment.HANDLE_ACTION, action);
+        showMapFragment(bundle);
+    }
+
+    void showMapFragment(Bundle bundle)
+    {
+        if (MiscUtil.isGoogleServicesOk(mActivity))
+        {
+            if(mapFragment == null)
+            {
+                mapFragment = getMapFragment();
+            }
+
+            if (!mapFragment.isVisible())
+            {
+                mapFragment.setArguments(bundle);
+                fragmentManager
+                        .beginTransaction()
+                        .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                        .commit();
+            }
+            else
+            {
+                mapFragment.reloadMapParameters(bundle);
+            }
+        }
+    }
+
+    public void unregisterBus()
+    {
+        Otto.getBus().unregister(this);
+    }
     public void setUp(MiscUtil util)
     {
         navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
@@ -99,8 +159,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                         break;
                     case R.id.nav_logout:
                         mActivity.startActivity(new Intent(mActivity, LoginActivity.class));
-                        PreferenceManager.getDefaultSharedPreferences(mActivity)
-                                .edit()
+                        mPreferences.edit()
                                 .putBoolean(LoginActivity.LOGIN_STATUS, false)
                                 .commit();
                         mActivity.finish();
@@ -118,7 +177,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                         mActivity.startActivity(intent);
                         break;
                     case R.id.nav_fav:
-                        showFavPlacesList(mActivity);
+                        showFavPlacesList();
                         break;
                     case R.id.nav_map:
                         showMapFragment();
@@ -136,9 +195,8 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         return true;
     }
 
-    public static void showFavPlacesList(AppCompatActivity mActivity)
+    public void showFavPlacesList()
     {
-        FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
         FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
         if (favoritePlacesFragment == null)
         {
@@ -149,29 +207,9 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
                 .commit();
     }
-
-    public static boolean isGoogleServicesOk(AppCompatActivity mActivity)
-    {
-        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
-        if (isAvailable == ConnectionResult.SUCCESS)
-        {
-            return true;
-        }
-        else if (GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
-        {
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable, mActivity, GPS_ERROR_DIALOG_REQUEST);
-            dialog.show();
-        }
-        else
-        {
-            Toast.makeText(mActivity, "Can't Connect to Google Play Services", Toast.LENGTH_SHORT).show();
-        }
-        return false;
-    }
-
     public void showMapFragment()
     {
-        if (isGoogleServicesOk(mActivity))
+        if (MiscUtil.isGoogleServicesOk(mActivity))
         {
             mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
             if (mapFragment == null)
@@ -185,27 +223,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
     }
 
-    public static void showMapFragment(AppCompatActivity mActivity, Bundle bundle)
-    {
-        if (isGoogleServicesOk(mActivity))
-        {
-            MapFragment mapFragment = getMapFragment(mActivity);
-            if (!mapFragment.isVisible())
-            {
-                mapFragment.setArguments(bundle);
-                fragmentManager
-                        .beginTransaction()
-                        .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
-                        .commit();
-            }
-            else
-            {
-                mapFragment.reloadMapParameters(bundle);
-            }
-        }
-    }
-
-    public static MapFragment getMapFragment(AppCompatActivity mActivity)
+    public MapFragment getMapFragment()
     {
         if (fragmentManager == null)
         {

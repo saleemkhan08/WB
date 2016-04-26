@@ -192,4 +192,24 @@
     <string name="title_activity_friend_list">FriendList</string>
     <string name="search">Search</string>
     <string name="server_key">AIzaSyAF1X4WKvN-5gBdpkAHpvC8ynLlyGmdwNU</string>
+    <string name="action_km">Kilometers</string>
+    <string name="action_mts">Meters</string>
+
+    <string-array name="fav_place_type">
+        <item>Home</item>
+        <item>Friends Place</item>
+        <item>Work Place</item>
+        <item>School / College</item>
+        <item>Shopping Mall</item>
+        <item>Cinema Hall</item>
+        <item>Library</item>
+        <item>Play Ground</item>
+        <item>Hospital</item>
+        <item>Jogging Place</item>
+        <item>Gym</item>
+        <item>Restaurant</item>
+        <item>Coffee Shop</item>
+        <item>Pub</item>
+        <item>Others</item>
+    </string-array>
 </resources>

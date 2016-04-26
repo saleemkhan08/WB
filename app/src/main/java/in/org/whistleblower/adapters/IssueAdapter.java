@@ -1,6 +1,5 @@
 package in.org.whistleblower.adapters;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,34 +17,36 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
-import in.org.whistleblower.utilities.NavigationUtil;
 
 public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHolder>
 {
     LayoutInflater mInflater;
-    Context mContext;
     AppCompatActivity mActivity;
     ArrayList<Issue> mIssuesArrayList;
     MiscUtil mUtil;
     ImageUtil mImageUtil;
     SharedPreferences preferences;
 
-    public IssueAdapter(Context mContext, ArrayList<Issue> mIssuesList)
+    public IssueAdapter(AppCompatActivity activity, ArrayList<Issue> mIssuesList)
     {
-        mInflater = LayoutInflater.from(mContext);
-        this.mContext = mContext;
-        mActivity = (AppCompatActivity) mContext;
+        mInflater = LayoutInflater.from(mActivity);
+        mActivity = activity;
+        WhistleBlower.getComponent().inject(this);
         this.mIssuesArrayList = mIssuesList;
-        mUtil = new MiscUtil(mContext);
-        mImageUtil = new ImageUtil(mContext);
-        preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mUtil = new MiscUtil(mActivity);
+        mImageUtil = new ImageUtil(mActivity);
+        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
     }
 
     @Override
@@ -70,10 +71,8 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onClick(View v)
             {
                 Bundle bundle = new Bundle();
-                bundle.putFloat(MapFragment.LATITUDE, issue.latitude);
-                bundle.putFloat(MapFragment.LONGITUDE, issue.longitude);
-
-                NavigationUtil.showMapFragment(mActivity, bundle);
+                bundle.putParcelable(MapFragment.SHOW_ISSUE, issue);
+                Otto.getBus().post(issue);
             }
         });
 
@@ -100,7 +99,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                PopupMenu popup = new PopupMenu(mContext, v);
+                PopupMenu popup = new PopupMenu(mActivity, v);
                 popup.getMenuInflater()
                         .inflate(R.menu.issue_options, popup.getMenu());
 
@@ -145,13 +144,13 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
-            holder.profilePic.setBackground(mContext.getDrawable(R.drawable.anonymous_white_primary_dark));
+            holder.profilePic.setBackground(mActivity.getDrawable(R.drawable.anonymous_white_primary_dark));
             holder.profilePic.setImageResource(android.R.color.transparent);
         }
         else
         {
             mImageUtil.displayImage(dpUrl, holder.profilePic, true);
-            holder.profilePic.setBackgroundColor(mContext.getResources().getColor(android.R.color.transparent, null));
+            holder.profilePic.setBackgroundColor(mActivity.getResources().getColor(android.R.color.transparent, null));
         }
 
         holder.issueImage.setOnClickListener(new View.OnClickListener()
@@ -159,9 +158,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View arg0)
             {
-                Intent issueActivityIntent = new Intent(mContext, IssueActivity.class);
+                Intent issueActivityIntent = new Intent(mActivity, IssueActivity.class);
                 //issueActivityIntent.putExtra()
-                mContext.startActivity(issueActivityIntent);
+                mActivity.startActivity(issueActivityIntent);
                 mUtil.toast("Image : " + position + " clicked");
             }
         });
@@ -238,31 +237,39 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
 
     class IssueViewHolder extends RecyclerView.ViewHolder
     {
-        TextView areaTypeName, username, issueDescription;
-        ImageView issueImage, profilePic, optionsIcon, shareIcon, locationIcon, volunteerIcon;
-        View optionsIconContainer, locationContainer, volunteerContainer, shareContainer;
+        @Bind(R.id.areaTypeName)
+        TextView areaTypeName;
+        @Bind(R.id.username)
+        TextView username;
+        @Bind(R.id.issueDescription)
+        TextView issueDescription;
+
+        @Bind(R.id.issueImg)
+        ImageView issueImage;
+        @Bind(R.id.profilePic)
+        ImageView profilePic;
+        @Bind(R.id.optionsIcon)
+        ImageView optionsIcon;
+        @Bind(R.id.shareIcon)
+        ImageView shareIcon;
+        @Bind(R.id.locationIcon)
+        ImageView locationIcon;
+        @Bind(R.id.volunteerIcon)
+        ImageView volunteerIcon;
+
+        @Bind(R.id.optionsIconContainer)
+        View optionsIconContainer;
+        @Bind(R.id.locationContainer)
+        View locationContainer;
+        @Bind(R.id.volunteerContainer)
+        View volunteerContainer;
+        @Bind(R.id.shareContainer)
+        View shareContainer;
 
         public IssueViewHolder(View view)
         {
             super(view);
-            issueImage = (ImageView) view.findViewById(R.id.issueImg);
-            profilePic = (ImageView) view.findViewById(R.id.profilePic);
-
-            optionsIcon = (ImageView) view.findViewById(R.id.optionsIcon);
-            optionsIconContainer = view.findViewById(R.id.optionsIconContainer);
-
-            shareIcon = (ImageView) view.findViewById(R.id.shareIcon);
-            shareContainer = view.findViewById(R.id.shareContainer);
-
-            locationIcon = (ImageView) view.findViewById(R.id.locationIcon);
-            locationContainer = view.findViewById(R.id.locationContainer);
-
-            volunteerIcon = (ImageView) view.findViewById(R.id.volunteerIcon);
-            volunteerContainer = view.findViewById(R.id.volunteerContainer);
-
-            username = (TextView) view.findViewById(R.id.username);
-            areaTypeName = (TextView) view.findViewById(R.id.areaTypeName);
-            issueDescription = (TextView) view.findViewById(R.id.issueDescription);
+            ButterKnife.bind(mActivity, view);
         }
     }
 }

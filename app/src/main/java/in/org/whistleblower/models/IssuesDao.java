@@ -42,8 +42,8 @@ public class IssuesDao
             + DESCRIPTION + " VARCHAR(255), "
             + AREA_TYPE + " VARCHAR(255), "
             + RADIUS + " INTEGER, "
-            + LATITUDE + " REAL, "
-            + LONGITUDE + " REAL );";
+            + LATITUDE + " VARCHAR(255), "
+            + LONGITUDE + " VARCHAR(255) );";
 
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
     //TODO write a query to save the old data and just alter the table.
@@ -95,8 +95,8 @@ public class IssuesDao
                 issue.description = cursor.getString(cursor.getColumnIndex(IssuesDao.DESCRIPTION));
                 issue.areaType = cursor.getString(cursor.getColumnIndex(IssuesDao.AREA_TYPE));
                 issue.radius = cursor.getInt(cursor.getColumnIndex(IssuesDao.RADIUS));
-                issue.latitude = cursor.getFloat(cursor.getColumnIndex(IssuesDao.LATITUDE));
-                issue.longitude = cursor.getFloat(cursor.getColumnIndex(IssuesDao.LONGITUDE));
+                issue.latitude = cursor.getString(cursor.getColumnIndex(IssuesDao.LATITUDE));
+                issue.longitude = cursor.getString(cursor.getColumnIndex(IssuesDao.LONGITUDE));
                 issuesList.add(issue);
             }
             cursor.close();

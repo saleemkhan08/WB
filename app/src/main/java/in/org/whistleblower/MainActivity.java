@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -20,9 +19,11 @@ import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
+import javax.inject.Inject;
+
 import in.org.whistleblower.icon.FontAwesomeIcon;
-import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.interfaces.ConnectivityListener;
+import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -32,8 +33,12 @@ public class MainActivity extends AppCompatActivity
 {
     MiscUtil mUtil;
     FloatingActionsMenu fabMenu;
+
     NavigationUtil mNavigationUtil;
+
     FABUtil mFabUtil;
+
+    @Inject
     SharedPreferences preferences;
     //static Typeface mFont;
     DrawerLayout drawer;
@@ -53,7 +58,9 @@ public class MainActivity extends AppCompatActivity
         else
         {
             setContentView(R.layout.activity_main);
-            preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            WhistleBlower.getComponent().inject(this);
+
+            //preferences = PreferenceManager.getDefaultSharedPreferences(this);
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -89,8 +96,10 @@ public class MainActivity extends AppCompatActivity
             drawer.setDrawerListener(toggle);
             toggle.syncState();
             MiscUtil.log("OnCreate");
+
             mNavigationUtil = new NavigationUtil(this);
             mNavigationUtil.setUp(mUtil);
+
             mFabUtil = new FABUtil(this);
             mFabUtil.setUp();
             if (savedInstanceState == null)
@@ -132,6 +141,7 @@ public class MainActivity extends AppCompatActivity
     protected void onStop()
     {
         super.onStop();
+        mNavigationUtil.unregisterBus();
         fabMenu.collapse();
     }
 
@@ -149,10 +159,22 @@ public class MainActivity extends AppCompatActivity
         {
             drawer.closeDrawer(GravityCompat.START);
         }
+        else if (mNavigationUtil.mapFragment != null && mNavigationUtil.mapFragment.isVisible())
+        {
+            if (mNavigationUtil.mapFragment.isSubmitButtonShown)
+            {
+                mNavigationUtil.mapFragment.hideSubmitButtonAndShowSearchIcon();
+            }
+            else
+            {
+                super.onBackPressed();
+            }
+        }
         else
         {
             super.onBackPressed();
         }
+
     }
 
     @Override
@@ -172,5 +194,11 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void favPlaceSelector(View view)
+    {
+        mNavigationUtil.mapFragment.setFavPlaceType(view);
     }
 }

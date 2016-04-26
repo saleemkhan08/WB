@@ -1,22 +1,60 @@
 package in.org.whistleblower.models;
 
-public class FavPlaces
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class FavPlaces implements Parcelable
 {
-    public String country;
+    public String latitude;
+    public String longitude;
+    public String addressLine;
+    public String placeType;
+    public int radius;
+    public int placeTypeIndex;
 
-    public String locality;
-    public String subLocality;
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
 
-    public String featureName;
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(this.latitude);
+        dest.writeString(this.longitude);
+        dest.writeString(this.addressLine);
+        dest.writeString(this.placeType);
+        dest.writeInt(this.radius);
+        dest.writeInt(this.placeTypeIndex);
+    }
 
-    public float latitude;
-    public float longitude;
+    public FavPlaces()
+    {
+    }
 
-    public String addressLine1;
-    public String addressLine0;
+    protected FavPlaces(Parcel in)
+    {
+        this.latitude = in.readString();
+        this.longitude = in.readString();
+        this.addressLine = in.readString();
+        this.placeType = in.readString();
+        this.radius = in.readInt();
+        this.placeTypeIndex = in.readInt();
+    }
 
-    public String adminArea;
-    public String subAdminArea;
+    public static final Parcelable.Creator<FavPlaces> CREATOR = new Parcelable.Creator<FavPlaces>()
+    {
+        @Override
+        public FavPlaces createFromParcel(Parcel source)
+        {
+            return new FavPlaces(source);
+        }
 
-    public String postalCode;
+        @Override
+        public FavPlaces[] newArray(int size)
+        {
+            return new FavPlaces[size];
+        }
+    };
 }

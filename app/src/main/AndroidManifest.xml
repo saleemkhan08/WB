@@ -152,15 +152,6 @@
                 android:value="in.org.whistleblower.MainActivity"/>
         </activity>
         <activity
-            android:name=".FavoritePlaceEditActivity"
-            android:label="@string/title_activity_favorite_place_edit"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity"/>
-        </activity>
-        <activity
             android:name=".AlarmActivity"
             android:label="@string/title_activity_alarm_acivity"
             android:parentActivityName=".MainActivity"
@@ -206,12 +197,6 @@
                 <action android:name="android.location.PROVIDERS_CHANGED"/>
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name=".MapActivity"
-            android:label="@string/title_activity_map_activity"
-            android:theme="@style/AppTheme">
-        </activity>
         <activity
             android:name=".FriendListActivity"
             android:label="@string/title_activity_friend_list"

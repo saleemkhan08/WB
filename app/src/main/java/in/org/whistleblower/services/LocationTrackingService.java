@@ -16,7 +16,10 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.maps.model.LatLng;
 
+import in.org.whistleblower.AlarmActivity;
+import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.interfaces.LocationChangeListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -25,6 +28,8 @@ import in.org.whistleblower.utilities.PermissionUtil;
 public class LocationTrackingService extends Service implements LocationListener,
         GoogleApiClient.ConnectionCallbacks
 {
+    public static final String KEY_LATLNG = "KEY_LATLNG";
+    public static final String KEY_PLACE_NAME = "KEY_PLACE_NAME";
     protected LocationRequest mLocationRequest;
     protected GoogleApiClient mGoogleApiClient;
     protected LocationSettingsRequest mLocationSettingsRequest;
@@ -35,6 +40,8 @@ public class LocationTrackingService extends Service implements LocationListener
     public static final String KEY_SHARE_LOCATION = "KEY_SHARE_LOCATION";
     public static final String KEY_ALARM_SET = "KEY_ALARM_SET";
     public static final String KEY_LOCATION_UPDATE_FREQ = "updateFreq";
+    private LatLng alarmLatlng;
+    private String alarmAddress;
     private static final float OFFSET_LAT = 0.008983f;
     private static final float OFFSET_LNG = 0.015060f;
     private boolean mStartLocationUpdates;
@@ -117,6 +124,13 @@ public class LocationTrackingService extends Service implements LocationListener
                 }
             });
         }
+
+        if (intent.hasExtra(KEY_ALARM_SET))
+        {
+            alarmAddress = intent.getStringExtra(KEY_PLACE_NAME);
+            alarmLatlng = intent.getParcelableExtra(KEY_LATLNG);
+        }
+
         return START_STICKY;
     }
 
@@ -189,7 +203,7 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onConnected(Bundle bundle)
     {
-        Log.d("FlowLogs", "Service  : onConnected : mStartLocationUpdates : "+mStartLocationUpdates);
+        Log.d("FlowLogs", "Service  : onConnected : mStartLocationUpdates : " + mStartLocationUpdates);
 
         if (mStartLocationUpdates)
         {
@@ -214,40 +228,45 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onLocationChanged(Location location)
     {
-        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : "+isLocationListenerRegistered);
+        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : " + isLocationListenerRegistered);
         mCurrentLocation = location;
         if (isLocationListenerRegistered)
         {
             mListener.onLocationChanged(location);
         }
-
-        /*
-        float expLat = preferences.getFloat(MapFragment.LATITUDE, 0),
-                expLng = preferences.getFloat(MapFragment.LONGITUDE, 0),
-
-                actLat = (float) location.getLatitude(),
-                actLng = (float) location.getLongitude();
-
-        if (expLng < (actLng + OFFSET_LNG) && expLng > (actLng - OFFSET_LNG)
-                &&
-                expLat < (actLat + OFFSET_LAT) && expLat < (actLat - OFFSET_LAT))
+        if(preferences.getBoolean(KEY_ALARM_SET, false))
         {
-            startActivity(new Intent(this, AlarmActivity.class));// Make it Notification with audio and vibration.
-            stopSelf();
-            notificationManager.cancel(ALARM_NOTIFICATION);
-        }*/
+            triggerAlarm(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
         stopService();
+    }
+
+    private void triggerAlarm(LatLng latLng)
+    {
+        double distance = MapFragment.distFrom(latLng.latitude, latLng.longitude, alarmLatlng.latitude, alarmLatlng.longitude);
+        Log.d("triggerAlarm", "triggerAlarm  distance : "+distance);
+        if (distance < 1000)
+        {
+            Intent intent = new Intent(this, AlarmActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);// Make it Notification with audio and vibration.
+            /*stopSelf();
+            notificationManager.cancel(ALARM_NOTIFICATION);*/
+
+            preferences.edit().putBoolean(KEY_ALARM_SET, false).commit();
+            stopService();
+        }
     }
 
     public void stopService()
     {
-        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : "+isLocationListenerRegistered);
+        Log.d("FlowLogs", "Service  : onLocationChanged : isLocationListenerRegistered : " + isLocationListenerRegistered);
 
         boolean alarmSet = preferences.getBoolean(KEY_ALARM_SET, false);
         boolean notifyArrival = preferences.getBoolean(KEY_NOTIFY_ARRIVAL, false);
         boolean shareLocation = preferences.getBoolean(KEY_SHARE_LOCATION, false);
         boolean travellingMode = preferences.getBoolean(KEY_TRAVELLING_MODE, false);
-        Log.d("FlowLogs", "Service  : alarmSet "+alarmSet+", notifyArrival "+notifyArrival+", shareLocation "+shareLocation+", travellingMode :"+travellingMode);
+        Log.d("FlowLogs", "Service  : alarmSet " + alarmSet + ", notifyArrival " + notifyArrival + ", shareLocation " + shareLocation + ", travellingMode :" + travellingMode);
         if (!alarmSet && !notifyArrival && !shareLocation && !travellingMode)
         {
 

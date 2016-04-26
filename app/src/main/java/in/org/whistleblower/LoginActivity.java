@@ -34,10 +34,9 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
 import in.org.whistleblower.gcm.RegistrationIntentService;
-import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.interfaces.ConnectivityListener;
+import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.MiscUtil;
-import in.org.whistleblower.utilities.NavigationUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener, ViewPager.OnPageChangeListener, ConnectivityListener
@@ -320,7 +319,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             if (result.isSuccess())
             {
                 GoogleSignInAccount acct = result.getSignInAccount();
-                if (NavigationUtil.isGoogleServicesOk(LoginActivity.this))
+                if (MiscUtil.isGoogleServicesOk(LoginActivity.this))
                 {
                     Uri photo_url = acct.getPhotoUrl();
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);

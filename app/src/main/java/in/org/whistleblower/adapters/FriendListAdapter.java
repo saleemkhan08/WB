@@ -176,7 +176,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
             addFriendButton = (Button) itemView.findViewById(R.id.addFriendButton);
             removeFriendButton = (Button) itemView.findViewById(R.id.removeFriendButton);
             suggestionsLabelView = itemView.findViewById(R.id.suggestionsLabel);
-            userRowView = itemView.findViewById(R.id.userRow);
+            userRowView = itemView.findViewById(R.id.placeContent);
             profilePicView = (ImageView) itemView.findViewById(R.id.profilePic);
             usernameView = (TextView) itemView.findViewById(R.id.username);
         }

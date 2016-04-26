@@ -1,8 +1,10 @@
 package in.org.whistleblower.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -10,18 +12,23 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,11 +53,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import butterknife.Bind;
+import butterknife.BindColor;
+import butterknife.ButterKnife;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.actions.Image;
 import in.org.whistleblower.asynctasks.GeoCoderTask;
+import in.org.whistleblower.asynctasks.GetNearByPlaces;
 import in.org.whistleblower.interfaces.GeoCodeListener;
 import in.org.whistleblower.interfaces.LocationChangeListener;
 import in.org.whistleblower.interfaces.PlacesResultListener;
+import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -67,9 +85,18 @@ public class MapFragment extends SupportMapFragment implements
         GoogleMap.OnCameraChangeListener
 {
 
+    public static final String SHOW_FAV_PLACE = "showFavPlace";
+    public static final String SHOW_ISSUE = "showIssue";
+    public static final String HANDLE_ACTION = "handleAction";
+
+
+    private static final String HOME = "Home";
     private View mOriginalContentView;
     private int searchBarMargin;
-    private boolean isSubmitButtonShown;
+    public boolean isSubmitButtonShown;
+    String placeType;
+    int placeTypeIndex;
+    private FavPlaces mFavPlace = new FavPlaces();
     public static final String LATITUDE = "LATITUDE";
     public static final String LONGITUDE = "LONGITUDE";
     public static final String ZOOM = "ZOOM";
@@ -85,48 +112,90 @@ public class MapFragment extends SupportMapFragment implements
     public static final String ANIMATE = "ANIMATE";
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
     private static final String MY_LOC = "MY_LOC";
-    private static final String ACCURACY = "ACCURACY";
+    public static final String ACCURACY = "ACCURACY";
     private Map<String, Marker> markerMap = new HashMap<>();
     private Map<String, Circle> circleMap = new HashMap<>();
     private GoogleMap mGoogleMap;
 
     AppCompatActivity mActivity;
+
+    @Inject
     static SharedPreferences preferences;
-    private View mSubmitButton;
-    private ImageView searchIcon;
+
+
     private String action;
-    ViewGroup map_fab_buttons;
-    RelativeLayout searchBar;
-    private FloatingActionButton buttonMyLoc;
     private static boolean mTravelModeOn;
-    int travelModeColor, normalModeColor;
+    @BindColor(R.color.travel_mode)
+    int travelModeColor;;
+
+    @BindColor(R.color.colorAccent)
+    int normalModeColor;
     Bundle bundle;
-    private Location mCurrentLocation;
-    private AppBarLayout mToolbar;
-    private TextView searchText;
-    private ProgressBar searchProgress;
+
+
+    private int mRadius;
+
+    //Injected Using Butter Knife
+
+    @Bind(R.id.map_fab_buttons)
+    ViewGroup map_fab_buttons;
+
+    @Bind(R.id.searchBar)
+    RelativeLayout searchBar;
+
+    @Bind(R.id.my_loc)
+    FloatingActionButton buttonMyLoc;
+
+    @Bind(R.id.submitButton)
+    View mSubmitButton;
+
+    @Bind(R.id.appBarLayout)
+    AppBarLayout mToolbar;
+
+    @Bind(R.id.hoverPlaceName)
+    TextView searchText;
+
+    @Bind(R.id.searchProgress)
+    ProgressBar searchProgress;
+
+    @Bind(R.id.radiusSeekBarValueWrapper)
+    View radiusSeekBarValueWrapper;
+
+    @Bind(R.id.radiusSeekBarInnerWrapper)
+    ViewGroup radiusSeekBarInnerWrapper;
+
+    @Bind(R.id.radiusSeekBar)
+    SeekBar radiusSeekBar;
+
+    @Bind(R.id.radiusSeekBarValue)
+    TextView radiusSeekBarValue;
+
+    @Bind(R.id.select_location)
+    View select_location;
+
+//---------------------------------------------------------
+
+    @Bind(R.id.searchIcon)
+    ImageView searchIcon;
+
+    @Nullable
+    @Bind(R.id.favPlaceTypeSelector)
+    ViewGroup favPlaceTypeSelector;
+
 
     LocationTrackingService mLocationTrackingService;
     boolean isLocationServiceBound = false;
     private boolean isShowingMyLocation;
     private boolean isMapMovedManually;
+
     private static int retryAttemptsCount;
     private GeoCoderTask mGeoCoderTask;
-    private LatLng mGeoCodeLatLng;
-    //Flow #1
-    //Start and bind service
-    //Goto last know location
-    //once location is obtained goto obtained location
-    //stop service
+    private LatLng mGeoCodeLatLng, mOnActionDownLatLng;
+    private GetNearByPlaces mGetNearByPlaces;
 
-    //Flow #2
-    //after above flow goto location other than my location
-    //click on my location
-    //Start Service
-    //Goto last know location
-    //once location is obtained goto obtained location
-    //stop service
-
+    private boolean isKm;
+    private float currentZoom;
+    private Issue mIssue;
 
     //Implementation done
     public MapFragment()
@@ -153,44 +222,146 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("FlowLogs", "onActivityCreated");
         setRetainInstance(true);
         mActivity = (AppCompatActivity) getActivity();
+        ButterKnife.bind(this, mActivity);
+        WhistleBlower.getComponent().inject(this);
+
         startLocationTrackingServiceAndBind();
         Log.d("FlowLogs", "Start Service Called");
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        mToolbar = (AppBarLayout) mActivity.findViewById(R.id.appBarLayout);
+        setupRadiusSeekBar();
 
-        travelModeColor = mActivity.getColor(R.color.travel_mode);
-        normalModeColor = mActivity.getColor(R.color.colorAccent);
-
-        map_fab_buttons = (ViewGroup) mActivity.findViewById(R.id.map_fab_buttons);
-        searchBar = (RelativeLayout) mActivity.findViewById(R.id.searchBar);
-
-        searchText = (TextView) mActivity.findViewById(R.id.hoverPlaceName);
-        searchProgress = (ProgressBar) mActivity.findViewById(R.id.searchProgress);
         searchText.setOnClickListener(this);
-
-        searchIcon = (ImageView) mActivity.findViewById(R.id.searchIcon);
         searchIcon.setOnClickListener(this);
-
-        mSubmitButton = mActivity.findViewById(R.id.submitButton);
         mSubmitButton.setOnClickListener(this);
 
-        buttonMyLoc = (FloatingActionButton) mActivity.findViewById(R.id.my_loc);
         setUpMyLocationButton();
     }
 
-    public void showSubmitButtonAndHideSearchIcon(int drawableId)
+    private void setupRadiusSeekBar()
     {
+        radiusSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                setRadiusSeekBarValue();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+
+            }
+        });
+
+        radiusSeekBarValueWrapper.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                PopupMenu popup = new PopupMenu(mActivity, v);
+                popup.getMenuInflater()
+                        .inflate(R.menu.radius_options, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                {
+                    public boolean onMenuItemClick(MenuItem item)
+                    {
+                        switch (item.getItemId())
+                        {
+                            case R.id.radius_km:
+                                isKm = true;
+                                break;
+                            case R.id.radius_mts:
+                                isKm = false;
+                                break;
+                        }
+                        setRadiusSeekBarValue();
+                        return true;
+                    }
+                });
+                popup.show();
+            }
+        });
+    }
+
+    private void setRadiusSeekBarValue()
+    {
+        if (isKm)
+        {
+            radiusSeekBarValue.setText((radiusSeekBar.getProgress() + 1) + "km");
+        }
+        else
+        {
+            radiusSeekBarValue.setText((radiusSeekBar.getProgress() + 1) * 100 + "m");
+        }
+        Log.d("hijk", "Circle : setRadiusSeekBarValue");
+        drawCircleOnMap();
+    }
+
+    public void showSubmitButtonAndHideSearchIcon()
+    {
+        int drawableId;
+        setupRadiusSeekBar();
+        switch (action)
+        {
+            case FABUtil.ADD_FAV_PLACE:
+                drawableId = R.mipmap.fav_holo;
+                break;
+            case FABUtil.ADD_ISSUE:
+                drawableId = R.drawable.bullhorn_primary_dark;
+                break;
+            case FABUtil.SET_ALARM:
+                drawableId = R.mipmap.bell_holo;
+                break;
+            default:
+                drawableId = R.drawable.search_primary_dark;
+                break;
+        }
         mSubmitButton.setVisibility(View.VISIBLE);
         isSubmitButtonShown = true;
         searchIcon.setImageDrawable(mActivity.getDrawable(drawableId));
+
+        TransitionManager.beginDelayedTransition(map_fab_buttons);
+
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) map_fab_buttons.getLayoutParams();
+        layoutParams.bottomMargin = MiscUtil.dp(mActivity, 60);
+        map_fab_buttons.setLayoutParams(layoutParams);
+
+        radiusSeekBarInnerWrapper.setVisibility(View.GONE);
+        TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
+        radiusSeekBarInnerWrapper.setVisibility(View.VISIBLE);
+
+        Log.d("hjki", "radius : VISIBLE");
+        drawCircleOnMap();
     }
 
     public void hideSubmitButtonAndShowSearchIcon()
     {
+        if (action.equals(FABUtil.ADD_FAV_PLACE))
+        {
+            favPlaceTypeSelector.setVisibility(View.VISIBLE);
+            TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+            favPlaceTypeSelector.setVisibility(View.GONE);
+        }
         isSubmitButtonShown = false;
-        mSubmitButton.setVisibility(View.INVISIBLE);
         searchIcon.setImageDrawable(mActivity.getDrawable(R.drawable.search_primary_dark));
+        mSubmitButton.setVisibility(View.INVISIBLE);
+        TransitionManager.beginDelayedTransition(map_fab_buttons);
+
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) map_fab_buttons.getLayoutParams();
+        layoutParams.bottomMargin = MiscUtil.dp(mActivity, 0);
+        map_fab_buttons.setLayoutParams(layoutParams);
+
+        TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
+        radiusSeekBarInnerWrapper.setVisibility(View.GONE);
+        removeAccuracyCircle(action);
+        Log.d("hjki", "radius : Gone");
     }
 
     //Implementation done
@@ -202,22 +373,48 @@ public class MapFragment extends SupportMapFragment implements
         reloadMapParameters(bundle);
     }
 
+
     //Implementation done
     public void reloadMapParameters(Bundle bundle)
     {
         if (bundle != null)
         {
             Set<String> keys = bundle.keySet();
-            if (keys.contains(LATITUDE) && keys.contains(LONGITUDE))
+            if (keys.contains(SHOW_FAV_PLACE))
             {
-                mCurrentLocation.setLatitude(Double.parseDouble(bundle.getString(LATITUDE)));
-                mCurrentLocation.setLongitude(Double.parseDouble(bundle.getString(LONGITUDE)));
-                mCurrentLocation.setAccuracy(bundle.getFloat(ACCURACY));
+                mFavPlace = bundle.getParcelable(SHOW_FAV_PLACE);
+                double lat = Double.parseDouble(mFavPlace.latitude);
+                double lng = Double.parseDouble(mFavPlace.longitude);
+                Log.d("latLng", mFavPlace.latitude + " = " + lat + "\n" + mFavPlace.longitude + " = " + lng);
+                mGeoCodeLatLng = new LatLng(lat, lng);
+                mRadius = mFavPlace.radius;
                 isShowingMyLocation = false;
             }
-            if (keys.contains(FABUtil.ACTION))
+            if (keys.contains(SHOW_ISSUE))
             {
+                mIssue = bundle.getParcelable(SHOW_FAV_PLACE);
+                double lat = Double.parseDouble(mIssue.latitude);
+                double lng = Double.parseDouble(mIssue.longitude);
+                Log.d("latLng", mIssue.latitude + " = " + lat + "\n" + mIssue.longitude + " = " + lng);
+                mGeoCodeLatLng = new LatLng(lat, lng);
+                mRadius = mIssue.radius;
+                isShowingMyLocation = false;
+            }
+            if (keys.contains(HANDLE_ACTION))
+            {
+                if (action != null)
+                {
+                    removeAccuracyCircle(action);
+                }
                 action = bundle.getString(FABUtil.ACTION);
+                placeType = HOME;
+                showSubmitButtonAndHideSearchIcon();
+                if (action.equals(FABUtil.ADD_FAV_PLACE))
+                {
+                    favPlaceTypeSelector.setVisibility(View.GONE);
+                    TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+                    favPlaceTypeSelector.setVisibility(View.VISIBLE);
+                }
             }
         }
         else
@@ -232,6 +429,7 @@ public class MapFragment extends SupportMapFragment implements
         super.onResume();
         searchText.clearFocus();
         map_fab_buttons.setVisibility(View.VISIBLE);
+        select_location.setVisibility(View.VISIBLE);
         searchBar.setVisibility(View.VISIBLE);//
         mGoogleMap = getMap();
         if (bundle != null)
@@ -241,7 +439,6 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             Log.d("FlowLogs", "onResume : gotoMyLocation");
-            Toast.makeText(mActivity, "onResume isShowingMyLocation : " + isShowingMyLocation, Toast.LENGTH_SHORT).show();
             gotoMyLocation(false);
         }
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -266,6 +463,9 @@ public class MapFragment extends SupportMapFragment implements
         mLocationTrackingService.unRegisterLocationChangedListener();
         map_fab_buttons.setVisibility(View.GONE);
         searchBar.setVisibility(View.GONE);
+        select_location.setVisibility(View.GONE);
+        cancelAsyncTask(mGeoCoderTask);
+        cancelAsyncTask(mGetNearByPlaces);
     }
 
     public void setUpMyLocationButton()
@@ -363,7 +563,28 @@ public class MapFragment extends SupportMapFragment implements
             Log.d("FlowLogs", "bindService");
             mActivity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
+    }
 
+    private void setAlarm()
+    {
+        preferences.edit()
+                .putBoolean(LocationTrackingService.KEY_ALARM_SET, true)
+                .commit();
+
+        Log.d("FlowLogs", "setAlarm");
+        Intent intent = new Intent(mActivity, LocationTrackingService.class);
+        intent.putExtra(LocationTrackingService.KEY_ALARM_SET, true);
+        intent.putExtra(LocationTrackingService.KEY_LATLNG, mGeoCodeLatLng);
+        intent.putExtra(LocationTrackingService.KEY_PLACE_NAME, searchText.getText());
+
+        mActivity.startService(intent);
+        Log.d("FlowLogs", "isLocationServiceBound : " + isLocationServiceBound);
+        if (!isLocationServiceBound)
+        {
+            Log.d("FlowLogs", "bindService");
+            mActivity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+        toast("Alarm Set : \n" + searchText.getText());
     }
 
     public void gotoCurrentPos(boolean animate)
@@ -400,10 +621,10 @@ public class MapFragment extends SupportMapFragment implements
 
     public static float getZoom()
     {
-        float zoom = preferences.getFloat(ZOOM, 17);
+        float zoom = preferences.getFloat(ZOOM, 16);
         if (zoom < 3)
         {
-            zoom = 17;
+            zoom = 16;
         }
         return zoom;
     }
@@ -419,7 +640,7 @@ public class MapFragment extends SupportMapFragment implements
         if (mGoogleMap != null)
         {
             showMyLocDot(getLatLng(), MY_LOC);
-            showAccuracyCircle(getLatLng(), getAccuracy(), MY_LOC);
+            showAccuracyCircle(getLatLng(), (int) getAccuracy(), MY_LOC);
             if (isShowingMyLocation)
             {
                 setCamera(CameraUpdateFactory.newCameraPosition(getLastKnownPos()), animate);
@@ -468,10 +689,9 @@ public class MapFragment extends SupportMapFragment implements
     private void moveMap(boolean animate)
     {
         CameraUpdate update;
-        if (mCurrentLocation != null)
+        if (mGeoCodeLatLng != null)
         {
-            update = CameraUpdateFactory.newCameraPosition(
-                    new CameraPosition(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), getZoom(), getTilt(), getBearing()));
+            update = CameraUpdateFactory.newCameraPosition(new CameraPosition(mGeoCodeLatLng, getZoom(), getTilt(), getBearing()));
         }
         else
         {
@@ -500,7 +720,7 @@ public class MapFragment extends SupportMapFragment implements
         {
             switch (v.getId())
             {
-//              case R.id.hoverPlaceName:
+                case R.id.hoverPlaceName:
                 case R.id.searchIcon:
                     try
                     {
@@ -513,14 +733,12 @@ public class MapFragment extends SupportMapFragment implements
                     }
                     break;
                 case R.id.submitButton:
-                    /*if (mGoogleMap != null)
+                    if (mGoogleMap != null)
                     {
-                        LatLng latLng = mGoogleMap.getCameraPosition().target;
                         switch (action)
                         {
                             case FABUtil.SET_ALARM:
-                                //mActivity.startLocationTrackingServiceAndBind(new Intent(mActivity, LocationTrackingService.class));
-                                //Toast.makeText(mActivity, "Location : " + mLocationTrackingService.getCurrentLocation(), Toast.LENGTH_SHORT).show();
+                                setAlarm();
                                 break;
 
                             case FABUtil.ADD_ISSUE:
@@ -528,14 +746,12 @@ public class MapFragment extends SupportMapFragment implements
                                 break;
 
                             case FABUtil.ADD_FAV_PLACE:
-                                Intent intent = new Intent(mActivity, FavoritePlaceEditActivity.class);
-                                intent.putExtra("LatLang", latLng);
-                                startActivity(intent);
+                                addFavPlace();
                                 break;
                         }
-                        hideSubmitButtonAndShowSearchIcon();
-                    }*/
-                    Toast.makeText(mActivity, "Submit : " + searchText.getText(), Toast.LENGTH_SHORT).show();
+                    }
+                    favPlaceTypeSelector.setVisibility(View.GONE);
+                    hideSubmitButtonAndShowSearchIcon();
                     break;
             }
         }
@@ -543,6 +759,43 @@ public class MapFragment extends SupportMapFragment implements
         {
             Toast.makeText(mActivity, "No Internet!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void addFavPlace()
+    {
+        mFavPlace.radius = (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
+        mFavPlace.addressLine = searchText.getText().toString();
+        mFavPlace.latitude = mGeoCodeLatLng.latitude + "";
+        mFavPlace.longitude = mGeoCodeLatLng.longitude + "";
+        mFavPlace.placeTypeIndex = placeTypeIndex;
+        mFavPlace.placeType = placeType;
+
+        Toast.makeText(mActivity, mFavPlace.addressLine + "\n"
+                + mFavPlace.placeTypeIndex + "\n"
+                + mFavPlace.placeType + "\n"
+                + mFavPlace.latitude + "\n"
+                + mFavPlace.longitude + "\n"
+                + mFavPlace.radius, Toast.LENGTH_SHORT).show();
+
+        Log.d("latLng", mFavPlace.addressLine + "\n"
+                + mFavPlace.placeTypeIndex + "\n"
+                + mFavPlace.placeType + "\n"
+                + mFavPlace.latitude + "\n"
+                + mFavPlace.longitude + "\n"
+                + mFavPlace.radius);
+
+        String result = new FavPlacesDao(mActivity).insert(mFavPlace);
+        toast(result);
+        hideSubmitButtonAndShowSearchIcon();
+    }
+
+    private void toast(String str)
+    {
+        Toast toast = Toast.makeText(mActivity, str, Toast.LENGTH_LONG);
+        ViewGroup view = (ViewGroup) toast.getView();
+        ((TextView) view.getChildAt(0)).setGravity(Gravity.CENTER);
+        toast.setView(view);
+        toast.show();
     }
 
     @Override
@@ -565,12 +818,18 @@ public class MapFragment extends SupportMapFragment implements
         searchBar.setLayoutParams(searchBarLayoutParams);
 
         mToolbar.animate().translationY(0).start();
+
+        if (isSubmitButtonShown && mOnActionDownLatLng.equals(mGeoCodeLatLng))
+        {
+            drawCircleOnMap();
+        }
     }
 
     @Override
     public void onActionDown()
     {
         Slide slide = new Slide();
+        mOnActionDownLatLng = mGeoCodeLatLng;
         TransitionManager.beginDelayedTransition(map_fab_buttons, slide);
         isMapMovedManually = true;
         map_fab_buttons.setVisibility(View.GONE);
@@ -582,12 +841,16 @@ public class MapFragment extends SupportMapFragment implements
         searchBarMargin = searchBarLayoutParams.topMargin;
         searchBarLayoutParams.topMargin = 0;
         searchBar.setLayoutParams(searchBarLayoutParams);
+
+        if (isSubmitButtonShown)
+        {
+            removeAccuracyCircle(action);
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        Toast.makeText(mActivity, "requestCode : " + requestCode, Toast.LENGTH_SHORT).show();
         switch (requestCode)
         {
             case MapFragment.PLACE_AUTOCOMPLETE_REQUEST_CODE:
@@ -595,9 +858,8 @@ public class MapFragment extends SupportMapFragment implements
                 {
                     case Activity.RESULT_OK:
                         Place place = PlaceAutocomplete.getPlace(mActivity, data);
-                        mCurrentLocation.setAccuracy(0);
-                        mCurrentLocation.setLongitude(place.getLatLng().longitude);
-                        mCurrentLocation.setLatitude(place.getLatLng().latitude);
+                        mGeoCodeLatLng = place.getLatLng();
+                        mRadius = 0;
                         gotoCurrentPos(true);
                         isShowingMyLocation = false;
                         searchText.setText(place.getAddress());
@@ -636,7 +898,6 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onLocationChanged(Location location)
     {
-        Toast.makeText(mActivity, "Location : " + location + "\nisShowingMyLocation : " + isShowingMyLocation, Toast.LENGTH_SHORT).show();
         Log.d("FlowLogs", "onLocationChanged : isShowingMyLocation : " + isShowingMyLocation);
         setCameraPosition(location);
         gotoMyLocation(true);
@@ -667,9 +928,21 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
+    void removeAccuracyCircle(String key)
+    {
+        Circle circle = null;
+        if (circleMap.containsKey(key))
+        {
+            circle = circleMap.get(key);
+            circleMap.remove(key);
+            circle.remove();
+        }
+    }
+
     void showAccuracyCircle(LatLng latLng, float accuracy, String key)
     {
         Circle circle = null;
+        Log.d("hijk", "Circle : showAccuracyCircle");
         if (circleMap.containsKey(key))
         {
             circle = circleMap.get(key);
@@ -678,9 +951,13 @@ public class MapFragment extends SupportMapFragment implements
         {
             circle.setCenter(latLng);
             circle.setRadius(accuracy);
+            Log.d("hijk", "Circle : from Map");
         }
         else
         {
+            Log.d("hijk", "Circle : first time");
+            Log.d("hijk", "circleMap : "+circleMap+", mGoogleMap : "+mGoogleMap);
+
             circleMap.put(key, mGoogleMap.addCircle(new CircleOptions()
                     .radius(accuracy)
                     .strokeWidth(2)
@@ -709,6 +986,9 @@ public class MapFragment extends SupportMapFragment implements
     {
         double dist = distFrom(cameraPosition.target.latitude, cameraPosition.target.longitude, getLatLng().latitude, getLatLng().longitude);
         int threshold = 1000;
+        currentZoom = cameraPosition.zoom;
+        mGeoCodeLatLng = cameraPosition.target;
+
         if (isMapMovedManually)
         {
             threshold = 100;
@@ -717,47 +997,138 @@ public class MapFragment extends SupportMapFragment implements
         {
             isShowingMyLocation = false;
         }
-        Toast.makeText(mActivity, "dist : " + dist + ", isShowingMyLocation : " + isShowingMyLocation, Toast.LENGTH_SHORT).show();
-        mGeoCodeLatLng = cameraPosition.target;
 
-        updateLocationInfo();
+
+        if (MiscUtil.isConnected(mActivity))
+        {
+            updateLocationInfo();
+        }
         retryAttemptsCount = 0;
+
+        Log.d("hijk", "Circle : isSubmitButtonShown : " + isSubmitButtonShown);
+        if (isSubmitButtonShown)
+        {
+            drawCircleOnMap();
+        }
+    }
+
+    private void drawCircleOnMap()
+    {
+        int radius = radiusSeekBar.getProgress() + 1;
+        Log.d("hijk", "Circle : radius : " + radius);
+
+        if (isKm)
+        {
+            radius *= 1000;
+        }
+        else
+        {
+            radius *= 100;
+        }
+        Log.d("zoom", "zoom : radius : " + radius);
+        showAccuracyCircle(mGeoCodeLatLng, radius, action);
+        setZoomLevel(radius);
+    }
+
+    private void setZoomLevel(int radius)
+    {
+        double zoom = 16;
+        if (radius < 400)
+        {
+            zoom = 16;
+        }
+        else if (radius < 600)
+        {
+            zoom = 15.5;
+        }
+        else if (radius < 800)
+        {
+            zoom = 15;
+        }
+        else if (radius < 1000)
+        {
+            zoom = 14.5;
+        }
+        else if (radius < 2000)
+        {
+            zoom = 14;
+        }
+        else if (radius < 3000)
+        {
+            zoom = 13;
+        }
+        else if (radius < 5000)
+        {
+            zoom = 12.5;
+        }
+        else if (radius < 6000)
+        {
+            zoom = 12;
+        }
+        else if (radius < 8000)
+        {
+            zoom = 11.5;
+        }
+        else if (radius <= 10000)
+        {
+            zoom = 11;
+        }
+
+        if (currentZoom != zoom)
+        {
+            if (mGoogleMap != null && mGeoCodeLatLng != null)
+            {
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mGeoCodeLatLng, (float) zoom));
+            }
+        }
     }
 
     void updateLocationInfo()
     {
         showSearchProgress();
-        if(mGeoCoderTask != null)
+        if (mGeoCoderTask != null)
         {
-            AsyncTask.Status status = mGeoCoderTask.getStatus();
-            if( status == AsyncTask.Status.RUNNING || status == AsyncTask.Status.PENDING)
-            {
-                mGeoCoderTask.cancel(true);
-            }
+            cancelAsyncTask(mGeoCoderTask);
         }
         mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
         mGeoCoderTask.execute(retryAttemptsCount++);
     }
 
+    private void cancelAsyncTask(AsyncTask task)
+    {
+        if (task != null)
+        {
+            AsyncTask.Status status = task.getStatus();
+            if (status == AsyncTask.Status.RUNNING || status == AsyncTask.Status.PENDING)
+            {
+                task.cancel(true);
+            }
+        }
+    }
+
+
     @Override
     public void onAddressObtained(String result)
     {
         hideSearchProgress();
-        if(result == null || "".equals(result))
+        if (result == null)
         {
             searchText.setText("Unknown Place...");
         }
-        else
+        else if (result != null)
         {
             searchText.setText(result);
-
+        }
+        else
+        {
+            searchText.setText("No Internet...");
         }
     }
 
     void showSearchProgress()
     {
         searchProgress.setVisibility(View.VISIBLE);
-        if(isSubmitButtonShown)
+        if (isSubmitButtonShown)
         {
             mSubmitButton.setVisibility(View.INVISIBLE);
         }
@@ -766,19 +1137,21 @@ public class MapFragment extends SupportMapFragment implements
     private void hideSearchProgress()
     {
         searchProgress.setVisibility(View.GONE);
-        if(isSubmitButtonShown)
+        if (isSubmitButtonShown)
         {
             mSubmitButton.setVisibility(View.VISIBLE);
         }
     }
+
     @Override
     public void onGeoCodingFailed()
     {
         hideSearchProgress();
-        if(retryAttemptsCount < 10)
+        if (retryAttemptsCount < 10)
         {
             updateLocationInfo();
-        }else
+        }
+        else
         {
             onAddressObtained(null);
         }
@@ -789,5 +1162,152 @@ public class MapFragment extends SupportMapFragment implements
     {
         hideSearchProgress();
         retryAttemptsCount = 0;
+    }
+
+    public void setFavPlaceType(View view)
+    {
+        String[] favPlaceTypeName = mActivity.getResources().getStringArray(R.array.fav_place_type);
+        /*
+        <item>Home</item>
+        <item>Friend's Place</item>
+        <item>Work Place</item>
+        <item>School / College</item>
+        <item>Shopping Mall</item>
+        <item>Cinema Hall</item>
+        <item>Library</item>
+        <item>Play Ground</item>
+        <item>Hospital</item>
+        <item>Jogging Place</item>
+        <item>Gym</item>
+        <item>Restaurant</item>
+        <item>Coffee Shop</item>
+        <item>Pub</item>
+        <item>Others</item>
+        */
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_home)).setIcon(R.mipmap.home_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_friendsPlace)).setIcon(R.mipmap.friends_place_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_work)).setIcon(R.mipmap.work_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_college)).setIcon(R.mipmap.school_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_shopping_place)).setIcon(R.mipmap.shopping_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_movie)).setIcon(R.mipmap.movie_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_library)).setIcon(R.mipmap.library_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_play_ground)).setIcon(R.mipmap.play_ground_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_hospital)).setIcon(R.mipmap.hospital_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_jogging)).setIcon(R.mipmap.jogging_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_gym)).setIcon(R.mipmap.gym_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_hotel)).setIcon(R.mipmap.hotel_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_coffee_shop)).setIcon(R.mipmap.coffee_shop_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_bar)).setIcon(R.mipmap.bar_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_others)).setIcon(R.mipmap.others_gray);
+
+        boolean isOther = false;
+
+        Log.d("Tracking","placeTypeIndex : "+placeTypeIndex);
+        switch (view.getId())
+        {
+            case R.id.fav_home:
+                ((FloatingActionButton) view).setIcon(R.mipmap.home_accent);
+                placeTypeIndex = 0;
+                break;
+            case R.id.fav_friendsPlace:
+                ((FloatingActionButton) view).setIcon(R.mipmap.friends_place_accent);
+                placeTypeIndex = 1;
+                break;
+            case R.id.fav_work:
+                ((FloatingActionButton) view).setIcon(R.mipmap.work_accent);
+                placeTypeIndex = 2;
+                break;
+            case R.id.fav_college:
+                ((FloatingActionButton) view).setIcon(R.mipmap.school_accent);
+                placeTypeIndex = 3;
+                break;
+            case R.id.fav_shopping_place:
+                ((FloatingActionButton) view).setIcon(R.mipmap.shopping_accent);
+                placeTypeIndex = 4;
+                break;
+            case R.id.fav_movie:
+                ((FloatingActionButton) view).setIcon(R.mipmap.movie_accent);
+                placeTypeIndex = 5;
+                break;
+            case R.id.fav_library:
+                ((FloatingActionButton) view).setIcon(R.mipmap.library_accent);
+                placeTypeIndex = 6;
+                break;
+            case R.id.fav_play_ground:
+                ((FloatingActionButton) view).setIcon(R.mipmap.play_ground_accent);
+                placeTypeIndex = 7;
+                break;
+            case R.id.fav_hospital:
+                ((FloatingActionButton) view).setIcon(R.mipmap.hospital_accent);
+                placeTypeIndex = 8;
+                break;
+            case R.id.fav_jogging:
+                ((FloatingActionButton) view).setIcon(R.mipmap.jogging_accent);
+                placeTypeIndex = 9;
+                break;
+            case R.id.fav_gym:
+                ((FloatingActionButton) view).setIcon(R.mipmap.gym_accent);
+                placeTypeIndex = 10;
+                break;
+            case R.id.fav_hotel:
+                ((FloatingActionButton) view).setIcon(R.mipmap.hotel_accent);
+                placeTypeIndex = 11;
+                break;
+            case R.id.fav_coffee_shop:
+                ((FloatingActionButton) view).setIcon(R.mipmap.coffee_shop_accent);
+                placeTypeIndex = 12;
+                break;
+            case R.id.fav_bar:
+                ((FloatingActionButton) view).setIcon(R.mipmap.bar_accent);
+                placeTypeIndex = 13;
+                break;
+            case R.id.fav_others:
+                ((FloatingActionButton) view).setIcon(R.mipmap.others_accent);
+                isOther = true;
+                placeTypeIndex = 14;
+                showFavPlaceNameEditDialog();
+                break;
+        }
+
+        placeType = favPlaceTypeName[placeTypeIndex];
+        Log.d("Tracking","Index : "+placeTypeIndex);
+        Log.d("Tracking","Place Type : "+placeType);
+        if (!isOther)
+        {
+            Toast.makeText(mActivity, placeType, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showFavPlaceNameEditDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setTitle("Title");
+
+        LayoutInflater inflater = mActivity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.alert_label_editor, null);
+        builder.setView(dialogView);
+        final EditText input = (EditText) dialogView.findViewById(R.id.favPlaceEditor);
+        input.setText(placeType);
+        // Set up the buttons
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                placeType = input.getText().toString();
+                if (placeType == null || placeType.trim().isEmpty())
+                {
+                    placeType = "Others";
+                }
+                Toast.makeText(mActivity, placeType, Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
     }
 }

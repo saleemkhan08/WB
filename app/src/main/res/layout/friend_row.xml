@@ -11,7 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/userRow">
+        android:id="@+id/placeContent">
 
         <ImageView
             android:id="@+id/profilePic"
@@ -59,7 +59,7 @@
         android:layout_height="1dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/userRow"
+        android:layout_below="@+id/placeContent"
         android:layout_marginTop="10dp"
         android:background="@color/divider">
     </View>
