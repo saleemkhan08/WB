@@ -30,7 +30,6 @@
         android:layout_height="match_parent">
 
         <include layout="@layout/content_main"/>
-
         <RelativeLayout
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
@@ -192,6 +191,7 @@
                 android:layout_height="wrap_content"
                 app:fab_title="Add Favorite Place"
                 fab:fab_colorNormal="@color/white"
+                app:fab_icon="@mipmap/star_icon_accent"
                 fab:fab_colorPressed="@color/white_pressed"
                 fab:fab_size="mini"/>
 
@@ -202,7 +202,7 @@
                 app:fab_title="Add Issue"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
-                fab:fab_icon="@drawable/bullhorn"
+                app:fab_icon="@drawable/bullhorn"
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
@@ -212,6 +212,7 @@
                 app:fab_title="Add Location Alarm"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
+                app:fab_icon="@mipmap/bell_icon_accent"
                 fab:fab_size="mini"/>
 
         </com.getbase.floatingactionbutton.FloatingActionsMenu>

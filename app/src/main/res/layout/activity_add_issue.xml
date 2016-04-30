@@ -31,17 +31,8 @@
         android:elevation="20dp"
         android:orientation="horizontal"
         android:padding="13dp"
-        android:weightSum="5"
+        android:weightSum="4"
         >
-
-        <ImageView
-            android:id="@+id/radius"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:src="@drawable/radius_accent"
-            />
-
         <ImageView
             android:id="@+id/zone"
             android:layout_width="0dp"
@@ -52,7 +43,7 @@
 
         <ImageView
             android:id="@+id/anonymous"
-            android:src="@drawable/anonymous"
+            android:src="@mipmap/anonymous"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"/>

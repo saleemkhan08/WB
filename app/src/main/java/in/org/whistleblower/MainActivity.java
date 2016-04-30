@@ -21,7 +21,6 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import javax.inject.Inject;
 
-import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.utilities.FABUtil;
@@ -33,9 +32,7 @@ public class MainActivity extends AppCompatActivity
 {
     MiscUtil mUtil;
     FloatingActionsMenu fabMenu;
-
     NavigationUtil mNavigationUtil;
-
     FABUtil mFabUtil;
 
     @Inject
@@ -59,7 +56,6 @@ public class MainActivity extends AppCompatActivity
         {
             setContentView(R.layout.activity_main);
             WhistleBlower.getComponent().inject(this);
-
             //preferences = PreferenceManager.getDefaultSharedPreferences(this);
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
@@ -74,13 +70,11 @@ public class MainActivity extends AppCompatActivity
             String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
             if (dpUrl.isEmpty())
             {
-                profilePic.setBackground(mUtil.getIcon(FontAwesomeIcon.ANONYMOUS, R.color.colorPrimary));
-                profilePic.setImageResource(android.R.color.transparent);
+                profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
             }
             else
             {
                 imageUtil.displayImage(dpUrl, profilePic, true);
-                profilePic.setBackgroundColor(getResources().getColor(android.R.color.transparent, null));
             }
 
 
@@ -141,8 +135,17 @@ public class MainActivity extends AppCompatActivity
     protected void onStop()
     {
         super.onStop();
-        mNavigationUtil.unregisterBus();
         fabMenu.collapse();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        if(mNavigationUtil != null)
+        {
+            mNavigationUtil.unregisterBus();
+        }
     }
 
     @Override

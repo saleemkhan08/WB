@@ -5,10 +5,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -23,12 +21,12 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 
+import in.org.whistleblower.AddIssueActivity;
 import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
-import in.org.whistleblower.fragments.MapFragment;
-import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.interfaces.ResultListener;
+import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
 
 public class AddIssueService extends Service
 {
@@ -40,13 +38,12 @@ public class AddIssueService extends Service
     public static final String RETRY = "RETRY";
     public static final String CANCEL = "CANCEL";
     PendingIntent cancelPendingIntent, retryPendingIntent;
-    String mImageUri, mAreaType, mDescription;
     NotificationCompat.Builder mBuilder;
     //RemoteViews mRemoteViews;
     long totalSize;
     Context mContext;
-    SharedPreferences preferences;
     UploadAsyncTask uploadAsyncTask;
+    Issue mIssue;
 
     public AddIssueService()
     {
@@ -62,11 +59,9 @@ public class AddIssueService extends Service
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         mContext = this;
-        preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        //Obtaining data from intent
-        mImageUri = intent.getStringExtra(IssuesDao.IMAGE_LOCAL_URI);
-        mAreaType = intent.getStringExtra(IssuesDao.AREA_TYPE);
-        mDescription = intent.getStringExtra(IssuesDao.DESCRIPTION);
+        mIssue = new Issue();
+
+        mIssue = intent.getParcelableExtra(AddIssueActivity.ISSUE_DATA);
 
         //Creating Cancel Upload Intent
         Intent cancelIntent = new Intent(mContext, StopRetryReceiver.class);
@@ -75,10 +70,9 @@ public class AddIssueService extends Service
 
         //Creating Retry Upload Intent
         Intent retryIntent = new Intent(mContext, StopRetryReceiver.class);
-        retryIntent.putExtra(IssuesDao.IMAGE_LOCAL_URI, mImageUri);
-        retryIntent.putExtra(IssuesDao.AREA_TYPE, mAreaType);
-        retryIntent.putExtra(IssuesDao.DESCRIPTION, mDescription);
+        retryIntent.putExtra(AddIssueActivity.ISSUE_DATA, mIssue);
         retryIntent.putExtra(RETRY, true);
+
         retryPendingIntent = PendingIntent.getBroadcast(mContext, (int) System.currentTimeMillis(), retryIntent, 0);
         mBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.bullhorn)
@@ -168,30 +162,21 @@ public class AddIssueService extends Service
                             }
                         });
 
-                boolean anonymous = preferences.getBoolean(IssuesDao.ANONYMOUS, false);
-                String username = preferences.getString(Accounts.NAME, "Anonymous");
-                String userDpURL = preferences.getString(Accounts.PHOTO_URL, "");
-                if (anonymous)
-                {
-                    userDpURL = "";
-                    username = "Anonymous";
-
-                }
-                File sourceFile = new File(mImageUri);
+                File sourceFile = new File(mIssue.imgUrl);
 
                 //TODO allow multiple file uploading
                 entity.addPart(FILE_NAME, new FileBody(sourceFile));
                 entity.addPart(ResultListener.ACTION, new StringBody(ACTION_ADD_ISSUE));
                 //TODO allow multiple file uploading
                 entity.addPart(IssuesDao.NO_OF_IMAGES, new StringBody("1"));
-                entity.addPart(IssuesDao.USER_ID, new StringBody(preferences.getString(Accounts.GOOGLE_ID, "")));
-                entity.addPart(IssuesDao.USER_DP_URL, new StringBody(userDpURL));
-                entity.addPart(IssuesDao.USERNAME, new StringBody(username));
-                entity.addPart(IssuesDao.DESCRIPTION, new StringBody(mDescription));
-                entity.addPart(IssuesDao.AREA_TYPE, new StringBody(mAreaType));
-                entity.addPart(IssuesDao.RADIUS, new StringBody(preferences.getInt(IssuesDao.RADIUS, 1) + ""));
-                entity.addPart(IssuesDao.LATITUDE, new StringBody("" + preferences.getFloat(MapFragment.LATITUDE, (float) 0)));
-                entity.addPart(IssuesDao.LONGITUDE, new StringBody("" + preferences.getFloat(MapFragment.LONGITUDE, (float) 0)));
+                entity.addPart(IssuesDao.USER_ID, new StringBody(mIssue.userId));
+                entity.addPart(IssuesDao.USER_DP_URL, new StringBody(mIssue.userDpUrl));
+                entity.addPart(IssuesDao.USERNAME, new StringBody(mIssue.username));
+                entity.addPart(IssuesDao.DESCRIPTION, new StringBody(mIssue.description));
+                entity.addPart(IssuesDao.AREA_TYPE, new StringBody(mIssue.areaType));
+                entity.addPart(IssuesDao.RADIUS, new StringBody(mIssue.radius+""));
+                entity.addPart(IssuesDao.LATITUDE, new StringBody(mIssue.latitude));
+                entity.addPart(IssuesDao.LONGITUDE, new StringBody(mIssue.longitude));
 
                 totalSize = entity.getContentLength();
                 Log.d("AddIssueService", "totalSize : " + totalSize);

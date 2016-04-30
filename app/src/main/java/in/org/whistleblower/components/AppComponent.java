@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.adapters.IssueAdapter;
+import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.modules.MiscModule;
@@ -21,4 +22,5 @@ public interface AppComponent
     void inject(FABUtil fabUtil);
     void inject(MainFragment mainFragment);
     void inject(IssueAdapter issueAdapter);
+    void inject(PlaceAdapter placeAdapter);
 }

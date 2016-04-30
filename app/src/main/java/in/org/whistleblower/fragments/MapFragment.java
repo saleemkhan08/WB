@@ -58,6 +58,7 @@ import javax.inject.Inject;
 import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
+import in.org.whistleblower.AddIssueActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.actions.Image;
@@ -91,6 +92,7 @@ public class MapFragment extends SupportMapFragment implements
 
 
     private static final String HOME = "Home";
+    public static final String LATLNG = "LATLNG";
     private View mOriginalContentView;
     private int searchBarMargin;
     public boolean isSubmitButtonShown;
@@ -126,10 +128,13 @@ public class MapFragment extends SupportMapFragment implements
     private String action;
     private static boolean mTravelModeOn;
     @BindColor(R.color.travel_mode)
-    int travelModeColor;;
+    int travelModeColor;
 
     @BindColor(R.color.colorAccent)
-    int normalModeColor;
+    int accentColor;
+
+    @BindColor(R.color.my_location_radius)
+    int radiusColor;
     Bundle bundle;
 
 
@@ -370,6 +375,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         super.onStart();
         bundle = getArguments();
+        Log.d("Action", "onStart : " + bundle);
         reloadMapParameters(bundle);
     }
 
@@ -377,6 +383,7 @@ public class MapFragment extends SupportMapFragment implements
     //Implementation done
     public void reloadMapParameters(Bundle bundle)
     {
+        Log.d("Action", "reloadMapParameters : " + bundle);
         if (bundle != null)
         {
             Set<String> keys = bundle.keySet();
@@ -392,7 +399,7 @@ public class MapFragment extends SupportMapFragment implements
             }
             if (keys.contains(SHOW_ISSUE))
             {
-                mIssue = bundle.getParcelable(SHOW_FAV_PLACE);
+                mIssue = bundle.getParcelable(SHOW_ISSUE);
                 double lat = Double.parseDouble(mIssue.latitude);
                 double lng = Double.parseDouble(mIssue.longitude);
                 Log.d("latLng", mIssue.latitude + " = " + lat + "\n" + mIssue.longitude + " = " + lng);
@@ -406,7 +413,7 @@ public class MapFragment extends SupportMapFragment implements
                 {
                     removeAccuracyCircle(action);
                 }
-                action = bundle.getString(FABUtil.ACTION);
+                action = bundle.getString(HANDLE_ACTION);
                 placeType = HOME;
                 showSubmitButtonAndHideSearchIcon();
                 if (action.equals(FABUtil.ADD_FAV_PLACE))
@@ -530,7 +537,7 @@ public class MapFragment extends SupportMapFragment implements
         }
         else
         {
-            buttonMyLoc.setColorNormal(normalModeColor);
+            buttonMyLoc.setColorNormal(accentColor);
             buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
         }
     }
@@ -742,7 +749,13 @@ public class MapFragment extends SupportMapFragment implements
                                 break;
 
                             case FABUtil.ADD_ISSUE:
-                                Image.captureImage(mActivity);
+
+                                Intent intent = new Intent(mActivity, AddIssueActivity.class);
+                                intent.putExtra(LATLNG, mGeoCodeLatLng);
+                                intent.putExtra(ADDRESS, searchText.getText().toString());
+                                intent.putExtra(RADIUS, mRadius);
+                                startActivity(intent);
+
                                 break;
 
                             case FABUtil.ADD_FAV_PLACE:
@@ -769,13 +782,6 @@ public class MapFragment extends SupportMapFragment implements
         mFavPlace.longitude = mGeoCodeLatLng.longitude + "";
         mFavPlace.placeTypeIndex = placeTypeIndex;
         mFavPlace.placeType = placeType;
-
-        Toast.makeText(mActivity, mFavPlace.addressLine + "\n"
-                + mFavPlace.placeTypeIndex + "\n"
-                + mFavPlace.placeType + "\n"
-                + mFavPlace.latitude + "\n"
-                + mFavPlace.longitude + "\n"
-                + mFavPlace.radius, Toast.LENGTH_SHORT).show();
 
         Log.d("latLng", mFavPlace.addressLine + "\n"
                 + mFavPlace.placeTypeIndex + "\n"
@@ -851,13 +857,14 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        Log.d("Activity Result", "requestCode : "+requestCode+", Image : "+Image.CAPTURE_IMAGE_REQUEST);
         switch (requestCode)
         {
-            case MapFragment.PLACE_AUTOCOMPLETE_REQUEST_CODE:
+            case PLACE_AUTOCOMPLETE_REQUEST_CODE:
+                Place place = PlaceAutocomplete.getPlace(mActivity, data);
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
-                        Place place = PlaceAutocomplete.getPlace(mActivity, data);
                         mGeoCodeLatLng = place.getLatLng();
                         mRadius = 0;
                         gotoCurrentPos(true);
@@ -865,12 +872,26 @@ public class MapFragment extends SupportMapFragment implements
                         searchText.setText(place.getAddress());
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
-                        //TODO Status status = PlaceAutocomplete.getStatus(mActivity, data);
+                        Toast.makeText(mActivity, "Unknown Location", Toast.LENGTH_SHORT).show();
                         break;
                     case Activity.RESULT_CANCELED:
                         break;
                 }
                 break;
+            case Image.CAPTURE_IMAGE_REQUEST:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                        Image.launchIssueEditor(mActivity, true);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(mActivity, "Cancelled image capture", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(mActivity, "Failed to capture image", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
         }
     }
 
@@ -956,13 +977,13 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             Log.d("hijk", "Circle : first time");
-            Log.d("hijk", "circleMap : "+circleMap+", mGoogleMap : "+mGoogleMap);
+            Log.d("hijk", "circleMap : " + circleMap + ", mGoogleMap : " + mGoogleMap);
 
             circleMap.put(key, mGoogleMap.addCircle(new CircleOptions()
                     .radius(accuracy)
                     .strokeWidth(2)
-                    .strokeColor(mActivity.getColor(R.color.colorAccent))
-                    .fillColor(mActivity.getColor(R.color.my_location_radius))
+                    .strokeColor(accentColor)
+                    .fillColor(radiusColor)
                     .center(latLng)));
         }
     }
@@ -1014,20 +1035,20 @@ public class MapFragment extends SupportMapFragment implements
 
     private void drawCircleOnMap()
     {
-        int radius = radiusSeekBar.getProgress() + 1;
-        Log.d("hijk", "Circle : radius : " + radius);
+        mRadius = radiusSeekBar.getProgress() + 1;
+        Log.d("hijk", "Circle : radius : " + mRadius);
 
         if (isKm)
         {
-            radius *= 1000;
+            mRadius *= 1000;
         }
         else
         {
-            radius *= 100;
+            mRadius *= 100;
         }
-        Log.d("zoom", "zoom : radius : " + radius);
-        showAccuracyCircle(mGeoCodeLatLng, radius, action);
-        setZoomLevel(radius);
+        Log.d("zoom", "zoom : radius : " + mRadius);
+        showAccuracyCircle(mGeoCodeLatLng, mRadius, action);
+        setZoomLevel(mRadius);
     }
 
     private void setZoomLevel(int radius)
@@ -1202,7 +1223,7 @@ public class MapFragment extends SupportMapFragment implements
 
         boolean isOther = false;
 
-        Log.d("Tracking","placeTypeIndex : "+placeTypeIndex);
+        Log.d("Tracking", "placeTypeIndex : " + placeTypeIndex);
         switch (view.getId())
         {
             case R.id.fav_home:
@@ -1270,8 +1291,8 @@ public class MapFragment extends SupportMapFragment implements
         }
 
         placeType = favPlaceTypeName[placeTypeIndex];
-        Log.d("Tracking","Index : "+placeTypeIndex);
-        Log.d("Tracking","Place Type : "+placeType);
+        Log.d("Tracking", "Index : " + placeTypeIndex);
+        Log.d("Tracking", "Place Type : " + placeType);
         if (!isOther)
         {
             Toast.makeText(mActivity, placeType, Toast.LENGTH_SHORT).show();

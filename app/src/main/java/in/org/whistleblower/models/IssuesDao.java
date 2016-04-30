@@ -46,6 +46,7 @@ public class IssuesDao
             + LONGITUDE + " VARCHAR(255) );";
 
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
+    public static final String LATLNG = "LATLNG";
     //TODO write a query to save the old data and just alter the table.
     Context mContext;
     WBDataBase mWBDataBase;

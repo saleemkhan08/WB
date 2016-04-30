@@ -11,4 +11,5 @@
     tools:context="in.org.whistleblower.MainActivity"
     tools:showIn="@layout/app_bar_main"
     >
+
 </RelativeLayout>

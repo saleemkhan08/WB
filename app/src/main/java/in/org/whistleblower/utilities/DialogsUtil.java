@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.interfaces.DialogUtilListener;
@@ -21,31 +22,12 @@ public class DialogsUtil
     String zones[];
     Resources res;
 
-    public DialogsUtil(Activity context)
+    public DialogsUtil(AppCompatActivity context)
     {
         mActivty = context;
         util = new MiscUtil(context);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         res = mActivty.getResources();
-    }
-
-    public void showRadiusDialog()
-    {
-        final String radiusOptions[] = mActivty.getResources().getStringArray(R.array.radius);
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(mActivty);
-        dialog.setTitle(mActivty.getResources().getString(R.string.loc_radius_dialog_title));
-
-        int selectedValue = preferences.getInt(IssuesDao.RADIUS, radiusOptions.length - 1);
-        dialog.setSingleChoiceItems(radiusOptions, selectedValue, new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int pos)
-            {
-                preferences.edit().putInt(IssuesDao.RADIUS, pos).apply();
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
     }
 
     private boolean[] getSelectedZones()

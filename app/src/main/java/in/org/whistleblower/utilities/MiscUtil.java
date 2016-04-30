@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -25,20 +24,16 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
-import in.org.whistleblower.FontDrawable;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
-import in.org.whistleblower.icon.Icon;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 
 public class MiscUtil
 {
-    private Context mContext;
-    FontDrawable fontDrawable;
+    private AppCompatActivity mContext;
     public ProgressDialog mProgressDialog;
     Resources resources;
-
-    public MiscUtil(Context mContext)
+    public MiscUtil(AppCompatActivity mContext)
     {
         this.mContext = mContext;
         resources = mContext.getResources();
@@ -132,23 +127,6 @@ public class MiscUtil
         }
         return false;
     }
-
-    public Drawable getIcon(Icon icon, int color)
-    {
-        fontDrawable = new FontDrawable(mContext);
-        fontDrawable.setIcon(icon);
-        fontDrawable.setIconColor(resources.getColor(color, null));
-        return fontDrawable;
-    }
-
-    public Drawable getIcon(Icon icon)
-    {
-        fontDrawable = new FontDrawable(mContext);
-        fontDrawable.setIcon(icon);
-        fontDrawable.setIconColor(resources.getColor(R.color.colorAccent, null));
-        return fontDrawable;
-    }
-
     public boolean hasUserSignedIn()
     {
         //Login Check

@@ -27,4 +27,10 @@
     <color name="my_location_radius">#6055c4c1</color>
 
     <color name="black_overlay">#66000000</color>
+    <color name="colorPrimaryDarkPressed">#666f79</color>
+
+    <color name="crop__button_bar">#f3f3f3</color>
+    <color name="crop__button_text">#666666</color>
+    <color name="crop__selector_pressed">#aa000000</color>
+    <color name="crop__selector_focused">#77000000</color>
 </resources>

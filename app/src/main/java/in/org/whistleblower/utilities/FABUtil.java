@@ -1,6 +1,7 @@
 package in.org.whistleblower.utilities;
 
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -9,7 +10,6 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
-import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.singletons.Otto;
 
 public class FABUtil
@@ -34,7 +34,6 @@ public class FABUtil
     {
         fabMenu = (FloatingActionsMenu) mActivity.findViewById(R.id.multiple_actions);
         FloatingActionButton buttonAlarm = (FloatingActionButton) mActivity.findViewById(R.id.alarm);
-        buttonAlarm.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.BELL_ALT));
         buttonAlarm.setStrokeVisible(false);
         buttonAlarm.setOnClickListener(new View.OnClickListener()
         {
@@ -59,7 +58,6 @@ public class FABUtil
         });
 
         FloatingActionButton buttonFavPlace = (FloatingActionButton) mActivity.findViewById(R.id.favPlace);
-        buttonFavPlace.setIconDrawable(mUtil.getIcon(FontAwesomeIcon.STAR));
         buttonFavPlace.setStrokeVisible(false);
         buttonFavPlace.setOnClickListener(new View.OnClickListener()
         {
@@ -74,6 +72,7 @@ public class FABUtil
 
     public void fabAction(String action)
     {
+        Log.d("Action", "fab Action : " + action);
         if (MiscUtil.isConnected(mActivity))
         {
             Otto.getBus().post(action);

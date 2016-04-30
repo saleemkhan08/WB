@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/setAlarm"
+        android:orderInCategory="100"
+        android:title="Set Alarm"
+        />
+    <item
+        android:id="@+id/notify_loc"
+        android:orderInCategory="200"
+        android:title="Notify Arrival"
+        />
+    <item
+        android:id="@+id/deleteFavPlace"
+        android:orderInCategory="300"
+        android:title="Delete"
+        />
+</menu>

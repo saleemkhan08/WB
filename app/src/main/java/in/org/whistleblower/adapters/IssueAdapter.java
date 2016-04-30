@@ -3,7 +3,6 @@ package in.org.whistleblower.adapters;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -36,23 +37,26 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     ArrayList<Issue> mIssuesArrayList;
     MiscUtil mUtil;
     ImageUtil mImageUtil;
+
+    @Inject
     SharedPreferences preferences;
 
     public IssueAdapter(AppCompatActivity activity, ArrayList<Issue> mIssuesList)
     {
-        mInflater = LayoutInflater.from(mActivity);
         mActivity = activity;
+        mInflater = LayoutInflater.from(mActivity);
         WhistleBlower.getComponent().inject(this);
+
         this.mIssuesArrayList = mIssuesList;
         mUtil = new MiscUtil(mActivity);
         mImageUtil = new ImageUtil(mActivity);
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        //preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
     }
 
     @Override
     public IssueViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        View view = mInflater.inflate(R.layout.single_issue_layout, parent, false);
+        View view = mInflater.inflate(R.layout.issue_layout, parent, false);
         return new IssueViewHolder(view);
     }
 
@@ -123,7 +127,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
                         switch (item.getItemId())
                         {
                             case R.id.editIssue:
-                                editIssue(issue.issueId);
+                                editIssue(issue);
                                 break;
                             case R.id.deleteIssue:
                                 deleteIssue(issue.issueId, position);
@@ -224,8 +228,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         notifyItemRangeChanged(position, mIssuesArrayList.size());
     }
 
-    private void editIssue(String issueId)
+    private void editIssue(Issue issue)
     {
+
         mUtil.toast("Not Implemented");
     }
 
@@ -269,7 +274,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         public IssueViewHolder(View view)
         {
             super(view);
-            ButterKnife.bind(mActivity, view);
+            ButterKnife.bind(this, view);
         }
     }
 }

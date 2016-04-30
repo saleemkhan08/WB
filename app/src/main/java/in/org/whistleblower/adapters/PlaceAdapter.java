@@ -1,39 +1,46 @@
 package in.org.whistleblower.adapters;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>
 {
-    Context mContext;
+    AppCompatActivity mActivity;
     LayoutInflater inflater;
     List<FavPlaces> mAddressList;
     MiscUtil mUtil;
+    @Inject
     SharedPreferences preferences;
 
-    public PlaceAdapter(Context context, List<FavPlaces> addressList)
+    public PlaceAdapter(AppCompatActivity activity, List<FavPlaces> addressList)
     {
-        mContext = context;
+        mActivity = activity;
         mAddressList = addressList;
-        inflater = LayoutInflater.from(context);
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mUtil = new MiscUtil(mContext);
+        inflater = LayoutInflater.from(mActivity);
+        mUtil = new MiscUtil(mActivity);
+        WhistleBlower.getComponent().inject(this);
     }
 
     @Override
@@ -56,15 +63,62 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             public void onClick(View v)
             {
                 Otto.getBus().post(address);
-                /*Bundle bundle = new Bundle();
-                bundle.putString(MapFragment.LONGITUDE, address.longitude + "");
-                bundle.putString(MapFragment.LATITUDE, address.latitude + "");
-                bundle.putBoolean(MapFragment.ANIMATE, true);
-                bundle.putInt(MapFragment.ACCURACY, address.radius);
-                bundle.putInt(MapFragment.MARKER, address.placeTypeIndex);
-                NavigationUtil.showMapFragment((AppCompatActivity) mContext, bundle);*/
             }
         });
+
+        holder.options.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                PopupMenu popup = new PopupMenu(mActivity, v);
+                popup.getMenuInflater()
+                        .inflate(R.menu.fav_place_options, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                {
+                    public boolean onMenuItemClick(MenuItem item)
+                    {
+                        switch (item.getItemId())
+                        {
+                            case R.id.setAlarm:
+                                setAlarm();
+                                break;
+                            case R.id.notify_loc:
+                                notifyLoc();
+                                break;
+                            case R.id.deleteFavPlace:
+                                deleteFavPlace(address.latitude, address.longitude);
+                                removeAt(position);
+                                Toast.makeText(mActivity, "Deleted : " + address.placeType, Toast.LENGTH_SHORT).show();
+                                break;
+
+                        }
+                        return true;
+                    }
+                });
+                popup.show();
+            }
+        });
+    }
+
+    public void removeAt(int position)
+    {
+        mAddressList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, mAddressList.size());
+    }
+    private void deleteFavPlace(String latitude, String longitude)
+    {
+        new FavPlacesDao(mActivity).delete(latitude, longitude);
+    }
+
+    private void notifyLoc()
+    {
+    }
+
+    private void setAlarm()
+    {
+        
     }
 
     int getDrawableResId(int index)
@@ -137,17 +191,11 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         @Bind(R.id.placeTypeName)
         TextView placeTypeName;
 
-        @Bind(R.id.deleteFavPlace)
-        View deleteFavPlace;
-
-        @Bind(R.id.setAlarm)
-        View setAlarm;
-
-        @Bind(R.id.arrivalNotification)
-        View arrivalNotification;
-
         @Bind(R.id.placeTypeImg)
         ImageView placeTypeImg;
+
+        @Bind(R.id.favPlaceOptionsIcon)
+        ImageView options;
 
         public PlaceViewHolder(View itemView)
         {

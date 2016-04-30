@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +26,6 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
-import in.org.whistleblower.icon.FontAwesomeIcon;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.singletons.Otto;
@@ -81,12 +81,14 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public void handleAction(String action)
     {
         Bundle bundle = new Bundle();
+        Log.d("Action", "handle Action : "+action);
         bundle.putString(MapFragment.HANDLE_ACTION, action);
         showMapFragment(bundle);
     }
 
     void showMapFragment(Bundle bundle)
     {
+        Log.d("Action", "Bundle : "+bundle);
         if (MiscUtil.isGoogleServicesOk(mActivity))
         {
             if(mapFragment == null)
@@ -118,13 +120,13 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
         navigationView.setNavigationItemSelectedListener(this);
         Menu menu = navigationView.getMenu();
-        menu.getItem(0).setIcon(util.getIcon(FontAwesomeIcon.MAP_MARKER));
-        menu.getItem(1).setIcon(util.getIcon(FontAwesomeIcon.NEWS));
-        menu.getItem(2).setIcon(util.getIcon(FontAwesomeIcon.STAR));
-        menu.getItem(3).setIcon(util.getIcon(FontAwesomeIcon.GROUP));
-        menu.findItem(R.id.nav_share_loc).setIcon(util.getIcon(FontAwesomeIcon.SHARE));
-        menu.findItem(R.id.nav_notify_loc).setIcon(util.getIcon(FontAwesomeIcon.COMMENT));
-        menu.findItem(R.id.nav_logout).setIcon(util.getIcon(FontAwesomeIcon.SIGNOUT));
+        /*menu.getItem(0).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
+        menu.getItem(1).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));//newsfeeds_icon_accent
+        menu.getItem(2).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
+        menu.getItem(3).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
+        menu.findItem(R.id.nav_share_loc).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
+        menu.findItem(R.id.nav_notify_loc).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
+        menu.findItem(R.id.nav_logout).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));*/
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

@@ -281,28 +281,34 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private void signOut()
     {
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>()
-                {
-                    @Override
-                    public void onResult(Status status)
+        if(mGoogleApiClient.isConnected())
+        {
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                    new ResultCallback<Status>()
                     {
-                        Log.d(TAG, "signOut:onResult:" + status);
-                    }
-                });
+                        @Override
+                        public void onResult(Status status)
+                        {
+                            Log.d(TAG, "signOut:onResult:" + status);
+                        }
+                    });
+        }
     }
 
     private void revokeAccess()
     {
-        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>()
-                {
-                    @Override
-                    public void onResult(Status status)
+        if (mGoogleApiClient.isConnected())
+        {
+            Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+                    new ResultCallback<Status>()
                     {
-                        Log.d(TAG, "revokeAccess:onResult:" + status);
-                    }
-                });
+                        @Override
+                        public void onResult(Status status)
+                        {
+                            Log.d(TAG, "revokeAccess:onResult:" + status);
+                        }
+                    });
+        }
     }
 
 

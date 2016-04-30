@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="in.org.whistleblower"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1"
-    android:versionName="1.0">
+<manifest package="in.org.whistleblower"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:versionCode="1"
+          android:versionName="1.0">
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -38,7 +37,6 @@
         android:icon="@drawable/bullhorn_invert"
         android:label="@string/app_name"
         android:supportsRtl="true"
-
         android:theme="@style/AppTheme">
 
         <!-- [START gcm_receiver] -->
@@ -79,8 +77,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -197,16 +195,20 @@
                 <action android:name="android.location.PROVIDERS_CHANGED"/>
             </intent-filter>
         </receiver>
+
         <activity
             android:name=".FriendListActivity"
             android:label="@string/title_activity_friend_list"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.org.whistleblower.MainActivity"/>
-
+        </activity>
+        <activity
+            android:name=".CropImageActivity"
+            android:label="@string/title_activity_crop_image"
+            android:theme="@style/AppTheme">
         </activity>
     </application>
 

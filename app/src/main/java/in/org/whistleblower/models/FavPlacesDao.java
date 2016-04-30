@@ -62,9 +62,11 @@ public class FavPlacesDao
         mWBDataBase.delete(TABLE, null, null);
     }
 
-    public void delete(String whereClause)
+    public void delete(String lat, String lng)
     {
-        mWBDataBase.delete(TABLE, whereClause, null);
+        String whereClause = LATITUDE+" = ? AND "+ LONGITUDE +" = ?";
+        String whereArgs[] = {lat, lng};
+        mWBDataBase.delete(TABLE, whereClause, whereArgs);
     }
 
     public void update(ContentValues cv, String whereClause)
