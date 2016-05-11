@@ -30,6 +30,7 @@
         android:layout_height="match_parent">
 
         <include layout="@layout/content_main"/>
+
         <RelativeLayout
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
@@ -99,6 +100,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:layout_below="@+id/searchBarInnerWrapper"
                 android:visibility="gone">
+
                 <include layout="@layout/fav_place_type_list"/>
             </RelativeLayout>
         </RelativeLayout>
@@ -110,9 +112,37 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:paddingBottom="32.5dp"
+            android:visibility="gone"
             android:src="@mipmap/map_pin_3"
-            android:visibility="gone"/>
+            />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingBottom="65dp"
+            android:visibility="gone"
+            android:id="@+id/shareLocationOptions"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/share_loc_bg"
+                >
+                <ImageView
+                    android:clickable="true"
+                    android:id="@+id/shareLoc1s"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:padding="8dp"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/white_circle"
+                    android:textColor="@color/white"
+                    android:src="@drawable/share_icon"
+                    />
+
+            </RelativeLayout>
+        </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout
@@ -189,9 +219,9 @@
                 android:id="@+id/favPlace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:fab_icon="@mipmap/star_icon_accent"
                 app:fab_title="Add Favorite Place"
                 fab:fab_colorNormal="@color/white"
-                app:fab_icon="@mipmap/star_icon_accent"
                 fab:fab_colorPressed="@color/white_pressed"
                 fab:fab_size="mini"/>
 
@@ -199,20 +229,20 @@
                 android:id="@+id/photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:fab_icon="@drawable/bullhorn"
                 app:fab_title="Add Issue"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
-                app:fab_icon="@drawable/bullhorn"
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/alarm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:fab_icon="@mipmap/bell_icon_accent"
                 app:fab_title="Add Location Alarm"
                 fab:fab_colorNormal="@color/white"
                 fab:fab_colorPressed="@color/white_pressed"
-                app:fab_icon="@mipmap/bell_icon_accent"
                 fab:fab_size="mini"/>
 
         </com.getbase.floatingactionbutton.FloatingActionsMenu>

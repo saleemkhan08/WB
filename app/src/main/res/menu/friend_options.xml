@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/realTimeLoc"
+        android:orderInCategory="100"
+        android:title="Request Real-Time Location"
+        />
+    <item
+        android:id="@+id/currentLoc"
+        android:orderInCategory="200"
+        android:title="Request Current Location"
+        />
+    <item
+        android:id="@+id/notify_loc"
+        android:orderInCategory="200"
+        android:title="Notify Location"
+        />
+    <item
+        android:id="@+id/removeFriend"
+        android:orderInCategory="300"
+        android:title="Un-friend"
+        />
+</menu>

@@ -60,6 +60,7 @@
 
     <!-- #################################### Crop Style ####################################### -->
     <style name="Crop"></style>
+
     <style name="Crop.DoneCancelBar">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/crop__bar_height</item>

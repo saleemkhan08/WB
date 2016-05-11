@@ -2,8 +2,10 @@ package in.org.whistleblower.adapters;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -69,21 +71,45 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
 
             if (account.relation.equals(Accounts.FRIEND))
             {
-                holder.removeFriendButton.setVisibility(View.VISIBLE);
+                holder.friendOptionsIcon.setVisibility(View.VISIBLE);
                 holder.addFriendButton.setVisibility(View.GONE);
-
-                holder.removeFriendButton.setOnClickListener(new View.OnClickListener()
+                holder.friendOptionsIcon.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
                     {
-                        mActivity.removeFriend(account, position);
+                        PopupMenu popup = new PopupMenu(mActivity, v);
+                        popup.getMenuInflater()
+                                .inflate(R.menu.friend_options, popup.getMenu());
+                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                        {
+                            public boolean onMenuItemClick(MenuItem item)
+                            {
+                                switch (item.getItemId())
+                                {
+                                    case R.id.realTimeLoc:
+                                        requestRealTimeLoc();
+                                        break;
+                                    case R.id.currentLoc:
+                                        requestCurrentLoc();
+                                        break;
+                                    case R.id.notify_loc:
+                                        notifyLoc();
+                                        break;
+                                    case R.id.removeFriend:
+                                        mActivity.removeFriend(account, position);
+                                        break;
+                                }
+                                return true;
+                            }
+                        });
+                        popup.show();
                     }
                 });
             }
             else
             {
-                holder.removeFriendButton.setVisibility(View.GONE);
+                holder.friendOptionsIcon.setVisibility(View.GONE);
                 holder.addFriendButton.setVisibility(View.VISIBLE);
 
                 holder.addFriendButton.setOnClickListener(new View.OnClickListener()
@@ -96,6 +122,20 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
                 });
             }
         }
+    }
+
+    private void requestCurrentLoc()
+    {
+
+    }
+
+    private void notifyLoc()
+    {
+
+    }
+
+    private void requestRealTimeLoc()
+    {
     }
 
     public void removeUser(int position, Accounts account)
@@ -123,20 +163,26 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
 
     public void removeAt(int position, Accounts account)
     {
-        mAccountsList.remove(position);
-        if (account != null)
+        int accSize = mAccountsList.size();
+
+        if (accSize > position)
         {
-            if (account.relation.equals(Accounts.FRIEND))
+            mAccountsList.remove(position);
+
+            if (account != null)
             {
-                FriendListActivity.mFriendList.remove(account);
+                if (account.relation.equals(Accounts.FRIEND))
+                {
+                    FriendListActivity.mFriendList.remove(account);
+                }
+                else
+                {
+                    FriendListActivity.mUserList.remove(account);
+                }
             }
-            else
-            {
-                FriendListActivity.mUserList.remove(account);
-            }
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, mAccountsList.size());
         }
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, mAccountsList.size());
     }
 
     public void addAt(int position, Accounts account)
@@ -162,10 +208,10 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
 
     class FriendListViewHolder extends RecyclerView.ViewHolder
     {
-        Button addFriendButton, removeFriendButton;
+        Button addFriendButton;
 
         View suggestionsLabelView;
-        View userRowView;
+        View userRowView, friendOptionsIcon;
 
         TextView usernameView;
         ImageView profilePicView;
@@ -174,7 +220,9 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
         {
             super(itemView);
             addFriendButton = (Button) itemView.findViewById(R.id.addFriendButton);
-            removeFriendButton = (Button) itemView.findViewById(R.id.removeFriendButton);
+
+            friendOptionsIcon = itemView.findViewById(R.id.friendOptionsIcon);
+
             suggestionsLabelView = itemView.findViewById(R.id.suggestionsLabel);
             userRowView = itemView.findViewById(R.id.placeContent);
             profilePicView = (ImageView) itemView.findViewById(R.id.profilePic);

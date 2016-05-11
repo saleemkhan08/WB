@@ -72,7 +72,7 @@
             android:id="@+id/favPlaceOptionsIcon"
             android:layout_width="40dp"
             android:layout_height="60dp"
-
+            android:background="@drawable/bg_drawable"
             android:paddingRight="10dp"
             android:paddingLeft="10dp"
             android:layout_centerVertical="true"

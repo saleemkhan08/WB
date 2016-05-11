@@ -3,6 +3,7 @@ package in.org.whistleblower.components;
 import javax.inject.Singleton;
 
 import dagger.Component;
+import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.adapters.IssueAdapter;
 import in.org.whistleblower.adapters.PlaceAdapter;
@@ -23,4 +24,5 @@ public interface AppComponent
     void inject(MainFragment mainFragment);
     void inject(IssueAdapter issueAdapter);
     void inject(PlaceAdapter placeAdapter);
+    void inject(IssueActivity issueActivity);
 }

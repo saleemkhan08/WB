@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -33,14 +34,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import in.org.whistleblower.adapters.FriendListAdapter;
+import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
-import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.utilities.VolleyUtil;
 
 public class FriendListActivity extends AppCompatActivity implements TextWatcher, View.OnClickListener
@@ -49,6 +52,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
     private static final String IS_FRIEND_LIST = "IS_FRIEND_LIST";
     private static final String IS_SEARCH_ENABLE = "IS_SEARCH_ENABLE";
     private static GetUserListTask mTask;
+    public static boolean busy = false;
     SharedPreferences preferences;
     static FriendListActivity mStaticContext;
     public static ArrayList<Accounts> mUserList;
@@ -75,22 +79,27 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
 
         progress = findViewById(R.id.progressFab);
         mFriendAndUserRecyclerView = (RecyclerView) findViewById(R.id.friendAndUserList);
+
         mStaticContext = this;
         currentUserMail = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
+
         fabWrapper = findViewById(R.id.fab_wrapper);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         searchToolBar = findViewById(R.id.searchToolBar);
         searchUser = (EditText) findViewById(R.id.searchUser);
+
         if (searchUser != null)
         {
             searchUser.addTextChangedListener(this);
         }
+
         setSupportActionBar(toolbar);
         fab = (FloatingActionButton) findViewById(R.id.addFriendFab);
         if (fab != null)
         {
             fab.setOnClickListener(this);
         }
+
         if (savedInstanceState != null)
         {
             isFriendList = savedInstanceState.getBoolean(IS_FRIEND_LIST, true);
@@ -101,41 +110,15 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
             isFriendList = true;
             isSearchEnabled = false;
         }
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
         {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        if (mFriendList != null)
-        {
-            for (Iterator<Accounts> iterator = mFriendList.iterator(); iterator.hasNext(); )
-            {
-                Accounts account = iterator.next();
-                if (account != null)
-                {
-                    if (!account.relation.equals(Accounts.FRIEND))
-                    {
-                        iterator.remove();
-                    }
-                }
-            }
-
-        }
-        if (mUserList != null)
-        {
-            for (Iterator<Accounts> iterator = mUserList.iterator(); iterator.hasNext(); )
-            {
-                Accounts account = iterator.next();
-                if (account != null)
-                {
-                    if (account.relation.equals(Accounts.FRIEND))
-                    {
-                        iterator.remove();
-                    }
-                }
-            }
-        }
+        refreshFriendList();
+        refreshUserList();
 
         if (!preferences.getBoolean(KEY_USERS_FETCHED, false))
         {
@@ -168,6 +151,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
             case R.id.addFriendFab:
                 isFriendList = false;
                 fabWrapper.setVisibility(View.GONE);
+                refreshUserList();
                 changeList(mUserList, "");
                 break;
         }
@@ -187,11 +171,13 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
         {
             Log.d("Doodle", "Do in backgrnd");
             AccountsDao dao = new AccountsDao(mStaticContext);
+
             if (mFriendList == null || mFriendList.size() <= 0)
             {
                 mFriendList = dao.getFriendsList();
             }
             mShowList = new ArrayList<>();
+            refreshFriendList();
             mShowList.addAll(mFriendList);
 
             if (mShowList.size() < 20)
@@ -201,6 +187,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
                 {
                     mUserList = dao.getUsersList();
                 }
+                refreshUserList();
                 mShowList.addAll(mUserList);
             }
             return null;
@@ -426,10 +413,12 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
     {
         if (isFriendList)
         {
+            refreshFriendList();
             changeList(mFriendList, query.toString());
         }
         else
         {
+            refreshUserList();
             changeList(mUserList, query.toString());
         }
     }
@@ -442,72 +431,153 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
 
     public void removeFriend(final Accounts account, final int position)
     {
-        FriendListActivity.showProgressFab();
-        Map<String, String> data = new HashMap<>();
-        data.put(VolleyUtil.KEY_ACTION, "removeFriend");
-        data.put(Accounts.USER_EMAIL, currentUserMail);
-        data.put(Accounts.FRIENDS_EMAIL, account.email);
-        VolleyUtil.sendPostData(data, new ResultListener<String>()
+        if (!busy)
+        {
+            FriendListActivity.showProgressFab();
+            Map<String, String> data = new HashMap<>();
+            data.put(VolleyUtil.KEY_ACTION, "removeFriend");
+            data.put(Accounts.USER_EMAIL, currentUserMail);
+            data.put(Accounts.FRIENDS_EMAIL, account.email);
+            busy = true;
+            VolleyUtil.sendPostData(data, new ResultListener<String>()
+            {
+                @Override
+                public void onSuccess(String result)
+                {
+                    Log.d("removeFriend", "removeFriend result : " + result);
+                    if (result.equals("1"))
+                    {
+                        new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
+                        account.relation = Accounts.NOT_A_FRIEND;
+                        mAdapter.removeUser(position, account);
+                        FriendListActivity.hideProgressFab();
+                    }
+                    else
+                    {
+                        Toast.makeText(FriendListActivity.this, "Please Try Again!", Toast.LENGTH_SHORT).show();
+                        Log.d("ToastMsg", "error : " + result);
+                    }
+                    resetBusy();
+                }
+
+                @Override
+                public void onError(VolleyError error)
+                {
+                    FriendListActivity.hideProgressFab();
+                    Toast.makeText(FriendListActivity.this, "Please Try again!", Toast.LENGTH_SHORT).show();
+                    Log.d("ToastMsg", "error : " + error.getMessage());
+                    resetBusy();
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(this, "Please Wait!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void resetBusy()
+    {
+        Handler myHandler = new Handler();
+        myHandler.postDelayed(new Runnable()
         {
             @Override
-            public void onSuccess(String result)
+            public void run()
             {
-                Log.d("removeFriend", "removeFriend result : " + result);
-                if (result.equals("1"))
-                {
-                    new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
-                    account.relation = Accounts.NOT_A_FRIEND;
-                    mAdapter.removeUser(position, account);
-                    FriendListActivity.hideProgressFab();
-                }
-                else
-                {
-                    Toast.makeText(FriendListActivity.this, "Please Try Again!", Toast.LENGTH_SHORT).show();
-                    Log.d("ToastMsg", result + " : Please Try again!");
-                }
+                busy = false;
             }
-
-            @Override
-            public void onError(VolleyError error)
-            {
-                FriendListActivity.hideProgressFab();
-                Toast.makeText(FriendListActivity.this, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
-                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
-            }
-        });
+        }, 600);
     }
 
     public void addFriend(final Accounts account, final int position)
     {
-        FriendListActivity.showProgressFab();
-        Map<String, String> data = new HashMap<>();
-        data.put(Accounts.FRIENDS_PHOTO, account.photo_url);
-        data.put(Accounts.FRIENDS_NAME, account.name);
-        data.put(Accounts.FRIENDS_EMAIL, account.email);
-        data.put(Accounts.USER_EMAIL, currentUserMail);
-        data.put(VolleyUtil.KEY_ACTION, "addFriend");
-        VolleyUtil.sendPostData(data, new ResultListener<String>()
+        if (!busy)
         {
-            @Override
-            public void onSuccess(String result)
-            {
-                Log.d("addFriend", "Result : " + result);
-                new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.FRIEND);
-                account.relation = Accounts.FRIEND;
-                mAdapter.addUser(position, account);
-                FriendListActivity.hideProgressFab();
-            }
+            FriendListActivity.showProgressFab();
 
-            @Override
-            public void onError(VolleyError error)
+            Map<String, String> data = new HashMap<>();
+            data.put(Accounts.FRIENDS_PHOTO, account.photo_url);
+            data.put(Accounts.FRIENDS_NAME, account.name);
+            data.put(Accounts.FRIENDS_EMAIL, account.email);
+            data.put(Accounts.USER_EMAIL, currentUserMail);
+            data.put(VolleyUtil.KEY_ACTION, "addFriend");
+            busy = true;
+            VolleyUtil.sendPostData(data, new ResultListener<String>()
             {
-                FriendListActivity.hideProgressFab();
-                Toast.makeText(FriendListActivity.this, error.getMessage() + "\nPlease Try again!", Toast.LENGTH_SHORT).show();
-                Log.d("ToastMsg", error.getMessage() + "\nPlease Try again!");
-            }
-        });
+                @Override
+                public void onSuccess(String result)
+                {
 
+                    Log.d("addFriend", "Result : " + result);
+                    new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.FRIEND);
+                    account.relation = Accounts.FRIEND;
+                    mAdapter.addUser(position, account);
+                    FriendListActivity.hideProgressFab();
+                    resetBusy();
+                }
+
+                @Override
+                public void onError(VolleyError error)
+                {
+                    FriendListActivity.hideProgressFab();
+                    Toast.makeText(FriendListActivity.this, "Please Try again!", Toast.LENGTH_SHORT).show();
+                    Log.d("ToastMsg", "Error : " + error.getMessage());
+                    resetBusy();
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(this, "Please Wait!", Toast.LENGTH_SHORT).show();
+        }
     }
 
+    public static void refreshFriendList()
+    {
+        if (mFriendList != null)
+        {
+            Set<Accounts> set = new HashSet<>();
+            set.addAll(mFriendList);
 
+            mFriendList.clear();
+            mFriendList.addAll(set);
+
+            for (Iterator<Accounts> iterator = mFriendList.iterator(); iterator.hasNext(); )
+            {
+                Accounts account = iterator.next();
+                if (account != null)
+                {
+                    if (!account.relation.equals(Accounts.FRIEND))
+                    {
+                        iterator.remove();
+                    }
+                }
+            }
+
+        }
+    }
+
+    public static void refreshUserList()
+    {
+        if (mUserList != null)
+        {
+            Set<Accounts> set = new HashSet<>();
+            set.addAll(mUserList);
+
+            mUserList.clear();
+            mUserList.addAll(set);
+
+            for (Iterator<Accounts> iterator = mUserList.iterator(); iterator.hasNext(); )
+            {
+                Accounts account = iterator.next();
+                if (account != null)
+                {
+                    if (account.relation.equals(Accounts.FRIEND))
+                    {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+    }
 }

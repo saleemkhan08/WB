@@ -219,4 +219,10 @@
 
     <string name="crop__done">DONE</string>
     <string name="crop__cancel" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="no_internet">No Internet...</string>
+    <string name="unknown_place">Unknown Place...</string>
+    <string name="kilometer">km</string>
+    <string name="meter">m</string>
+    <string name="once">1<sup><small>s</small></sup></string>
+    <string name="realtime">R</string>
 </resources>

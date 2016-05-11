@@ -13,8 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -24,11 +29,14 @@ import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.VolleyUtil;
 
 public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHolder>
 {
@@ -64,7 +72,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     public void onBindViewHolder(IssueViewHolder holder, final int position)
     {
         final Issue issue = mIssuesArrayList.get(position);
+
         // Set the results into TextViews
+
         holder.areaTypeName.setText(issue.areaType);
         holder.username.setText(issue.username);
         holder.issueDescription.setText(issue.description);
@@ -85,7 +95,15 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Share This Post : " + position);
+                Intent share = new Intent(android.content.Intent.ACTION_SEND);
+                share.setType("text/plain");
+                share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+
+                share.putExtra(Intent.EXTRA_SUBJECT, "Title Of The Post");
+                share.putExtra(Intent.EXTRA_TEXT, "whistleblower-thnkin.rhcloud.com/issue.php?issueId="+issue.issueId);
+
+                mActivity.startActivity(Intent.createChooser(share, "Share link!"));
+
             }
         });
 
@@ -148,13 +166,11 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
-            holder.profilePic.setBackground(mActivity.getDrawable(R.drawable.anonymous_white_primary_dark));
-            holder.profilePic.setImageResource(android.R.color.transparent);
+            holder.profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
         }
         else
         {
             mImageUtil.displayImage(dpUrl, holder.profilePic, true);
-            holder.profilePic.setBackgroundColor(mActivity.getResources().getColor(android.R.color.transparent, null));
         }
 
         holder.issueImage.setOnClickListener(new View.OnClickListener()
@@ -162,10 +178,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View arg0)
             {
-                Intent issueActivityIntent = new Intent(mActivity, IssueActivity.class);
-                //issueActivityIntent.putExtra()
-                mActivity.startActivity(issueActivityIntent);
-                mUtil.toast("Image : " + position + " clicked");
+                Intent intent = new Intent(mActivity, IssueActivity.class);
+                intent.putExtra(IssuesDao.ISSUE_ID, issue);
+                mActivity.startActivity(intent);
             }
         });
     }
@@ -173,52 +188,53 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     private void reportIssue(String issueId)
     {
         mUtil.showIndeterminateProgressDialog("Reporting...");
-        /*ParseQuery<ParseObject> query = ParseQuery.getQuery(IssuesDao.TABLE);
-        query.getInBackground(issueId, new GetCallback<ParseObject>()
+        Map<String, String> map = new HashMap<>();
+        map.put(VolleyUtil.KEY_ACTION, "reportSpam");
+        map.put(IssuesDao.ISSUE_ID, issueId);
+        VolleyUtil.sendPostData(map, new ResultListener<String>()
         {
-            public void done(ParseObject issue, ParseException e)
+            @Override
+            public void onSuccess(String result)
             {
-                if (e == null)
-                {
-                    issue.put(IssuesDao.STATUS, IssuesDao.SPAM);
-                    issue.saveInBackground(new SaveCallback()
-                    {
-                        @Override
-                        public void done(ParseException e)
-                        {
-                            if (e == null)
-                            {
-                                mUtil.toast("Reported!");
-                                mUtil.hideProgressDialog();
-                            }
-                        }
-                    });
-                }
+                mUtil.hideProgressDialog();
+                Toast.makeText(mActivity, result, Toast.LENGTH_SHORT).show();
             }
-        });*/
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                mUtil.hideProgressDialog();
+                Toast.makeText(mActivity, "Please Try Again"+"\n"+error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void deleteIssue(String issueId, final int position)
     {
         mUtil.showIndeterminateProgressDialog("Deleting...");
-        /*ParseQuery<ParseObject> query = new ParseQuery<>(IssuesDao.TABLE);
-        query.getInBackground(issueId, new GetCallback<ParseObject>()
+        Map<String, String> map = new HashMap<>();
+        map.put(VolleyUtil.KEY_ACTION, "deleteIssue");
+        map.put(IssuesDao.ISSUE_ID, issueId);
+        VolleyUtil.sendPostData(map, new ResultListener<String>()
         {
             @Override
-            public void done(final ParseObject object, ParseException e)
+            public void onSuccess(String result)
             {
-                object.deleteInBackground(new DeleteCallback()
+                mUtil.hideProgressDialog();
+                Toast.makeText(mActivity, result, Toast.LENGTH_SHORT).show();
+                if(result.equals("Deleted"))
                 {
-                    @Override
-                    public void done(ParseException e)
-                    {
-                        mUtil.toast("Deleted");
-                        mUtil.hideProgressDialog();
-                        removeAt(position);
-                    }
-                });
+                    removeAt(position);
+                }
             }
-        });*/
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                mUtil.hideProgressDialog();
+                Toast.makeText(mActivity, "Please Try Again"+"\n"+error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void removeAt(int position)
@@ -230,7 +246,6 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
 
     private void editIssue(Issue issue)
     {
-
         mUtil.toast("Not Implemented");
     }
 

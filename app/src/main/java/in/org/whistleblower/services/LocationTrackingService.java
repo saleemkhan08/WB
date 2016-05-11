@@ -125,7 +125,7 @@ public class LocationTrackingService extends Service implements LocationListener
             });
         }
 
-        if (intent.hasExtra(KEY_ALARM_SET))
+        if (intent != null && intent.hasExtra(KEY_ALARM_SET))
         {
             alarmAddress = intent.getStringExtra(KEY_PLACE_NAME);
             alarmLatlng = intent.getParcelableExtra(KEY_LATLNG);

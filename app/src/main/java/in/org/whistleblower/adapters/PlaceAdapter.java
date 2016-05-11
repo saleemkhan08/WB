@@ -121,7 +121,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         
     }
 
-    int getDrawableResId(int index)
+    public static int getDrawableResId(int index)
     {
         /*
         <item>Home</item>
@@ -170,6 +170,8 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
                 return R.mipmap.coffee_shop_primay_dark;
             case 13:
                 return R.mipmap.bar_primary_dark;
+            case -1:
+                return R.mipmap.issue_primary_dark;
             default:
                 return R.mipmap.others_primary_dark;
         }

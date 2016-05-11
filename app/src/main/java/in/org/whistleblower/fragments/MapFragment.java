@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -62,6 +63,7 @@ import in.org.whistleblower.AddIssueActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.actions.Image;
+import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.asynctasks.GeoCoderTask;
 import in.org.whistleblower.asynctasks.GetNearByPlaces;
 import in.org.whistleblower.interfaces.GeoCodeListener;
@@ -142,6 +144,9 @@ public class MapFragment extends SupportMapFragment implements
 
     //Injected Using Butter Knife
 
+    @Bind(R.id.shareLoc1s)
+    View shareLoc1s;
+
     @Bind(R.id.map_fab_buttons)
     ViewGroup map_fab_buttons;
 
@@ -178,6 +183,9 @@ public class MapFragment extends SupportMapFragment implements
     @Bind(R.id.select_location)
     View select_location;
 
+    @Bind(R.id.shareLocationOptions)
+    ViewGroup shareLocationOptions;
+
 //---------------------------------------------------------
 
     @Bind(R.id.searchIcon)
@@ -190,7 +198,7 @@ public class MapFragment extends SupportMapFragment implements
 
     LocationTrackingService mLocationTrackingService;
     boolean isLocationServiceBound = false;
-    private boolean isShowingMyLocation;
+    //private boolean moveCameraToMyLocOnLocUpdate;
     private boolean isMapMovedManually;
 
     private static int retryAttemptsCount;
@@ -200,7 +208,8 @@ public class MapFragment extends SupportMapFragment implements
 
     private boolean isKm;
     private float currentZoom;
-    private Issue mIssue;
+    private boolean moveCameraToMyLocOnLocUpdate;
+    private boolean showShareLocationOptions = true;
 
     //Implementation done
     public MapFragment()
@@ -238,8 +247,123 @@ public class MapFragment extends SupportMapFragment implements
         searchText.setOnClickListener(this);
         searchIcon.setOnClickListener(this);
         mSubmitButton.setOnClickListener(this);
-
+        shareLoc1s.setOnClickListener(this);
         setUpMyLocationButton();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Log.d("FlowLogs", "onResume");
+        map_fab_buttons.setVisibility(View.VISIBLE);
+        select_location.setVisibility(View.VISIBLE);
+        searchBar.setVisibility(View.VISIBLE);//
+        mGoogleMap = getMap();
+        mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
+
+        if (PermissionUtil.isLocationPermissionAvailable())
+        {
+            mGoogleMap.setMyLocationEnabled(false);
+        }
+        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
+        mGoogleMap.setOnCameraChangeListener(this);
+
+        if (mLocationTrackingService != null)
+        {
+            mLocationTrackingService.registerLocationChangedListener(this);
+        }
+        bundle = getArguments();
+        reloadMapParameters(bundle);
+    }
+
+
+    //Implementation done
+    public void reloadMapParameters(Bundle bundle)
+    {
+        Log.d("FlowLogs", "reloadMapParameters : " + bundle);
+        if (bundle != null)
+        {
+            Set<String> keys = bundle.keySet();
+            if (keys.contains(SHOW_FAV_PLACE))
+            {
+                moveCameraToMyLocOnLocUpdate = false;
+                showFavPlaceOnMap((FavPlaces) bundle.getParcelable(SHOW_FAV_PLACE));
+            }
+            if (keys.contains(SHOW_ISSUE))
+            {
+                moveCameraToMyLocOnLocUpdate = false;
+                showIssueOnMap((Issue) bundle.getParcelable(SHOW_ISSUE));
+            }
+            if (keys.contains(HANDLE_ACTION))
+            {
+                moveCameraToMyLocOnLocUpdate = false;
+                if (action != null)
+                {
+                    removeMarkerAndCircle(action);
+                }
+                action = bundle.getString(HANDLE_ACTION);
+                showSubmitButtonAndHideSearchIcon();
+            }
+        }
+        else
+        {
+            moveCameraToMyLocOnLocUpdate = true;
+            Log.d("showMyLocOnMap", "reloadMapParameters");
+            showMyLocOnMap(false);
+        }
+    }
+
+    private void showMyLocOnMap(boolean animate)
+    {
+        LatLng latLng = getLatLng();
+        showMarker(latLng, MY_LOC, 0);
+        showAccuracyCircle(latLng, (int) getAccuracy(), MY_LOC);
+        gotoLatLng(latLng, animate);
+    }
+
+    private void showIssueOnMap(Issue issue)
+    {
+        LatLng latLng = new LatLng(Double.parseDouble(issue.latitude), Double.parseDouble(issue.longitude));
+        showMarker(latLng, issue.issueId, -1);
+        showAccuracyCircle(latLng, issue.radius, issue.issueId);
+        gotoLatLng(latLng, false);
+    }
+
+    private void showFavPlaceOnMap(FavPlaces favPlace)
+    {
+        mFavPlace = favPlace;
+        LatLng latLng = new LatLng(Double.parseDouble(favPlace.latitude), Double.parseDouble(favPlace.longitude));
+        showMarker(latLng, favPlace.latitude + favPlace.longitude, favPlace.placeTypeIndex);
+        showAccuracyCircle(latLng, favPlace.radius, favPlace.latitude + favPlace.longitude);
+        gotoLatLng(latLng, false);
+    }
+
+    private void hideMyLocMarker()
+    {
+        boolean hide = false;
+        if (markerMap.containsKey(MY_LOC))
+        {
+            Marker marker = markerMap.get(MY_LOC);
+            LatLng myLocLatLng = marker.getPosition();
+            for (String key : markerMap.keySet())
+            {
+                if (!key.equals(MY_LOC))
+                {
+                    LatLng latLng = markerMap.get(key).getPosition();
+                    double dist = distFrom(latLng.latitude, latLng.longitude, myLocLatLng.latitude, myLocLatLng.longitude);
+                    if (dist < 50)
+                    {
+                        hide = true;
+                    }
+                }
+            }
+            if (hide)
+            {
+                marker.remove();
+                markerMap.remove(MY_LOC);
+            }
+        }
     }
 
     private void setupRadiusSeekBar()
@@ -297,26 +421,36 @@ public class MapFragment extends SupportMapFragment implements
 
     private void setRadiusSeekBarValue()
     {
+        String radiusSeekBarText;
         if (isKm)
         {
-            radiusSeekBarValue.setText((radiusSeekBar.getProgress() + 1) + "km");
+            radiusSeekBarText = (radiusSeekBar.getProgress() + 1) + getText(R.string.kilometer).toString();
+
         }
         else
         {
-            radiusSeekBarValue.setText((radiusSeekBar.getProgress() + 1) * 100 + "m");
+            radiusSeekBarText = (radiusSeekBar.getProgress() + 1) * 100 + getText(R.string.meter).toString();
         }
-        Log.d("hijk", "Circle : setRadiusSeekBarValue");
+        radiusSeekBarValue.setText(radiusSeekBarText);
         drawCircleOnMap();
     }
 
     public void showSubmitButtonAndHideSearchIcon()
     {
         int drawableId;
+        showShareLocationOptions = false;
+        TransitionManager.beginDelayedTransition(shareLocationOptions);
+        shareLocationOptions.setVisibility(View.GONE);
+
         setupRadiusSeekBar();
         switch (action)
         {
             case FABUtil.ADD_FAV_PLACE:
                 drawableId = R.mipmap.fav_holo;
+                placeType = HOME;
+                favPlaceTypeSelector.setVisibility(View.GONE);
+                TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+                favPlaceTypeSelector.setVisibility(View.VISIBLE);
                 break;
             case FABUtil.ADD_ISSUE:
                 drawableId = R.drawable.bullhorn_primary_dark;
@@ -348,6 +482,7 @@ public class MapFragment extends SupportMapFragment implements
 
     public void hideSubmitButtonAndShowSearchIcon()
     {
+        showShareLocationOptions = true;
         if (action.equals(FABUtil.ADD_FAV_PLACE))
         {
             favPlaceTypeSelector.setVisibility(View.VISIBLE);
@@ -365,102 +500,10 @@ public class MapFragment extends SupportMapFragment implements
 
         TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
         radiusSeekBarInnerWrapper.setVisibility(View.GONE);
-        removeAccuracyCircle(action);
+        removeMarkerAndCircle(action);
         Log.d("hjki", "radius : Gone");
-    }
 
-    //Implementation done
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-        bundle = getArguments();
-        Log.d("Action", "onStart : " + bundle);
-        reloadMapParameters(bundle);
-    }
-
-
-    //Implementation done
-    public void reloadMapParameters(Bundle bundle)
-    {
-        Log.d("Action", "reloadMapParameters : " + bundle);
-        if (bundle != null)
-        {
-            Set<String> keys = bundle.keySet();
-            if (keys.contains(SHOW_FAV_PLACE))
-            {
-                mFavPlace = bundle.getParcelable(SHOW_FAV_PLACE);
-                double lat = Double.parseDouble(mFavPlace.latitude);
-                double lng = Double.parseDouble(mFavPlace.longitude);
-                Log.d("latLng", mFavPlace.latitude + " = " + lat + "\n" + mFavPlace.longitude + " = " + lng);
-                mGeoCodeLatLng = new LatLng(lat, lng);
-                mRadius = mFavPlace.radius;
-                isShowingMyLocation = false;
-            }
-            if (keys.contains(SHOW_ISSUE))
-            {
-                mIssue = bundle.getParcelable(SHOW_ISSUE);
-                double lat = Double.parseDouble(mIssue.latitude);
-                double lng = Double.parseDouble(mIssue.longitude);
-                Log.d("latLng", mIssue.latitude + " = " + lat + "\n" + mIssue.longitude + " = " + lng);
-                mGeoCodeLatLng = new LatLng(lat, lng);
-                mRadius = mIssue.radius;
-                isShowingMyLocation = false;
-            }
-            if (keys.contains(HANDLE_ACTION))
-            {
-                if (action != null)
-                {
-                    removeAccuracyCircle(action);
-                }
-                action = bundle.getString(HANDLE_ACTION);
-                placeType = HOME;
-                showSubmitButtonAndHideSearchIcon();
-                if (action.equals(FABUtil.ADD_FAV_PLACE))
-                {
-                    favPlaceTypeSelector.setVisibility(View.GONE);
-                    TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
-                    favPlaceTypeSelector.setVisibility(View.VISIBLE);
-                }
-            }
-        }
-        else
-        {
-            isShowingMyLocation = true;
-        }
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        searchText.clearFocus();
-        map_fab_buttons.setVisibility(View.VISIBLE);
-        select_location.setVisibility(View.VISIBLE);
-        searchBar.setVisibility(View.VISIBLE);//
-        mGoogleMap = getMap();
-        if (bundle != null)
-        {
-            gotoCurrentPos(bundle.getBoolean(ANIMATE, false));
-        }
-        else
-        {
-            Log.d("FlowLogs", "onResume : gotoMyLocation");
-            gotoMyLocation(false);
-        }
-        mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
-
-        if (PermissionUtil.isLocationPermissionAvailable())
-        {
-            mGoogleMap.setMyLocationEnabled(false);
-        }
-        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
-        mGoogleMap.setOnCameraChangeListener(this);
-
-        if (mLocationTrackingService != null)
-        {
-            mLocationTrackingService.registerLocationChangedListener(this);
-        }
+        showShareLocationOptions();
     }
 
     @Override
@@ -471,6 +514,7 @@ public class MapFragment extends SupportMapFragment implements
         map_fab_buttons.setVisibility(View.GONE);
         searchBar.setVisibility(View.GONE);
         select_location.setVisibility(View.GONE);
+        shareLocationOptions.setVisibility(View.GONE);
         cancelAsyncTask(mGeoCoderTask);
         cancelAsyncTask(mGetNearByPlaces);
     }
@@ -485,10 +529,11 @@ public class MapFragment extends SupportMapFragment implements
             @Override
             public void onClick(View v)
             {
+                moveCameraToMyLocOnLocUpdate = true;
                 showTravellingModeHint();
-                isShowingMyLocation = true;
                 startLocationTrackingServiceAndBind();
-                gotoMyLocation(true);
+                Log.d("showMyLocOnMap", "onClick");
+                showMyLocOnMap(true);
             }
         });
 
@@ -497,6 +542,9 @@ public class MapFragment extends SupportMapFragment implements
             @Override
             public boolean onLongClick(View v)
             {
+                moveCameraToMyLocOnLocUpdate = true;
+                Log.d("showMyLocOnMap", "onLongClick");
+                showMyLocOnMap(true);
                 if (!mTravelModeOn)
                 {
                     Toast.makeText(mActivity, "Travelling Mode : On", Toast.LENGTH_SHORT).show();
@@ -507,9 +555,7 @@ public class MapFragment extends SupportMapFragment implements
                             .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, true)
                             .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 6)
                             .commit();
-                    isShowingMyLocation = true;
                     startLocationTrackingServiceAndBind();
-                    gotoMyLocation(true);
                 }
                 else
                 {
@@ -594,16 +640,9 @@ public class MapFragment extends SupportMapFragment implements
         toast("Alarm Set : \n" + searchText.getText());
     }
 
-    public void gotoCurrentPos(boolean animate)
+    public static CameraPosition getCameraPos(LatLng latLng)
     {
-        setMapType();
-        showNearByPlaces();
-        moveMap(animate);
-    }
-
-    public static CameraPosition getLastKnownPos()
-    {
-        return new CameraPosition(getLatLng(), getZoom(), getTilt(), getBearing());
+        return new CameraPosition(latLng, getZoom(), getTilt(), getBearing());
     }
 
     public static LatLng getLatLng()
@@ -611,14 +650,6 @@ public class MapFragment extends SupportMapFragment implements
         double latitude = Double.parseDouble(preferences.getString(LATITUDE, "12.9667"));
         double longitude = Double.parseDouble(preferences.getString(LONGITUDE, "77.5667"));
         return new LatLng(latitude, longitude);
-    }
-
-    public static void setLatLng(LatLng latLng)
-    {
-        preferences.edit()
-                .putString(LATITUDE, "" + latLng.latitude)
-                .putString(LONGITUDE, "" + latLng.longitude)
-                .apply();
     }
 
     public static float getBearing()
@@ -641,19 +672,6 @@ public class MapFragment extends SupportMapFragment implements
         return preferences.getFloat(TILT, 0);
     }
 
-    private void gotoMyLocation(boolean animate)
-    {
-        Log.d("FlowLogs", "gotoMyLocation : " + animate + ", isShowingMyLocation : " + isShowingMyLocation);
-        if (mGoogleMap != null)
-        {
-            showMyLocDot(getLatLng(), MY_LOC);
-            showAccuracyCircle(getLatLng(), (int) getAccuracy(), MY_LOC);
-            if (isShowingMyLocation)
-            {
-                setCamera(CameraUpdateFactory.newCameraPosition(getLastKnownPos()), animate);
-            }
-        }
-    }
 
     public static double distFrom(double lat1, double lng1, double lat2, double lng2)
     {
@@ -693,18 +711,10 @@ public class MapFragment extends SupportMapFragment implements
                 .commit();
     }
 
-    private void moveMap(boolean animate)
+    void gotoLatLng(LatLng latLng, boolean animate)
     {
-        CameraUpdate update;
-        if (mGeoCodeLatLng != null)
-        {
-            update = CameraUpdateFactory.newCameraPosition(new CameraPosition(mGeoCodeLatLng, getZoom(), getTilt(), getBearing()));
-        }
-        else
-        {
-            update = CameraUpdateFactory.newCameraPosition(getLastKnownPos());
-        }
-        setCamera(update, animate);
+        setMapType();
+        setCamera(CameraUpdateFactory.newCameraPosition(getCameraPos(latLng)), animate);
     }
 
     private void setMapType()
@@ -714,10 +724,6 @@ public class MapFragment extends SupportMapFragment implements
         {
             mGoogleMap.setMapType(mapType);
         }
-    }
-
-    private void showNearByPlaces()
-    {
     }
 
     @Override
@@ -765,6 +771,9 @@ public class MapFragment extends SupportMapFragment implements
                     }
                     favPlaceTypeSelector.setVisibility(View.GONE);
                     hideSubmitButtonAndShowSearchIcon();
+                    break;
+                case R.id.shareLoc1s:
+                    Toast.makeText(mActivity, "Share Location", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -829,6 +838,15 @@ public class MapFragment extends SupportMapFragment implements
         {
             drawCircleOnMap();
         }
+        Handler myHandler = new Handler();
+        myHandler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                showShareLocationOptions();
+            }
+        }, 800);
     }
 
     @Override
@@ -848,27 +866,28 @@ public class MapFragment extends SupportMapFragment implements
         searchBarLayoutParams.topMargin = 0;
         searchBar.setLayoutParams(searchBarLayoutParams);
 
+        hideShareLocationOptions();
+
         if (isSubmitButtonShown)
         {
-            removeAccuracyCircle(action);
+            removeMarkerAndCircle(action);
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        Log.d("Activity Result", "requestCode : "+requestCode+", Image : "+Image.CAPTURE_IMAGE_REQUEST);
+        Log.d("Activity Result", "requestCode : " + requestCode + ", Image : " + Image.CAPTURE_IMAGE_REQUEST);
         switch (requestCode)
         {
             case PLACE_AUTOCOMPLETE_REQUEST_CODE:
                 Place place = PlaceAutocomplete.getPlace(mActivity, data);
+                moveCameraToMyLocOnLocUpdate = false;
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
                         mGeoCodeLatLng = place.getLatLng();
-                        mRadius = 0;
-                        gotoCurrentPos(true);
-                        isShowingMyLocation = false;
+                        gotoLatLng(mGeoCodeLatLng, true);
                         searchText.setText(place.getAddress());
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
@@ -919,44 +938,73 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onLocationChanged(Location location)
     {
-        Log.d("FlowLogs", "onLocationChanged : isShowingMyLocation : " + isShowingMyLocation);
+        Log.d("showMyLocOnMap", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);
         setCameraPosition(location);
-        gotoMyLocation(true);
+        if (moveCameraToMyLocOnLocUpdate)
+        {
+            showMyLocOnMap(true);
+        }
     }
 
-    void showMyLocDot(LatLng latLng, String key)
+    void showMarker(LatLng latLng, String key, int type)
     {
-        Log.d("FlowLogs", "showMyLocDot");
         Marker marker = null;
         if (markerMap.containsKey(key))
         {
             Log.d("FlowLogs", "getting marker from map");
             marker = markerMap.get(key);
         }
-        if (marker != null)
+        if (marker != null && marker.isVisible())
         {
             Log.d("FlowLogs", "marker setPosition");
-            marker.setPosition(latLng);
+            marker.remove();
         }
-        else
+        if (markerMap.containsKey(key + "img"))
         {
-            Log.d("FlowLogs", "creating marker first time");
+            markerMap.remove(key + "img");
+        }
+        Log.d("FlowLogs", "creating marker first time");
+        if (key.equals(MY_LOC))
+        {
             markerMap.put(key, mGoogleMap.addMarker(new MarkerOptions()
                     .position(latLng)
                     .anchor(0.5f, 0.5f)
                     .flat(true)
                     .icon(MiscUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot_48, 17))));
+
         }
+        else
+        {
+            markerMap.put(key, mGoogleMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .anchor(0.5f, 0.5f)
+                    .flat(true)
+                    .icon(MiscUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot_big, 40))));
+
+            int imgId = PlaceAdapter.getDrawableResId(type);
+
+            markerMap.put(key + "img", mGoogleMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .anchor(0.5f, 0.5f)
+                    .flat(true)
+                    .icon(MiscUtil.getMapMarker(mActivity, imgId, 20))));
+        }
+
     }
 
-    void removeAccuracyCircle(String key)
+    void removeMarkerAndCircle(String key)
     {
-        Circle circle = null;
         if (circleMap.containsKey(key))
         {
-            circle = circleMap.get(key);
+            Circle circle = circleMap.get(key);
             circleMap.remove(key);
             circle.remove();
+        }
+        if (markerMap.containsKey(key))
+        {
+            Marker marker = markerMap.get(key);
+            markerMap.remove(key);
+            marker.remove();
         }
     }
 
@@ -968,24 +1016,20 @@ public class MapFragment extends SupportMapFragment implements
         {
             circle = circleMap.get(key);
         }
-        if (circle != null)
-        {
-            circle.setCenter(latLng);
-            circle.setRadius(accuracy);
-            Log.d("hijk", "Circle : from Map");
-        }
-        else
-        {
-            Log.d("hijk", "Circle : first time");
-            Log.d("hijk", "circleMap : " + circleMap + ", mGoogleMap : " + mGoogleMap);
 
-            circleMap.put(key, mGoogleMap.addCircle(new CircleOptions()
-                    .radius(accuracy)
-                    .strokeWidth(2)
-                    .strokeColor(accentColor)
-                    .fillColor(radiusColor)
-                    .center(latLng)));
+        if (circle != null && circle.isVisible())
+        {
+            circle.remove();
         }
+
+        Log.d("hijk", "circleMap : " + circleMap + ", mGoogleMap : " + mGoogleMap);
+
+        circleMap.put(key, mGoogleMap.addCircle(new CircleOptions()
+                .radius(accuracy)
+                .strokeWidth(2)
+                .strokeColor(accentColor)
+                .fillColor(radiusColor)
+                .center(latLng)));
     }
 
     @Override
@@ -1002,35 +1046,36 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
+    double dist;
+
     @Override
     public void onCameraChange(CameraPosition cameraPosition)
     {
-        double dist = distFrom(cameraPosition.target.latitude, cameraPosition.target.longitude, getLatLng().latitude, getLatLng().longitude);
+        dist = distFrom(cameraPosition.target.latitude, cameraPosition.target.longitude, getLatLng().latitude, getLatLng().longitude);
         int threshold = 1000;
         currentZoom = cameraPosition.zoom;
+        hideMyLocMarker();
         mGeoCodeLatLng = cameraPosition.target;
 
         if (isMapMovedManually)
         {
             threshold = 100;
         }
-        if (dist > threshold)
+
+        if (dist < threshold)
         {
-            isShowingMyLocation = false;
+            moveCameraToMyLocOnLocUpdate = true;
         }
 
-
-        if (MiscUtil.isConnected(mActivity))
-        {
-            updateLocationInfo();
-        }
+        updateLocationInfo(MiscUtil.isConnected(mActivity));
         retryAttemptsCount = 0;
 
-        Log.d("hijk", "Circle : isSubmitButtonShown : " + isSubmitButtonShown);
+        Log.d("hijk", "Circle : isSubmitButtonShown : " + isSubmitButtonShown + ", Dist : " + dist);
         if (isSubmitButtonShown)
         {
             drawCircleOnMap();
         }
+        showShareLocationOptions();
     }
 
     private void drawCircleOnMap()
@@ -1104,15 +1149,22 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
-    void updateLocationInfo()
+    void updateLocationInfo(boolean internet)
     {
-        showSearchProgress();
-        if (mGeoCoderTask != null)
+        if (internet)
         {
-            cancelAsyncTask(mGeoCoderTask);
+            showSearchProgress();
+            if (mGeoCoderTask != null)
+            {
+                cancelAsyncTask(mGeoCoderTask);
+            }
+            mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
+            mGeoCoderTask.execute(retryAttemptsCount++);
         }
-        mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
-        mGeoCoderTask.execute(retryAttemptsCount++);
+        else
+        {
+            searchText.setText("No Internet...");
+        }
     }
 
     private void cancelAsyncTask(AsyncTask task)
@@ -1134,7 +1186,7 @@ public class MapFragment extends SupportMapFragment implements
         hideSearchProgress();
         if (result == null)
         {
-            searchText.setText("Unknown Place...");
+            searchText.setText(getText(R.string.unknown_place));
         }
         else if (result != null)
         {
@@ -1142,7 +1194,7 @@ public class MapFragment extends SupportMapFragment implements
         }
         else
         {
-            searchText.setText("No Internet...");
+            searchText.setText(getText(R.string.no_internet));
         }
     }
 
@@ -1170,7 +1222,7 @@ public class MapFragment extends SupportMapFragment implements
         hideSearchProgress();
         if (retryAttemptsCount < 10)
         {
-            updateLocationInfo();
+            updateLocationInfo(MiscUtil.isConnected(mActivity));
         }
         else
         {
@@ -1326,9 +1378,23 @@ public class MapFragment extends SupportMapFragment implements
         builder.show();
     }
 
-    @Override
-    public void onDestroy()
+    void showShareLocationOptions()
     {
-        super.onDestroy();
+        if (dist < 10 && showShareLocationOptions)
+        {
+            TransitionManager.beginDelayedTransition(shareLocationOptions);
+            shareLocationOptions.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            TransitionManager.beginDelayedTransition(shareLocationOptions);
+            shareLocationOptions.setVisibility(View.GONE);
+        }
+    }
+
+    void hideShareLocationOptions()
+    {
+        TransitionManager.beginDelayedTransition(shareLocationOptions);
+        shareLocationOptions.setVisibility(View.GONE);
     }
 }

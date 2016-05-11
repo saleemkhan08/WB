@@ -76,22 +76,18 @@
                     android:gravity="center_vertical|center_horizontal"
                     android:text="Add"
                     android:textColor="@color/white"
-                    />
-
-                <Button
-                    android:id="@+id/removeFriendButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="35dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center"
-                    android:background="@drawable/button_bg"
-                    android:gravity="center_vertical|center_horizontal"
-                    android:text="Remove"
-                    android:textColor="@color/white"
                     android:visibility="gone"
                     />
+                <ImageView
+                    android:id="@+id/friendOptionsIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:paddingRight="10dp"
+                    android:paddingLeft="10dp"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/bg_drawable"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/options_primary_dark"/>
             </RelativeLayout>
 
             <View

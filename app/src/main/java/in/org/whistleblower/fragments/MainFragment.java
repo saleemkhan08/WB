@@ -159,7 +159,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             @Override
             public void onSuccess(String result)
             {
-                Toast.makeText(mActivity, "Success : " + result, Toast.LENGTH_LONG).show();
                 try
                 {
                     JSONArray array = new JSONArray(result);
@@ -200,7 +199,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 issuesRecyclerView.setAdapter(adapter);
                 issuesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
                 swipeRefreshLayout.setRefreshing(false);
-                mUtil.toast("Updated.");
             }
 
             @Override
