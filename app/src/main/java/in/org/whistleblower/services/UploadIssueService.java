@@ -1,4 +1,4 @@
-package in.org.whistleblower;
+package in.org.whistleblower.services;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -23,12 +23,14 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 
+import in.org.whistleblower.IssueActivity;
+import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.utilities.AndroidMultiPartEntity;
-import in.org.whistleblower.utilities.StopRetryReceiver;
+import in.org.whistleblower.receivers.StopRetryReceiver;
 
 public class UploadIssueService extends IntentService
 {

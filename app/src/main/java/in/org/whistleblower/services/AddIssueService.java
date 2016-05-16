@@ -1,4 +1,4 @@
-package in.org.whistleblower.utilities;
+package in.org.whistleblower.services;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -27,6 +27,8 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.receivers.StopRetryReceiver;
+import in.org.whistleblower.utilities.AndroidMultiPartEntity;
 
 public class AddIssueService extends Service
 {

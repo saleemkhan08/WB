@@ -1,4 +1,4 @@
-package in.org.whistleblower.utilities;
+package in.org.whistleblower.receivers;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -6,8 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import in.org.whistleblower.UploadIssueService;
+import in.org.whistleblower.services.UploadIssueService;
 import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.services.AddIssueService;
 
 public class StopRetryReceiver extends BroadcastReceiver
 {

@@ -86,7 +86,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             {
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(MapFragment.SHOW_ISSUE, issue);
-                Otto.getBus().post(issue);
+                Otto.post(issue);
             }
         });
 

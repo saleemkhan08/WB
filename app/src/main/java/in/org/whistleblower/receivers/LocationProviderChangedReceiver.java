@@ -1,4 +1,4 @@
-package in.org.whistleblower;
+package in.org.whistleblower.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -25,9 +25,13 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
+import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.interfaces.PermissionResultListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
+import in.org.whistleblower.models.OttoCommunicator;
+import in.org.whistleblower.services.LocationTrackingService;
+import in.org.whistleblower.singletons.Otto;
 
 public class PermissionUtil extends AppCompatActivity implements ResultCallback<LocationSettingsResult>
 {
@@ -36,6 +40,7 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 102;
     private static final int REQUEST_CODE_SDCARD_PERMISSION = 103;
     public static final String LOCATION_SETTINGS = "LOCATION_SETTINGS";
+    public static final String REQUEST_NOT_TO_TURN_LOCATION_OFF = "requestNotToTurnLocationOff";
     private static PermissionResultListener mPermissionResultListener;
     public static final String SDCARD_PERMISSION = "SDCARD_PERMISSION";
     private static String currentRequest;
@@ -64,8 +69,51 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
                 requestLocationPermission();
             }
         }
+        if(intent.hasExtra(REQUEST_NOT_TO_TURN_LOCATION_OFF))
+        {
+            requestSettingsDialog(intent.getStringExtra(REQUEST_NOT_TO_TURN_LOCATION_OFF));
+        }
     }
-
+    public void requestSettingsDialog(String msg)
+    {
+        final OttoCommunicator communicator = new OttoCommunicator();
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(getString(R.string.app_name));
+        dialog.setMessage(msg);
+        dialog.setPositiveButton("OKAY", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                communicator.action = LocationTrackingService.TURN_ON_LOCATION_SETTINGS;
+                Otto.post(communicator);
+                finish();
+            }
+        });
+        dialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                //TODO decide wat to do?
+                communicator.action = LocationTrackingService.FORCE_STOP;
+                Otto.post(communicator);
+                finish();
+            }
+        });
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                //TODO decide wat to do?
+                communicator.action = LocationTrackingService.FORCE_STOP;
+                Otto.post(communicator);
+                finish();
+            }
+        });
+        dialog.show();
+    }
     private void requestSdCardPermission()
     {
         currentRequest = SDCARD_PERMISSION;
@@ -316,6 +364,10 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
         Log.d("saleem", "intent sent");
     }
 
+    public static void requestLocationSettings(GoogleApiClient googleApiClient, LocationSettingsRequest locationSettingsRequest, SettingsResultListener listener)
+    {
+
+    }
     public static boolean isCameraAndStoragePermissionsAvailable()
     {
         Context mContext = WhistleBlower.getAppContext();

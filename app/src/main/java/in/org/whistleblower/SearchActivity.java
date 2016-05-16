@@ -192,7 +192,7 @@ public class SearchActivity extends AppCompatActivity
             }
             else
             {
-                //searchResultView.setAdapter(new UserListAdapter(mContext, mUserList, mFriendList, isFriendList));
+                //searchResultView.setAdapter(new CommonUserListAdapter(mContext, mUserList, mFriendList, isFriendList));
             }
             searchResultView.setLayoutManager(new LinearLayoutManager(mContext));
             mProgressBar.setVisibility(View.GONE);

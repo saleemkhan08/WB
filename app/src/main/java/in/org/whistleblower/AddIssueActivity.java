@@ -41,7 +41,7 @@ import in.org.whistleblower.interfaces.DialogUtilListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.utilities.AddIssueService;
+import in.org.whistleblower.services.AddIssueService;
 import in.org.whistleblower.utilities.DialogsUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 

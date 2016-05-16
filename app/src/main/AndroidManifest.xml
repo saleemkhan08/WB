@@ -151,24 +151,24 @@
         </activity>
 
         <receiver
-            android:name=".NotificationReceiver"
+            android:name=".receivers.NotificationReceiver"
             android:enabled="true"
             android:exported="true">
         </receiver>
 
         <service
-            android:name=".UploadIssueService"
+            android:name=".services.UploadIssueService"
             android:exported="false">
         </service>
 
         <receiver
-            android:name=".utilities.StopRetryReceiver"
+            android:name=".receivers.StopRetryReceiver"
             android:enabled="true"
             android:exported="true">
         </receiver>
 
         <service
-            android:name=".utilities.AddIssueService"
+            android:name=".services.AddIssueService"
             android:enabled="true"
             android:exported="true">
         </service>
@@ -179,7 +179,7 @@
         </activity>
 
         <receiver
-            android:name=".LocationProviderChangedReceiver"
+            android:name=".receivers.LocationProviderChangedReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -205,6 +205,18 @@
             android:name=".IssueActivity"
             android:label="@string/title_activity_issue"
             android:theme="@style/AppTheme">
+        </activity>
+
+        <receiver
+            android:name=".receivers.ShareLocationStopReceiver"
+            android:enabled="false"
+            android:exported="false">
+        </receiver>
+
+        <activity
+            android:name=".LocationListActivity"
+            android:label="@string/title_activity_location_list"
+            android:theme="@style/DialogTheme">
         </activity>
     </application>
 

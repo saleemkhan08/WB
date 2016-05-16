@@ -18,6 +18,7 @@ public class FABUtil
     public static final String SET_ALARM = "SET_ALARM";
     public static final String ADD_ISSUE = "ADD_ISSUE";
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
+    public static final String NOTIFY_LOC = "NOTIFY_LOC" ;
     AppCompatActivity mActivity;
     MiscUtil mUtil;
 
@@ -68,6 +69,18 @@ public class FABUtil
                 fabAction(ADD_FAV_PLACE);
             }
         });
+
+        FloatingActionButton buttonNotifyPlace = (FloatingActionButton) mActivity.findViewById(R.id.notifyLoc);
+        buttonNotifyPlace.setStrokeVisible(false);
+        buttonNotifyPlace.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                fabMenu.collapse();
+                fabAction(NOTIFY_LOC);
+            }
+        });
     }
 
     public void fabAction(String action)
@@ -75,7 +88,7 @@ public class FABUtil
         Log.d("Action", "fab Action : " + action);
         if (MiscUtil.isConnected(mActivity))
         {
-            Otto.getBus().post(action);
+            Otto.post(action);
         }
         else
         {

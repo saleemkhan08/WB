@@ -1,6 +1,7 @@
 package in.org.whistleblower;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,7 +49,7 @@ import in.org.whistleblower.utilities.VolleyUtil;
 
 public class FriendListActivity extends AppCompatActivity implements TextWatcher, View.OnClickListener
 {
-    private static final String KEY_USERS_FETCHED = "KEY_USERS_FETCHED";
+    public static final String KEY_USERS_FETCHED = "KEY_USERS_FETCHED";
     private static final String IS_FRIEND_LIST = "IS_FRIEND_LIST";
     private static final String IS_SEARCH_ENABLE = "IS_SEARCH_ENABLE";
     private static GetUserListTask mTask;
@@ -132,8 +133,11 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
 
     private void changeList(List<Accounts> list, String query)
     {
-        mAdapter.animateTo(filter(list, query));
-        mFriendAndUserRecyclerView.scrollToPosition(0);
+        if(list != null)
+        {
+            mAdapter.animateTo(filter(list, query));
+            mFriendAndUserRecyclerView.scrollToPosition(0);
+        }
     }
 
     public static void showUserListFromDatabase()
@@ -296,9 +300,10 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
             @Override
             public void onError(VolleyError error)
             {
-                Toast.makeText(FriendListActivity.this, "error : " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(FriendListActivity.this, "Please Try again", Toast.LENGTH_SHORT).show();
                 Log.d("ToastMsg", "error : " + error.getMessage());
                 hideProgressFab();
+                startActivity(new Intent(FriendListActivity.this, MainActivity.class));
             }
         });
     }

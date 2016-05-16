@@ -99,7 +99,7 @@ public class IssueActivity extends AppCompatActivity
             {
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(MapFragment.SHOW_ISSUE, issue);
-                Otto.getBus().post(issue);
+                Otto.post(issue);
             }
         });
 

@@ -2,19 +2,16 @@ package in.org.whistleblower.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.transition.Slide;
@@ -48,6 +45,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.squareup.otto.Subscribe;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,12 +65,13 @@ import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.asynctasks.GeoCoderTask;
 import in.org.whistleblower.asynctasks.GetNearByPlaces;
 import in.org.whistleblower.interfaces.GeoCodeListener;
-import in.org.whistleblower.interfaces.LocationChangeListener;
 import in.org.whistleblower.interfaces.PlacesResultListener;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.services.LocationTrackingService;
+import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
@@ -81,7 +80,6 @@ import in.org.whistleblower.utilities.TouchableWrapper;
 
 public class MapFragment extends SupportMapFragment implements
         View.OnClickListener,
-        LocationChangeListener,
         PlacesResultListener,
         TouchableWrapper.OnMapTouchListener,
         GeoCodeListener,
@@ -91,7 +89,7 @@ public class MapFragment extends SupportMapFragment implements
     public static final String SHOW_FAV_PLACE = "showFavPlace";
     public static final String SHOW_ISSUE = "showIssue";
     public static final String HANDLE_ACTION = "handleAction";
-
+    OttoCommunicator mCommunicator = new OttoCommunicator();
 
     private static final String HOME = "Home";
     public static final String LATLNG = "LATLNG";
@@ -195,10 +193,6 @@ public class MapFragment extends SupportMapFragment implements
     @Bind(R.id.favPlaceTypeSelector)
     ViewGroup favPlaceTypeSelector;
 
-
-    LocationTrackingService mLocationTrackingService;
-    boolean isLocationServiceBound = false;
-    //private boolean moveCameraToMyLocOnLocUpdate;
     private boolean isMapMovedManually;
 
     private static int retryAttemptsCount;
@@ -215,6 +209,7 @@ public class MapFragment extends SupportMapFragment implements
     public MapFragment()
     {
         Log.d("FlowLogs", "Constructor");
+        Otto.register(this);
     }
 
     //Implementation done
@@ -238,8 +233,12 @@ public class MapFragment extends SupportMapFragment implements
         mActivity = (AppCompatActivity) getActivity();
         ButterKnife.bind(this, mActivity);
         WhistleBlower.getComponent().inject(this);
-
-        startLocationTrackingServiceAndBind();
+        mTravelModeOn = false;
+        preferences.edit()
+                .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
+                .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
+                .commit();
+        startLocationTrackingService();
         Log.d("FlowLogs", "Start Service Called");
 
         setupRadiusSeekBar();
@@ -249,6 +248,7 @@ public class MapFragment extends SupportMapFragment implements
         mSubmitButton.setOnClickListener(this);
         shareLoc1s.setOnClickListener(this);
         setUpMyLocationButton();
+
     }
 
     @Override
@@ -268,11 +268,6 @@ public class MapFragment extends SupportMapFragment implements
         }
         NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
         mGoogleMap.setOnCameraChangeListener(this);
-
-        if (mLocationTrackingService != null)
-        {
-            mLocationTrackingService.registerLocationChangedListener(this);
-        }
         bundle = getArguments();
         reloadMapParameters(bundle);
     }
@@ -455,6 +450,9 @@ public class MapFragment extends SupportMapFragment implements
             case FABUtil.ADD_ISSUE:
                 drawableId = R.drawable.bullhorn_primary_dark;
                 break;
+            case FABUtil.NOTIFY_LOC:
+                drawableId = R.mipmap.notify_loc_primary_dark;
+                break;
             case FABUtil.SET_ALARM:
                 drawableId = R.mipmap.bell_holo;
                 break;
@@ -510,7 +508,7 @@ public class MapFragment extends SupportMapFragment implements
     public void onStop()
     {
         super.onStop();
-        mLocationTrackingService.unRegisterLocationChangedListener();
+        Otto.unregister(this);
         map_fab_buttons.setVisibility(View.GONE);
         searchBar.setVisibility(View.GONE);
         select_location.setVisibility(View.GONE);
@@ -531,7 +529,7 @@ public class MapFragment extends SupportMapFragment implements
             {
                 moveCameraToMyLocOnLocUpdate = true;
                 showTravellingModeHint();
-                startLocationTrackingServiceAndBind();
+                startLocationTrackingService();
                 Log.d("showMyLocOnMap", "onClick");
                 showMyLocOnMap(true);
             }
@@ -555,7 +553,7 @@ public class MapFragment extends SupportMapFragment implements
                             .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, true)
                             .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 6)
                             .commit();
-                    startLocationTrackingServiceAndBind();
+                    startLocationTrackingService();
                 }
                 else
                 {
@@ -566,7 +564,8 @@ public class MapFragment extends SupportMapFragment implements
                             .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
                             .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
                             .commit();
-                    mLocationTrackingService.stopService();
+                    mCommunicator.action = LocationTrackingService.STOP_SERVICE;
+                    Otto.post(mCommunicator);
                 }
                 return true;
             }
@@ -605,17 +604,11 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
-    private void startLocationTrackingServiceAndBind()
+    private void startLocationTrackingService()
     {
-        Log.d("FlowLogs", "startLocationTrackingServiceAndBind");
+        Log.d("FlowLogs", "startLocationTrackingService");
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         mActivity.startService(intent);
-        Log.d("FlowLogs", "isLocationServiceBound : " + isLocationServiceBound);
-        if (!isLocationServiceBound)
-        {
-            Log.d("FlowLogs", "bindService");
-            mActivity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        }
     }
 
     private void setAlarm()
@@ -631,12 +624,6 @@ public class MapFragment extends SupportMapFragment implements
         intent.putExtra(LocationTrackingService.KEY_PLACE_NAME, searchText.getText());
 
         mActivity.startService(intent);
-        Log.d("FlowLogs", "isLocationServiceBound : " + isLocationServiceBound);
-        if (!isLocationServiceBound)
-        {
-            Log.d("FlowLogs", "bindService");
-            mActivity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        }
         toast("Alarm Set : \n" + searchText.getText());
     }
 
@@ -767,13 +754,19 @@ public class MapFragment extends SupportMapFragment implements
                             case FABUtil.ADD_FAV_PLACE:
                                 addFavPlace();
                                 break;
+
+                            case FABUtil.NOTIFY_LOC:
+                                notifyLocation();
+                                break;
                         }
                     }
                     favPlaceTypeSelector.setVisibility(View.GONE);
                     hideSubmitButtonAndShowSearchIcon();
                     break;
                 case R.id.shareLoc1s:
-                    Toast.makeText(mActivity, "Share Location", Toast.LENGTH_SHORT).show();
+                    FragmentManager manager = getFragmentManager();
+                    ShareLocationFragment dialog = new ShareLocationFragment();
+                    dialog.show(manager, "ShareLocationFragment");
                     break;
             }
         }
@@ -781,6 +774,11 @@ public class MapFragment extends SupportMapFragment implements
         {
             Toast.makeText(mActivity, "No Internet!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void notifyLocation()
+    {
+        Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
     }
 
     private void addFavPlace()
@@ -914,28 +912,7 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
-    ServiceConnection serviceConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            Log.d("FlowLogs", "onServiceConnected");
-            LocationTrackingService.LocalBinder binder = (LocationTrackingService.LocalBinder) service;
-            mLocationTrackingService = binder.getService();
-            mLocationTrackingService.registerLocationChangedListener(MapFragment.this);
-            isLocationServiceBound = true;
-            Log.d("FlowLogs", "Service Bounded : " + isLocationServiceBound);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            isLocationServiceBound = false;
-            Log.d("FlowLogs", "Service Bounded : " + isLocationServiceBound);
-        }
-    };
-
-    @Override
+    @Subscribe
     public void onLocationChanged(Location location)
     {
         Log.d("showMyLocOnMap", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);

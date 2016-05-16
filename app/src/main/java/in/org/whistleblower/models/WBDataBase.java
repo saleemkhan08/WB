@@ -25,12 +25,18 @@ public class WBDataBase
         String[] mTableSchema = {
                 IssuesDao.TABLE_SCHEMA,
                 FavPlacesDao.TABLE_SCHEMA,
-                AccountsDao.TABLE_SCHEMA
+                AccountsDao.TABLE_SCHEMA,
+                LocationAlarmDao.TABLE_SCHEMA,
+                ShareLocationDao.TABLE_SCHEMA,
+                NotifyLocationDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
                 IssuesDao.DROP_TABLE,
                 FavPlacesDao.TABLE_SCHEMA,
-                AccountsDao.TABLE_SCHEMA
+                AccountsDao.TABLE_SCHEMA,
+                LocationAlarmDao.TABLE_SCHEMA,
+                ShareLocationDao.TABLE_SCHEMA,
+                NotifyLocationDao.TABLE_SCHEMA
         };
 
         Context mContext;

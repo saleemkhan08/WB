@@ -226,6 +226,16 @@
                 fab:fab_size="mini"/>
 
             <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/notifyLoc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fab_icon="@mipmap/comment_accent"
+                app:fab_title="Notify Friend"
+                fab:fab_colorNormal="@color/white"
+                fab:fab_colorPressed="@color/white_pressed"
+                fab:fab_size="mini"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

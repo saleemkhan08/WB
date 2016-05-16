@@ -62,7 +62,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             @Override
             public void onClick(View v)
             {
-                Otto.getBus().post(address);
+                Otto.post(address);
             }
         });
 

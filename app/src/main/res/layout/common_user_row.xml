@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp">
+
+    <RelativeLayout
+        android:id="@+id/contentWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/profilePic"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="15dp"
+            android:gravity="center_vertical"
+            android:scaleType="centerCrop"
+            android:src="@drawable/img"
+            />
+
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/profilePic"
+            android:layout_toLeftOf="@+id/actionContainer"
+            android:text="Anonymous"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp"
+            />
+        <RelativeLayout
+            android:id="@+id/actionContainer"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_width="40dp"
+            android:layout_height="40dp">
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/userOptionsIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_drawable"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/options_primary_dark"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/contentWrapper"
+        android:layout_marginTop="10dp"
+        android:background="@color/divider">
+    </View>
+</RelativeLayout>

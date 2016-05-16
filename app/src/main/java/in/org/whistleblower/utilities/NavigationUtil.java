@@ -20,6 +20,7 @@ import com.squareup.otto.Subscribe;
 import javax.inject.Inject;
 
 import in.org.whistleblower.FriendListActivity;
+import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
@@ -58,7 +59,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         fragmentManager = mActivity.getSupportFragmentManager();
         WhistleBlower.getComponent().inject(this);
         drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
-        Otto.getBus().register(this);
+        Otto.register(this);
     }
 
     @Subscribe
@@ -113,7 +114,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void unregisterBus()
     {
-        Otto.getBus().unregister(this);
+        Otto.unregister(this);
     }
     public void setUp(MiscUtil util)
     {
@@ -169,15 +170,19 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                     case R.id.nav_notify_loc:
                         Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
                         break;
+                    
                     case R.id.nav_share_loc:
-                        Toast.makeText(mActivity, "Real time Location", Toast.LENGTH_SHORT).show();
-                        //showNewsFeedsFragment();
+                        Intent shareLocationList = new Intent(mActivity, LocationListActivity.class);
+                        shareLocationList.putExtra(LocationListActivity.SHARE_LOCATION_LIST, true);
+                        mActivity.startActivity(shareLocationList);
                         break;
+
                     case R.id.nav_friends:
                         Intent intent = new Intent(mActivity, FriendListActivity.class);
                         intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
                         mActivity.startActivity(intent);
                         break;
+
                     case R.id.nav_fav:
                         showFavPlacesList();
                         break;
