@@ -6,12 +6,10 @@ package in.org.whistleblower.models;
 public class OttoCommunicator
 {
     public String action;
-
     public OttoCommunicator(String action)
     {
         this.action = action;
     }
-
     public OttoCommunicator()
     {
     }

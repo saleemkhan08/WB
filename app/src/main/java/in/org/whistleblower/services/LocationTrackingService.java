@@ -530,7 +530,7 @@ public class LocationTrackingService extends Service implements LocationListener
                 @Override
                 public void onError(VolleyError error)
                 {
-                    Log.d("shareLocation", error.getMessage());
+                    Log.d("shareLocation", ""+error.getMessage());
                 }
             });
         }

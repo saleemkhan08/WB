@@ -130,6 +130,22 @@
                 fab:fab_icon="@mipmap/movie_gray"
                 fab:fab_size="mini"/>
         </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="10dp">
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fav_worship"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:onClick="favPlaceSelector"
+                fab:fab_colorNormal="@color/white"
+                fab:fab_colorPressed="@color/white_pressed"
+                fab:fab_icon="@mipmap/worship_grey"
+                fab:fab_size="mini"/>
+        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="wrap_content"

@@ -81,18 +81,26 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     @Subscribe
     public void handleAction(String action)
     {
-        Bundle bundle = new Bundle();
-        Log.d("Action", "handle Action : "+action);
-        bundle.putString(MapFragment.HANDLE_ACTION, action);
-        showMapFragment(bundle);
+        Log.d("Action", "handle Action : " + action);
+        switch (action)
+        {
+            case FABUtil.SET_ALARM:
+            case FABUtil.ADD_ISSUE:
+            case FABUtil.ADD_FAV_PLACE:
+            case FABUtil.NOTIFY_LOC:
+                Bundle bundle = new Bundle();
+                bundle.putString(MapFragment.HANDLE_ACTION, action);
+                showMapFragment(bundle);
+                break;
+        }
     }
 
     void showMapFragment(Bundle bundle)
     {
-        Log.d("Action", "Bundle : "+bundle);
+        Log.d("Action", "Bundle : " + bundle);
         if (MiscUtil.isGoogleServicesOk(mActivity))
         {
-            if(mapFragment == null)
+            if (mapFragment == null)
             {
                 mapFragment = getMapFragment();
             }
@@ -103,6 +111,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 fragmentManager
                         .beginTransaction()
                         .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                        .addToBackStack(null)
                         .commit();
             }
             else
@@ -112,10 +121,11 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
     }
 
-    public void unregisterBus()
+    public void unregisterOtto()
     {
         Otto.unregister(this);
     }
+
     public void setUp(MiscUtil util)
     {
         navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
@@ -141,13 +151,13 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset)
             {
-
+                Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
             }
 
             @Override
             public void onDrawerOpened(View drawerView)
             {
-
+                Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
             }
 
             @Override
@@ -170,7 +180,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                     case R.id.nav_notify_loc:
                         Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
                         break;
-                    
+
                     case R.id.nav_share_loc:
                         Intent shareLocationList = new Intent(mActivity, LocationListActivity.class);
                         shareLocationList.putExtra(LocationListActivity.SHARE_LOCATION_LIST, true);
@@ -212,8 +222,10 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
+                .addToBackStack(null)
                 .commit();
     }
+
     public void showMapFragment()
     {
         if (MiscUtil.isGoogleServicesOk(mActivity))
@@ -255,6 +267,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.content_layout, mainFragment, MAIN_FRAGMENT_TAG)
+                .addToBackStack(null)
                 .commit();
     }
 

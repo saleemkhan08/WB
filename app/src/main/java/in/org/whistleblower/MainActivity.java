@@ -23,6 +23,7 @@ import javax.inject.Inject;
 
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -144,7 +145,11 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
         if(mNavigationUtil != null)
         {
-            mNavigationUtil.unregisterBus();
+            mNavigationUtil.unregisterOtto();
+        }
+        if(mFabUtil != null)
+        {
+            mFabUtil.unregisterOtto();
         }
     }
 
@@ -162,6 +167,10 @@ public class MainActivity extends AppCompatActivity
         {
             drawer.closeDrawer(GravityCompat.START);
         }
+        else if(fabMenu.isExpanded())
+        {
+            fabMenu.collapse();
+        }
         else if (mNavigationUtil.mapFragment != null && mNavigationUtil.mapFragment.isVisible())
         {
             if (mNavigationUtil.mapFragment.isSubmitButtonShown)
@@ -175,9 +184,9 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-            super.onBackPressed();
+                super.onBackPressed();
         }
-
+        Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
     }
 
     @Override

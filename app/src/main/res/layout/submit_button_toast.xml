@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/toastRoot"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    >
+    <TextView
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+        android:background="@mipmap/feature_180"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:text="Click on Submit."
+        android:textColor="@color/white"/>
+</RelativeLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:id="@+id/toastRoot"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <TextView
+        android:layout_width="140dp"
+        android:layout_height="50dp"
+        android:background="@mipmap/feature_90_left"
+        android:gravity="center"
+        android:paddingLeft="5dp"
+        android:text="Select Location"
+        android:textColor="@color/white"/>
+</LinearLayout>

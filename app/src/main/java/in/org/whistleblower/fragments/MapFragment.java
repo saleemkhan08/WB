@@ -69,6 +69,7 @@ import in.org.whistleblower.interfaces.PlacesResultListener;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
@@ -99,6 +100,7 @@ public class MapFragment extends SupportMapFragment implements
     String placeType;
     int placeTypeIndex;
     private FavPlaces mFavPlace = new FavPlaces();
+    private NotifyLocation mNotifyLocation = new NotifyLocation();
     public static final String LATITUDE = "LATITUDE";
     public static final String LONGITUDE = "LONGITUDE";
     public static final String ZOOM = "ZOOM";
@@ -204,6 +206,7 @@ public class MapFragment extends SupportMapFragment implements
     private float currentZoom;
     private boolean moveCameraToMyLocOnLocUpdate;
     private boolean showShareLocationOptions = true;
+    private boolean isPlacesApiResult;
 
     //Implementation done
     public MapFragment()
@@ -300,6 +303,10 @@ public class MapFragment extends SupportMapFragment implements
                 action = bundle.getString(HANDLE_ACTION);
                 showSubmitButtonAndHideSearchIcon();
             }
+        }
+        else if (isPlacesApiResult)
+        {
+            isPlacesApiResult = false;
         }
         else
         {
@@ -433,6 +440,7 @@ public class MapFragment extends SupportMapFragment implements
     public void showSubmitButtonAndHideSearchIcon()
     {
         int drawableId;
+        favPlaceTypeSelector.setVisibility(View.GONE);
         showShareLocationOptions = false;
         TransitionManager.beginDelayedTransition(shareLocationOptions);
         shareLocationOptions.setVisibility(View.GONE);
@@ -470,7 +478,6 @@ public class MapFragment extends SupportMapFragment implements
         layoutParams.bottomMargin = MiscUtil.dp(mActivity, 60);
         map_fab_buttons.setLayoutParams(layoutParams);
 
-        radiusSeekBarInnerWrapper.setVisibility(View.GONE);
         TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
         radiusSeekBarInnerWrapper.setVisibility(View.VISIBLE);
 
@@ -481,12 +488,9 @@ public class MapFragment extends SupportMapFragment implements
     public void hideSubmitButtonAndShowSearchIcon()
     {
         showShareLocationOptions = true;
-        if (action.equals(FABUtil.ADD_FAV_PLACE))
-        {
-            favPlaceTypeSelector.setVisibility(View.VISIBLE);
-            TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
-            favPlaceTypeSelector.setVisibility(View.GONE);
-        }
+        TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+        favPlaceTypeSelector.setVisibility(View.GONE);
+
         isSubmitButtonShown = false;
         searchIcon.setImageDrawable(mActivity.getDrawable(R.drawable.search_primary_dark));
         mSubmitButton.setVisibility(View.INVISIBLE);
@@ -500,8 +504,8 @@ public class MapFragment extends SupportMapFragment implements
         radiusSeekBarInnerWrapper.setVisibility(View.GONE);
         removeMarkerAndCircle(action);
         Log.d("hjki", "radius : Gone");
-
         showShareLocationOptions();
+        Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
     }
 
     @Override
@@ -509,12 +513,14 @@ public class MapFragment extends SupportMapFragment implements
     {
         super.onStop();
         Otto.unregister(this);
+        hideSubmitButtonAndShowSearchIcon();
         map_fab_buttons.setVisibility(View.GONE);
         searchBar.setVisibility(View.GONE);
         select_location.setVisibility(View.GONE);
         shareLocationOptions.setVisibility(View.GONE);
         cancelAsyncTask(mGeoCoderTask);
         cancelAsyncTask(mGetNearByPlaces);
+        Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
     }
 
     public void setUpMyLocationButton()
@@ -739,6 +745,7 @@ public class MapFragment extends SupportMapFragment implements
                         {
                             case FABUtil.SET_ALARM:
                                 setAlarm();
+                                hideSubmitButtonAndShowSearchIcon();
                                 break;
 
                             case FABUtil.ADD_ISSUE:
@@ -748,20 +755,20 @@ public class MapFragment extends SupportMapFragment implements
                                 intent.putExtra(ADDRESS, searchText.getText().toString());
                                 intent.putExtra(RADIUS, mRadius);
                                 startActivity(intent);
-
+                                hideSubmitButtonAndShowSearchIcon();
                                 break;
 
                             case FABUtil.ADD_FAV_PLACE:
                                 addFavPlace();
+                                hideSubmitButtonAndShowSearchIcon();
                                 break;
 
                             case FABUtil.NOTIFY_LOC:
                                 notifyLocation();
+                                hideSubmitButtonAndShowSearchIcon();
                                 break;
                         }
                     }
-                    favPlaceTypeSelector.setVisibility(View.GONE);
-                    hideSubmitButtonAndShowSearchIcon();
                     break;
                 case R.id.shareLoc1s:
                     FragmentManager manager = getFragmentManager();
@@ -778,7 +785,18 @@ public class MapFragment extends SupportMapFragment implements
 
     private void notifyLocation()
     {
-        Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
+        mNotifyLocation.radius = (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
+        mNotifyLocation.message = searchText.getText().toString();
+        mNotifyLocation.latitude = mGeoCodeLatLng.latitude + "";
+        mNotifyLocation.longitude = mGeoCodeLatLng.longitude + "";
+
+        FragmentManager manager = getFragmentManager();
+        NotifyLocationFragment dialog = new NotifyLocationFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
+        dialog.setArguments(bundle);
+        dialog.show(manager, "ShareLocationFragment");
+
     }
 
     private void addFavPlace()
@@ -880,18 +898,26 @@ public class MapFragment extends SupportMapFragment implements
         {
             case PLACE_AUTOCOMPLETE_REQUEST_CODE:
                 Place place = PlaceAutocomplete.getPlace(mActivity, data);
+                Log.d("PlacesApi", "" + place);
+                isPlacesApiResult = true;
                 moveCameraToMyLocOnLocUpdate = false;
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
                         mGeoCodeLatLng = place.getLatLng();
+                        Log.d("PlacesApi", "" + place.getAddress());
+                        Log.d("PlacesApi", "" + place.getLatLng());
+                        Log.d("PlacesApi", "" + place.getName());
+
                         gotoLatLng(mGeoCodeLatLng, true);
                         searchText.setText(place.getAddress());
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
+                        Log.d("PlacesApi", "RESULT_ERROR");
                         Toast.makeText(mActivity, "Unknown Location", Toast.LENGTH_SHORT).show();
                         break;
                     case Activity.RESULT_CANCELED:
+                        Log.d("PlacesApi", "RESULT_CANCELED");
                         break;
                 }
                 break;
@@ -1240,6 +1266,7 @@ public class MapFragment extends SupportMapFragment implements
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_college)).setIcon(R.mipmap.school_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_shopping_place)).setIcon(R.mipmap.shopping_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_movie)).setIcon(R.mipmap.movie_gray);
+        ((FloatingActionButton) mActivity.findViewById(R.id.fav_worship)).setIcon(R.mipmap.worship_grey);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_library)).setIcon(R.mipmap.library_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_play_ground)).setIcon(R.mipmap.play_ground_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_hospital)).setIcon(R.mipmap.hospital_gray);
@@ -1279,42 +1306,46 @@ public class MapFragment extends SupportMapFragment implements
                 ((FloatingActionButton) view).setIcon(R.mipmap.movie_accent);
                 placeTypeIndex = 5;
                 break;
+            case R.id.fav_worship:
+                ((FloatingActionButton) view).setIcon(R.mipmap.worship_accent);
+                placeTypeIndex = 6;
+                break;
             case R.id.fav_library:
                 ((FloatingActionButton) view).setIcon(R.mipmap.library_accent);
-                placeTypeIndex = 6;
+                placeTypeIndex = 7;
                 break;
             case R.id.fav_play_ground:
                 ((FloatingActionButton) view).setIcon(R.mipmap.play_ground_accent);
-                placeTypeIndex = 7;
+                placeTypeIndex = 8;
                 break;
             case R.id.fav_hospital:
                 ((FloatingActionButton) view).setIcon(R.mipmap.hospital_accent);
-                placeTypeIndex = 8;
+                placeTypeIndex = 9;
                 break;
             case R.id.fav_jogging:
                 ((FloatingActionButton) view).setIcon(R.mipmap.jogging_accent);
-                placeTypeIndex = 9;
+                placeTypeIndex = 10;
                 break;
             case R.id.fav_gym:
                 ((FloatingActionButton) view).setIcon(R.mipmap.gym_accent);
-                placeTypeIndex = 10;
+                placeTypeIndex = 11;
                 break;
             case R.id.fav_hotel:
                 ((FloatingActionButton) view).setIcon(R.mipmap.hotel_accent);
-                placeTypeIndex = 11;
+                placeTypeIndex = 12;
                 break;
             case R.id.fav_coffee_shop:
                 ((FloatingActionButton) view).setIcon(R.mipmap.coffee_shop_accent);
-                placeTypeIndex = 12;
+                placeTypeIndex = 13;
                 break;
             case R.id.fav_bar:
                 ((FloatingActionButton) view).setIcon(R.mipmap.bar_accent);
-                placeTypeIndex = 13;
+                placeTypeIndex = 14;
                 break;
             case R.id.fav_others:
                 ((FloatingActionButton) view).setIcon(R.mipmap.others_accent);
                 isOther = true;
-                placeTypeIndex = 14;
+                placeTypeIndex = 15;
                 showFavPlaceNameEditDialog();
                 break;
         }
@@ -1326,6 +1357,15 @@ public class MapFragment extends SupportMapFragment implements
         {
             Toast.makeText(mActivity, placeType, Toast.LENGTH_SHORT).show();
         }
+        cancelToast(2);
+    }
+
+    private void cancelToast(int i)
+    {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(FABUtil.HIDE_DESCRIPTION_TOAST, true);
+        bundle.putInt(FABUtil.TOAST_INDEX, i);
+        Otto.post(bundle);
     }
 
     private void showFavPlaceNameEditDialog()

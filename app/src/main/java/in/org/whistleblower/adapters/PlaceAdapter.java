@@ -155,20 +155,22 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             case 5:
                 return R.mipmap.movie_primary_dark;
             case 6:
-                return R.mipmap.library_primay_dark;
+                return R.mipmap.worship;
             case 7:
-                return R.mipmap.play_ground_primary_dark;
+                return R.mipmap.library_primay_dark;
             case 8:
-                return R.mipmap.hospital_primary_dark;
+                return R.mipmap.play_ground_primary_dark;
             case 9:
-                return R.mipmap.jogging_primary_dark;
+                return R.mipmap.hospital_primary_dark;
             case 10:
-                return R.mipmap.gym_primary_dark;
+                return R.mipmap.jogging_primary_dark;
             case 11:
-                return R.mipmap.hotel_primary_dark;
+                return R.mipmap.gym_primary_dark;
             case 12:
-                return R.mipmap.coffee_shop_primay_dark;
+                return R.mipmap.hotel_primary_dark;
             case 13:
+                return R.mipmap.coffee_shop_primay_dark;
+            case 14:
                 return R.mipmap.bar_primary_dark;
             case -1:
                 return R.mipmap.issue_primary_dark;
