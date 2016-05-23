@@ -1,9 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
-              android:minWidth="300dp"
               android:layout_height="match_parent"
+              android:minWidth="300dp"
               android:orientation="vertical"
+              android:background="#eee"
               tools:context="in.org.whistleblower.fragments.ShareLocationFragment">
 
     <LinearLayout
@@ -23,40 +24,42 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:paddingRight="10dp"
-                android:paddingLeft="10dp"
-                android:weightSum="2"
-                android:layout_height="40dp">
 
-                <RadioButton
-                    android:id="@+id/continuously"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:checked="true"
-                    android:gravity="center"
-                    android:text="Continuously"
-                    android:textColor="@color/white"/>
-                <View
-                    android:visibility="gone"
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:background="@color/white"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
-                <RadioButton
-                    android:id="@+id/justOnce"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Just Once"
-                    android:textColor="@color/white"/>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/continuously"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/bg_drawable"
+                android:gravity="center"
+                android:text="Real Time"
+                android:textColor="@color/colorAccent"/>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="5dp"
+                android:background="@color/white"
+                />
+
+            <TextView
+                android:id="@+id/justOnce"
+                android:layout_width="0dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/bg_drawable"
+                android:gravity="center"
+                android:text="Just Once"
+                android:textColor="@color/white"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

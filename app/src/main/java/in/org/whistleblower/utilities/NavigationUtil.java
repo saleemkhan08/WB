@@ -19,12 +19,12 @@ import com.squareup.otto.Subscribe;
 
 import javax.inject.Inject;
 
-import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.LoginActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
+import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.FavPlaces;
@@ -41,6 +41,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
     public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
+    public static final String FRIEND_LIST_FRAGMENT_TAG = "FRIEND_LIST_FRAGMENT_TAG";
     //To get fragment manager
     AppCompatActivity mActivity;
     public MapFragment mapFragment;
@@ -188,9 +189,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                         break;
 
                     case R.id.nav_friends:
-                        Intent intent = new Intent(mActivity, FriendListActivity.class);
-                        intent.putExtra(KEY_CATEGORY, FRIEND_LIST);
-                        mActivity.startActivity(intent);
+                        showFriendsList();
                         break;
 
                     case R.id.nav_fav:
@@ -222,6 +221,20 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void showFriendsList()
+    {
+        FriendListFragment friendListFragment = (FriendListFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FRIEND_LIST_FRAGMENT_TAG);
+        if (friendListFragment == null)
+        {
+            friendListFragment = new FriendListFragment();
+        }
+        fragmentManager
+                .beginTransaction()
+                .replace(R.id.content_layout, friendListFragment, FRIEND_LIST_FRAGMENT_TAG)
                 .addToBackStack(null)
                 .commit();
     }

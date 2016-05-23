@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
             String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
             if (dpUrl.isEmpty())
             {
-                profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
+                profilePic.setImageResource(R.mipmap.user_accent_o);
             }
             else
             {

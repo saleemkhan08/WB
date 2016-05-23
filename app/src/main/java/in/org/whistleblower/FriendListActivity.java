@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import in.org.whistleblower.adapters.FriendListAdapter;
+import in.org.whistleblower.adapters.FriendListAdapterOld;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
@@ -65,7 +65,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
     static View progress;
     static RecyclerView mFriendAndUserRecyclerView;
     private boolean isSearchEnabled;
-    private static FriendListAdapter mAdapter;
+    private static FriendListAdapterOld mAdapter;
     private boolean isFriendList;
     FloatingActionButton fab;
     private View fabWrapper;
@@ -174,7 +174,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
         protected Void doInBackground(Void... params)
         {
             Log.d("Doodle", "Do in backgrnd");
-            AccountsDao dao = new AccountsDao(mStaticContext);
+            AccountsDao dao = new AccountsDao();
 
             if (mFriendList == null || mFriendList.size() <= 0)
             {
@@ -201,7 +201,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
         protected void onPostExecute(Void result)
         {
             Log.d("Doodle", "Post exe");
-            mAdapter = new FriendListAdapter(mStaticContext, mShowList);
+            mAdapter = new FriendListAdapterOld(mStaticContext, mShowList);
             mFriendAndUserRecyclerView.setLayoutManager(new LinearLayoutManager(mStaticContext));
             mFriendAndUserRecyclerView.setAdapter(mAdapter);
             hideProgressFab();
@@ -311,7 +311,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
     private void saveUserListInDataBase(String result)
     {
         Log.d("Doodle", "Data base saving");
-        AccountsDao accountsDao = new AccountsDao(this);
+        AccountsDao accountsDao = new AccountsDao();
         try
         {
             JSONArray array = new JSONArray(result);
@@ -452,7 +452,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
                     Log.d("removeFriend", "removeFriend result : " + result);
                     if (result.equals("1"))
                     {
-                        new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
+                        new AccountsDao().update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
                         account.relation = Accounts.NOT_A_FRIEND;
                         mAdapter.removeUser(position, account);
                         FriendListActivity.hideProgressFab();
@@ -514,7 +514,7 @@ public class FriendListActivity extends AppCompatActivity implements TextWatcher
                 {
 
                     Log.d("addFriend", "Result : " + result);
-                    new AccountsDao(FriendListActivity.this).update(account.email, Accounts.RELATION, Accounts.FRIEND);
+                    new AccountsDao().update(account.email, Accounts.RELATION, Accounts.FRIEND);
                     account.relation = Accounts.FRIEND;
                     mAdapter.addUser(position, account);
                     FriendListActivity.hideProgressFab();

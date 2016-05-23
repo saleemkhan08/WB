@@ -6,6 +6,8 @@ import android.database.Cursor;
 
 import java.util.ArrayList;
 
+import in.org.whistleblower.WhistleBlower;
+
 public class AccountsDao
 {
     public static final String TABLE_SCHEMA = "CREATE TABLE " + Accounts.TABLE + " ("
@@ -17,9 +19,9 @@ public class AccountsDao
     private Context mContext;
     private WBDataBase mWBDataBase;
 
-    public AccountsDao(Context context)
+    public AccountsDao()
     {
-        this.mContext = context;
+        this.mContext = WhistleBlower.getAppContext();
         mWBDataBase = new WBDataBase(mContext);
     }
 

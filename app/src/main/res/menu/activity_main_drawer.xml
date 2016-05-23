@@ -14,27 +14,31 @@
             android:id="@+id/nav_fav"
             android:icon="@mipmap/star_icon_accent"
             android:title="Favorite Places"/>
-        <item
-            android:id="@+id/nav_friends"
-            android:icon="@mipmap/friends_icon_accent"
-            android:title="Friends List"/>
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Location Util Lists">
         <menu>
             <item
                 android:id="@+id/nav_share_loc"
                 android:icon="@mipmap/share_icon_accent"
-                android:title="Real-time Location"/>
+                android:title="Share Location"/>
             <item
                 android:id="@+id/nav_notify_loc"
                 android:icon="@mipmap/comment_accent"
                 android:title="Notify Location"/>
+            <item
+                android:id="@+id/nav_loc_alarm"
+                android:icon="@mipmap/bell_icon_accent_pad"
+                android:title="Location Alarm"/>
         </menu>
     </item>
 
     <item android:title="Account">
         <menu>
+            <item
+                android:id="@+id/nav_friends"
+                android:icon="@mipmap/friends_icon_accent"
+                android:title="Friends"/>
             <item
                 android:id="@+id/nav_logout"
                 android:icon="@mipmap/logout_icon_accent"

@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="#eee"
     android:minWidth="300dp"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -19,42 +20,34 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
 
-            android:text="Sharing Location To :"
+            android:text="Sharing Location"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/white"
             android:textStyle="bold"
             />
+
         <ImageView
             android:id="@+id/closeDialog"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:padding="13dp"
-            android:background="@drawable/bg_drawable"
             android:layout_alignParentRight="true"
+            android:background="@drawable/bg_drawable"
+            android:padding="13dp"
             android:src="@drawable/cross"/>
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/emptyList"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include layout="@layout/share_location_intro_card"
+            />
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/common_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </android.support.v7.widget.RecyclerView>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:visibility="gone"
-        android:id="@+id/emptyList"
-        >
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_gravity="center"
-            android:text="No One"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/divider"
-            android:textStyle="bold"
-            />
-    </LinearLayout>
 </LinearLayout>

@@ -86,7 +86,7 @@ public class NotifyLocationFragment extends DialogFragment
         preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         Otto.register(this);
 
-        AccountsDao dao = new AccountsDao(mActivity);
+        AccountsDao dao = new AccountsDao();
         mFriendList = dao.getFriendsList();
 
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);

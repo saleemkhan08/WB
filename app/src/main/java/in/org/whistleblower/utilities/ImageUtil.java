@@ -23,8 +23,8 @@ public class ImageUtil
         mImageLoader.init(ImageLoaderConfiguration.createDefault(mContext));
         issueOptions = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.loading)
-                .showImageForEmptyUri(R.drawable.ic_empty)
-                .showImageOnFail(R.drawable.ic_error)
+                .showImageForEmptyUri(R.drawable.loading)
+                .showImageOnFail(R.drawable.loading)
                 .cacheInMemory(true)
                 .cacheOnDisk(true)
                 .considerExifParams(true)
@@ -32,9 +32,9 @@ public class ImageUtil
                 .build();
 
         dpOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.anonymous_white_primary_dark)
-                .showImageForEmptyUri(R.drawable.ic_empty)
-                .showImageOnFail(R.drawable.ic_error)
+                .showImageOnLoading(R.mipmap.user_accent_primary_o)
+                .showImageForEmptyUri(R.mipmap.user_accent_primary_o)
+                .showImageOnFail(R.mipmap.user_accent_primary_o)
                 .cacheInMemory(true)
                 .cacheOnDisk(true)
                 .considerExifParams(true)

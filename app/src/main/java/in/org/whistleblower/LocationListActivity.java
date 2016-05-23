@@ -7,10 +7,10 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.view.ViewGroup;
 
 import com.squareup.otto.Subscribe;
 
@@ -25,7 +25,6 @@ import in.org.whistleblower.singletons.Otto;
 
 public class LocationListActivity extends AppCompatActivity
 {
-
     RecyclerView recyclerView;
     public static final String SHARE_LOCATION_FRAGMENT = "shareLocationFragment";
     public static final String SHARE_LOCATION_LIST = "shareLocationList";
@@ -33,7 +32,7 @@ public class LocationListActivity extends AppCompatActivity
     public static final String FINISH_ACTIVITY = "FINISH_ACTIVITY";
     private SharedPreferences preferences;
     View closeDialog;
-    LinearLayout emptyList;
+    ViewGroup emptyList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -42,7 +41,7 @@ public class LocationListActivity extends AppCompatActivity
         setContentView(R.layout.activity_location_list);
         recyclerView = (RecyclerView) findViewById(R.id.common_list);
         closeDialog = findViewById(R.id.closeDialog);
-        emptyList = (LinearLayout) findViewById(R.id.emptyList);
+        emptyList = (ViewGroup) findViewById(R.id.emptyList);
         closeDialog.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -66,27 +65,29 @@ public class LocationListActivity extends AppCompatActivity
                 recyclerView.setLayoutManager(new LinearLayoutManager(this));
                 if (shareLocationList.size() < 1)
                 {
-                    Toast.makeText(this, "You are not sharing location to any one.", Toast.LENGTH_LONG).show();
-                    preferences.edit().putBoolean(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, false).commit();
-                    Otto.post(new OttoCommunicator(LocationTrackingService.STOP_SERVICE));
-                    finish();
+                    showShareLocationIntroCard();
                 }
             }
         }
     }
 
     @Subscribe
-    public void ottoCommunicator(OttoCommunicator communicator)
+    public void ottoCommunicator(String action)
     {
-        switch (communicator.action)
+        switch (action)
         {
             case FINISH_ACTIVITY :
-                preferences.edit().putBoolean(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, false).commit();
-                Otto.post(new OttoCommunicator(LocationTrackingService.STOP_SERVICE));
-                TransitionManager.beginDelayedTransition(emptyList);
-                emptyList.setVisibility(View.VISIBLE);
+                showShareLocationIntroCard();
                 break;
         }
+    }
+
+    private void showShareLocationIntroCard()
+    {
+        preferences.edit().putBoolean(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, false).commit();
+        Otto.post(new OttoCommunicator(LocationTrackingService.STOP_SERVICE));
+        TransitionManager.beginDelayedTransition(emptyList, new Slide());
+        emptyList.setVisibility(View.VISIBLE);
     }
 
     @Override

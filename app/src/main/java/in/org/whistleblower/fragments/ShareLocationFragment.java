@@ -13,7 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
@@ -21,6 +21,7 @@ import com.squareup.otto.Subscribe;
 import java.util.ArrayList;
 
 import butterknife.Bind;
+import butterknife.BindColor;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.FriendListActivity;
@@ -39,12 +40,13 @@ public class ShareLocationFragment extends DialogFragment
     RecyclerView shareLocationFriendList;
     ArrayList<Accounts> mFriendList;
     @Bind(R.id.continuously)
-    RadioButton continuously;
+    TextView continuously;
 
     @Bind(R.id.justOnce)
-    RadioButton justOnce;
+    TextView justOnce;
 
     private SharedPreferences preferences;
+    private boolean isContinuouslyClicked = true;
 
     public ShareLocationFragment()
     {
@@ -62,7 +64,7 @@ public class ShareLocationFragment extends DialogFragment
         preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         shareLocationFriendList = (RecyclerView) parentView.findViewById(R.id.shareLocationFriendList);
         Otto.register(this);
-        AccountsDao dao = new AccountsDao(mActivity);
+        AccountsDao dao = new AccountsDao();
         mFriendList = dao.getFriendsList();
 
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);
@@ -98,7 +100,7 @@ public class ShareLocationFragment extends DialogFragment
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         intent.putExtra(ShareLocation.LOCATION, location);
 
-        if (continuously.isChecked())
+        if (isContinuouslyClicked)
         {
             ShareLocationDao dao = new ShareLocationDao(mActivity);
             intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
@@ -133,15 +135,25 @@ public class ShareLocationFragment extends DialogFragment
         Otto.unregister(this);
     }
 
+    @BindColor(R.color.colorAccent)
+    int colorAccent;
+
+    @BindColor(R.color.white)
+    int colorWhite;
+
     @OnClick(R.id.continuously)
     public void onContinuouslyClick()
     {
-        justOnce.setChecked(false);
+        continuously.setTextColor(colorAccent);
+        justOnce.setTextColor(colorWhite);
+        isContinuouslyClicked = true;
     }
 
     @OnClick(R.id.justOnce)
     public void onJustOnceClick()
     {
-        continuously.setChecked(false);
+        isContinuouslyClicked = false;
+        continuously.setTextColor(colorWhite);
+        justOnce.setTextColor(colorAccent);
     }
 }

@@ -1,296 +1,213 @@
 package in.org.whistleblower.adapters;
 
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.VolleyError;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.models.AccountsDao;
 import in.org.whistleblower.utilities.ImageUtil;
+import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.VolleyUtil;
 
-public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.FriendListViewHolder>
+public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.FriendViewHolder>
 {
+    AppCompatActivity mActivity;
     LayoutInflater inflater;
+    List<Accounts> mFriendList;
     private ImageUtil mImageUtil;
-    SharedPreferences preferences;
-    int dividerPos;
-    List<Accounts> mAccountsList;
-    FriendListActivity mActivity;
+    MiscUtil mUtil;
+    private boolean busy;
+    private SharedPreferences preferences;
 
-    public FriendListAdapter(FriendListActivity activity, List<Accounts> accountsList)
+    public FriendListAdapter(AppCompatActivity activity, List<Accounts> friendList)
     {
         mActivity = activity;
-        mAccountsList = accountsList;
+        mFriendList = friendList;
         inflater = LayoutInflater.from(mActivity);
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        mUtil = new MiscUtil(mActivity);
         mImageUtil = new ImageUtil(mActivity);
+        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
     }
 
     @Override
-    public FriendListViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+    public FriendViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        View view = inflater.inflate(R.layout.user_row, parent, false);
-        return new FriendListViewHolder(view);
+        View view = inflater.inflate(R.layout.friend_card, parent, false);
+        return new FriendViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(FriendListViewHolder holder, final int position)
+    public void onBindViewHolder(FriendViewHolder holder, final int position)
     {
-        final Accounts account = mAccountsList.get(position);
-        if (account == null)
+        final Accounts account = mFriendList.get(position);
+        if (account.photo_url == null || account.photo_url.isEmpty())
         {
-            dividerPos = position;
-            holder.suggestionsLabelView.setVisibility(View.VISIBLE);
-            holder.userRowView.setVisibility(View.GONE);
+            holder.friendCardIcon.setImageResource(R.mipmap.user_accent_primary_o);
         }
         else
         {
-            holder.suggestionsLabelView.setVisibility(View.GONE);
-            holder.userRowView.setVisibility(View.VISIBLE);
-
-            holder.usernameView.setText(account.name);
-            if (account.photo_url == null || account.photo_url.isEmpty())
+            mImageUtil.displayImage(account.photo_url, holder.friendCardIcon, true);
+        }
+        holder.friendsEmail.setText(account.email);
+        holder.friendsName.setText(account.name);
+        holder.friendCardOptions.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
             {
-                holder.profilePicView.setImageResource(R.drawable.anonymous_white_primary_dark);
-            }
-            else
-            {
-                mImageUtil.displayImage(account.photo_url, holder.profilePicView, true);
-            }
-
-            if (account.relation.equals(Accounts.FRIEND))
-            {
-                holder.friendOptionsIcon.setVisibility(View.VISIBLE);
-                holder.addFriendButton.setVisibility(View.GONE);
-                holder.friendOptionsIcon.setOnClickListener(new View.OnClickListener()
+                PopupMenu popup = new PopupMenu(mActivity, v);
+                popup.getMenuInflater()
+                        .inflate(R.menu.friend_options, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
                 {
-                    @Override
-                    public void onClick(View v)
+                    public boolean onMenuItemClick(MenuItem item)
                     {
-                        PopupMenu popup = new PopupMenu(mActivity, v);
-                        popup.getMenuInflater()
-                                .inflate(R.menu.friend_options, popup.getMenu());
-                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                        switch (item.getItemId())
                         {
-                            public boolean onMenuItemClick(MenuItem item)
-                            {
-                                switch (item.getItemId())
-                                {
-                                    case R.id.realTimeLoc:
-                                        requestRealTimeLoc();
-                                        break;
-                                    case R.id.currentLoc:
-                                        requestCurrentLoc();
-                                        break;
-                                    case R.id.notify_loc:
-                                        notifyLoc();
-                                        break;
-                                    case R.id.removeFriend:
-                                        mActivity.removeFriend(account, position);
-                                        break;
-                                }
-                                return true;
-                            }
-                        });
-                        popup.show();
+                            case R.id.req_loc_share:
+                                reqLocShare();
+                                break;
+                            case R.id.loc_notification:
+                                reqLocNotification();
+                                break;
+                            case R.id.removeFriend:
+                                removeFriend(account, position);
+                                break;
+                        }
+                        return true;
                     }
                 });
+                popup.show();
             }
-            else
-            {
-                holder.friendOptionsIcon.setVisibility(View.GONE);
-                holder.addFriendButton.setVisibility(View.VISIBLE);
+        });
+    }
 
-                holder.addFriendButton.setOnClickListener(new View.OnClickListener()
+    private void reqLocNotification()
+    {
+
+    }
+
+    private void reqLocShare()
+    {
+
+    }
+
+    public void removeFriend(final Accounts account, final int position)
+    {
+        if (!busy)
+        {
+            FriendListActivity.showProgressFab();
+            Map<String, String> data = new HashMap<>();
+            data.put(VolleyUtil.KEY_ACTION, "removeFriend");
+            data.put(Accounts.USER_EMAIL, preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com"));
+            data.put(Accounts.FRIENDS_EMAIL, account.email);
+            busy = true;
+            VolleyUtil.sendPostData(data, new ResultListener<String>()
+            {
+                @Override
+                public void onSuccess(String result)
                 {
-                    @Override
-                    public void onClick(View v)
+                    Log.d("removeFriend", "removeFriend result : " + result);
+                    if (result.equals("1"))
                     {
-                        mActivity.addFriend(account, position);
+                        new AccountsDao().update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
+                        account.relation = Accounts.NOT_A_FRIEND;
+                        removeAt(position);
                     }
-                });
-            }
-        }
-    }
-
-    private void requestCurrentLoc()
-    {
-
-    }
-
-    private void notifyLoc()
-    {
-
-    }
-
-    private void requestRealTimeLoc()
-    {
-    }
-
-    public void removeUser(int position, Accounts account)
-    {
-        removeAt(position, account);
-        int size = mAccountsList.size();
-        if (dividerPos >= size)
-        {
-            mAccountsList.add(size, null);
-        }
-        addAt(dividerPos, account);
-        dividerPos--;
-    }
-
-    public void addUser(int position, Accounts account)
-    {
-        removeAt(position, account);
-        addAt(dividerPos, account);
-        dividerPos++;
-        if (dividerPos >= (mAccountsList.size() - 1))
-        {
-            removeAt(dividerPos, null);
-        }
-    }
-
-    public void removeAt(int position, Accounts account)
-    {
-        int accSize = mAccountsList.size();
-
-        if (accSize > position)
-        {
-            mAccountsList.remove(position);
-
-            if (account != null)
-            {
-                if (account.relation.equals(Accounts.FRIEND))
-                {
-                    FriendListActivity.mFriendList.remove(account);
+                    else
+                    {
+                        Toast.makeText(mActivity, "Please Try Again!", Toast.LENGTH_SHORT).show();
+                        Log.d("ToastMsg", "error : " + result);
+                    }
+                    resetBusy();
                 }
-                else
-                {
-                    FriendListActivity.mUserList.remove(account);
-                }
-            }
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, mAccountsList.size());
-        }
-    }
 
-    public void addAt(int position, Accounts account)
-    {
-        mAccountsList.add(position, account);
-        notifyItemInserted(position);
-        notifyItemRangeChanged(position, mAccountsList.size());
-        if (account.relation.equals(Accounts.FRIEND))
-        {
-            FriendListActivity.mFriendList.add(account);
+                @Override
+                public void onError(VolleyError error)
+                {
+                    FriendListActivity.hideProgressFab();
+                    Toast.makeText(mActivity, "Please Try again!", Toast.LENGTH_SHORT).show();
+                    Log.d("ToastMsg", "error : " + error.getMessage());
+                    resetBusy();
+                }
+            });
         }
         else
         {
-            FriendListActivity.mUserList.add(account);
+            Toast.makeText(mActivity, "Please Wait!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void removeAt(int position)
+    {
+        mFriendList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, mFriendList.size());
     }
 
     @Override
     public int getItemCount()
     {
-        return mAccountsList.size();
+        return mFriendList.size();
     }
 
-    class FriendListViewHolder extends RecyclerView.ViewHolder
+    class FriendViewHolder extends RecyclerView.ViewHolder
     {
-        Button addFriendButton;
+        View item;
 
-        View suggestionsLabelView;
-        View userRowView, friendOptionsIcon;
+        @Bind(R.id.friendsEmail)
+        TextView friendsEmail;
 
-        TextView usernameView;
-        ImageView profilePicView;
+        @Bind(R.id.friendsName)
+        TextView friendsName;
 
-        public FriendListViewHolder(View itemView)
+        @Bind(R.id.friendCardIcon)
+        ImageView friendCardIcon;
+
+        @Bind(R.id.friendCardOptions)
+        ImageView friendCardOptions;
+
+        public FriendViewHolder(View itemView)
         {
             super(itemView);
-            addFriendButton = (Button) itemView.findViewById(R.id.addFriendButton);
-
-            friendOptionsIcon = itemView.findViewById(R.id.friendOptionsIcon);
-
-            suggestionsLabelView = itemView.findViewById(R.id.suggestionsLabel);
-            userRowView = itemView.findViewById(R.id.placeContent);
-            profilePicView = (ImageView) itemView.findViewById(R.id.profilePic);
-            usernameView = (TextView) itemView.findViewById(R.id.username);
+            item = itemView;
+            ButterKnife.bind(this, itemView);
         }
     }
 
-    public void animateTo(List<Accounts> accounts)
+    private void resetBusy()
     {
-        applyAndAnimateRemovals(accounts);
-        applyAndAnimateAdditions(accounts);
-        applyAndAnimateMovedItems(accounts);
-    }
-
-    private void applyAndAnimateRemovals(List<Accounts> newAccountsList)
-    {
-        for (int i = mAccountsList.size() - 1; i >= 0; i--)
+        Handler myHandler = new Handler();
+        myHandler.postDelayed(new Runnable()
         {
-            final Accounts account = mAccountsList.get(i);
-            if (!newAccountsList.contains(account))
+            @Override
+            public void run()
             {
-                removeItem(i);
+                busy = false;
             }
-        }
-    }
-
-    private void applyAndAnimateAdditions(List<Accounts> newAccountsList)
-    {
-        for (int i = 0, count = newAccountsList.size(); i < count; i++)
-        {
-            final Accounts account = newAccountsList.get(i);
-            if (!mAccountsList.contains(account))
-            {
-                addItem(i, account);
-            }
-        }
-    }
-
-    private void applyAndAnimateMovedItems(List<Accounts> newAccountsList)
-    {
-        for (int toPosition = newAccountsList.size() - 1; toPosition >= 0; toPosition--)
-        {
-            final Accounts model = newAccountsList.get(toPosition);
-            final int fromPosition = mAccountsList.indexOf(model);
-            if (fromPosition >= 0 && fromPosition != toPosition)
-            {
-                moveItem(fromPosition, toPosition);
-            }
-        }
-    }
-
-    public Accounts removeItem(int position)
-    {
-        final Accounts model = mAccountsList.remove(position);
-        notifyItemRemoved(position);
-        return model;
-    }
-
-    public void addItem(int position, Accounts model)
-    {
-        mAccountsList.add(position, model);
-        notifyItemInserted(position);
-    }
-
-    public void moveItem(int fromPosition, int toPosition)
-    {
-        final Accounts model = mAccountsList.remove(fromPosition);
-        mAccountsList.add(toPosition, model);
-        notifyItemMoved(fromPosition, toPosition);
+        }, 600);
     }
 }

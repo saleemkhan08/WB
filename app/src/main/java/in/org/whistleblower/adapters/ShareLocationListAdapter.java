@@ -113,7 +113,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             int size = mAccountsList.size();
             if(size < 1)
             {
-                Otto.post(new OttoCommunicator(LocationListActivity.FINISH_ACTIVITY));
+                Otto.post(LocationListActivity.FINISH_ACTIVITY);
             }
             else
             {

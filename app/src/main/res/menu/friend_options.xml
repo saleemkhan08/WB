@@ -1,18 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/realTimeLoc"
+        android:id="@+id/req_loc_share"
         android:orderInCategory="100"
-        android:title="Request Real-Time Location"
+        android:title="Location Share"
         />
     <item
-        android:id="@+id/currentLoc"
+        android:id="@+id/loc_notification"
         android:orderInCategory="200"
-        android:title="Request Current Location"
-        />
-    <item
-        android:id="@+id/notify_loc"
-        android:orderInCategory="200"
-        android:title="Notify Location"
+        android:title="Location Notification"
         />
     <item
         android:id="@+id/removeFriend"

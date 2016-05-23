@@ -20,6 +20,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.singletons.Otto;
@@ -106,6 +107,10 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         mAddressList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, mAddressList.size());
+        if(mAddressList.size() < 1)
+        {
+            Otto.post(FavoritePlacesFragment.SHOW_FAV_PLACE_INTRO_CARD);
+        }
     }
     private void deleteFavPlace(String latitude, String longitude)
     {
