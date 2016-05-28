@@ -17,7 +17,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.R;
-import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
@@ -117,7 +116,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             }
             else
             {
-                Otto.post(new OttoCommunicator(LocationTrackingService.UPDATE_NOTIFICATION));
+                Otto.post(LocationTrackingService.UPDATE_NOTIFICATION);
             }
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, size);

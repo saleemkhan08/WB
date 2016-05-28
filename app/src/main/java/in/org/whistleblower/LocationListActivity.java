@@ -17,7 +17,6 @@ import com.squareup.otto.Subscribe;
 import java.util.List;
 
 import in.org.whistleblower.adapters.ShareLocationListAdapter;
-import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
@@ -85,7 +84,7 @@ public class LocationListActivity extends AppCompatActivity
     private void showShareLocationIntroCard()
     {
         preferences.edit().putBoolean(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, false).commit();
-        Otto.post(new OttoCommunicator(LocationTrackingService.STOP_SERVICE));
+        Otto.post(LocationTrackingService.STOP_SERVICE);
         TransitionManager.beginDelayedTransition(emptyList, new Slide());
         emptyList.setVisibility(View.VISIBLE);
     }

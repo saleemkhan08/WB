@@ -39,7 +39,6 @@ import in.org.whistleblower.models.LocationAlarm;
 import in.org.whistleblower.models.LocationAlarmDao;
 import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.models.NotifyLocationDao;
-import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.receivers.ShareLocationStopReceiver;
@@ -280,10 +279,10 @@ public class LocationTrackingService extends Service implements LocationListener
     }
 
     @Subscribe
-    public void communicator(OttoCommunicator communicator)
+    public void communicator(String action)
     {
-        Log.d("Communicator", communicator.action);
-        switch (communicator.action)
+        Log.d("Communicator", action);
+        switch (action)
         {
             case STOP_SERVICE:
                 stopService();

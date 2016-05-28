@@ -188,15 +188,6 @@
         </receiver>
 
         <activity
-            android:name=".FriendListActivity"
-            android:label="@string/title_activity_friend_list"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.org.whistleblower.MainActivity"/>
-        </activity>
-        <activity
             android:name=".CropImageActivity"
             android:label="@string/title_activity_crop_image"
             android:theme="@style/AppTheme">

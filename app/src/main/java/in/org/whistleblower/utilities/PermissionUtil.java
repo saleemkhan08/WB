@@ -29,7 +29,6 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.interfaces.PermissionResultListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
-import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
@@ -76,7 +75,6 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
     }
     public void requestSettingsDialog(String msg)
     {
-        final OttoCommunicator communicator = new OttoCommunicator();
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.app_name));
         dialog.setMessage(msg);
@@ -85,8 +83,7 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                communicator.action = LocationTrackingService.TURN_ON_LOCATION_SETTINGS;
-                Otto.post(communicator);
+                Otto.post(LocationTrackingService.TURN_ON_LOCATION_SETTINGS);
                 finish();
             }
         });
@@ -96,8 +93,7 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
             public void onClick(DialogInterface dialog, int which)
             {
                 //TODO decide wat to do?
-                communicator.action = LocationTrackingService.FORCE_STOP;
-                Otto.post(communicator);
+                Otto.post(LocationTrackingService.FORCE_STOP);
                 finish();
             }
         });
@@ -107,8 +103,7 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
             public void onCancel(DialogInterface dialog)
             {
                 //TODO decide wat to do?
-                communicator.action = LocationTrackingService.FORCE_STOP;
-                Otto.post(communicator);
+                Otto.post(LocationTrackingService.FORCE_STOP);
                 finish();
             }
         });

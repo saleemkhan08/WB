@@ -226,4 +226,8 @@
     <string name="once">1<sup><small>s</small></sup></string>
     <string name="realtime">R</string>
     <string name="title_activity_location_list">Location List</string>
+    <string name="youArentSharingLocation">You Aren\'t Sharing Location...</string>
+    <string name="youHaventAddedFriends">You Haven\'t Added Friends Yet...</string>
+    <string name="youHaventSetAnyFavoritePlaces">You Haven\'t Set Any Favorite Places...</string>
+    <string name="youHaveRemovedAllFriends">You Have Removed All Friends...</string>
 </resources>

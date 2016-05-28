@@ -114,7 +114,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     }
     private void deleteFavPlace(String latitude, String longitude)
     {
-        new FavPlacesDao(mActivity).delete(latitude, longitude);
+        new FavPlacesDao().delete(latitude, longitude);
     }
 
     private void notifyLoc()

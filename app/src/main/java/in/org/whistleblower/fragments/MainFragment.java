@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.IssueAdapter;
@@ -94,6 +95,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onResume();
         MiscUtil.log("onResume");
         NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_news);
+        mActivity.setTitle(MainActivity.NEWS_FEEDS);
     }
 
     //TODO Make issueList static

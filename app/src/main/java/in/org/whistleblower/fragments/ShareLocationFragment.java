@@ -24,7 +24,6 @@ import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.adapters.CommonUserListAdapter;
 import in.org.whistleblower.models.Accounts;
@@ -80,11 +79,10 @@ public class ShareLocationFragment extends DialogFragment
         if(mFriendList.size() < 1)
         {
             dismiss();
-            if(!preferences.getBoolean(FriendListActivity.KEY_USERS_FETCHED, false))
+            if(!preferences.getBoolean(FriendListFragment.KEY_USERS_FETCHED, false))
             {
                 Toast.makeText(mActivity, "Please add friends to share location", Toast.LENGTH_SHORT).show();
             }
-            mActivity.startActivity(new Intent(mActivity, FriendListActivity.class));
         }
     }
 

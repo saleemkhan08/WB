@@ -1,7 +1,6 @@
 package in.org.whistleblower.fragments;
 
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -19,24 +18,26 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.singletons.Otto;
-import in.org.whistleblower.utilities.MiscUtil;
 
 public class FavoritePlacesFragment extends Fragment
 {
     public static final String SHOW_FAV_PLACE_INTRO_CARD = "SHOW_FAV_PLACE_INTRO_CARD";
-    @Bind(R.id.favPlaceIntroCard)
+    @Bind(R.id.emptyList)
     ViewGroup favPlaceIntroCard;
 
     public FavoritePlacesFragment()
     {
     }
 
+    @Bind(R.id.favoritePlaceList)
     RecyclerView favPlacesRecyclerView;
+
     ArrayList<FavPlaces> favPlacesList;
     AppCompatActivity mActivity;
     PlaceAdapter adapter;
@@ -48,54 +49,34 @@ public class FavoritePlacesFragment extends Fragment
         View parentView = inflater.inflate(R.layout.fragment_favorite_places, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
+        mActivity = (AppCompatActivity) getActivity();
+        favPlacesList = new FavPlacesDao().getFavPlacesList();
+        mActivity.setTitle(MainActivity.FAVORITE_PLACES);
         return parentView;
     }
 
     @Override
-    public void onResume()
+    public void onStart()
     {
-        super.onResume();
-        mActivity = (AppCompatActivity) getActivity();
-        new LocalDataTask().execute();
-    }
-
-    private class LocalDataTask extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected void onPreExecute()
+        super.onStart();
+        if (null != favPlacesList)
         {
-            MiscUtil.log("LocalDataTask : onPreExecute");
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-            MiscUtil.log("LocalDataTask : doInBackground");
-            favPlacesList = new FavPlacesDao(mActivity).getFavPlacesList();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid)
-        {
-            if (null != favPlacesList)
+            favPlacesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.favoritePlaceList);
+            adapter = new PlaceAdapter(mActivity, favPlacesList);
+            favPlacesRecyclerView.setAdapter(adapter);
+            favPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+            if (favPlacesList.size() < 1)
             {
-                favPlacesRecyclerView = (RecyclerView) mActivity.findViewById(R.id.favoritePlaceList);
-                adapter = new PlaceAdapter(mActivity, favPlacesList);
-                favPlacesRecyclerView.setAdapter(adapter);
-                favPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-                if (favPlacesList.size() < 1)
-                {
-                    showFavPlaceIntroCard();
-                }
-                else
-                {
-                    hideFavPlaceIntroCard();
-                }
+                showFavPlaceIntroCard();
+            }
+            else
+            {
+                hideFavPlaceIntroCard();
             }
         }
     }
+
+
 
     private void hideFavPlaceIntroCard()
     {
@@ -113,7 +94,7 @@ public class FavoritePlacesFragment extends Fragment
     }
     private void showFavPlaceIntroCard()
     {
-        TransitionManager.beginDelayedTransition(favPlaceIntroCard, new Slide());
+        TransitionManager.beginDelayedTransition(favPlaceIntroCard);
         favPlaceIntroCard.setVisibility(View.VISIBLE);
     }
 

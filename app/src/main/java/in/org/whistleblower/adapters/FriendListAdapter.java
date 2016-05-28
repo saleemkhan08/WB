@@ -2,7 +2,6 @@ package in.org.whistleblower.adapters;
 
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -23,11 +22,13 @@ import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import in.org.whistleblower.FriendListActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
@@ -49,7 +50,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
         inflater = LayoutInflater.from(mActivity);
         mUtil = new MiscUtil(mActivity);
         mImageUtil = new ImageUtil(mActivity);
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        preferences = WhistleBlower.getPreferences();
     }
 
     @Override
@@ -119,7 +120,6 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
     {
         if (!busy)
         {
-            FriendListActivity.showProgressFab();
             Map<String, String> data = new HashMap<>();
             data.put(VolleyUtil.KEY_ACTION, "removeFriend");
             data.put(Accounts.USER_EMAIL, preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com"));
@@ -148,7 +148,6 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
                 @Override
                 public void onError(VolleyError error)
                 {
-                    FriendListActivity.hideProgressFab();
                     Toast.makeText(mActivity, "Please Try again!", Toast.LENGTH_SHORT).show();
                     Log.d("ToastMsg", "error : " + error.getMessage());
                     resetBusy();
@@ -164,6 +163,10 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
     public void removeAt(int position)
     {
         mFriendList.remove(position);
+        if(mFriendList.size() < 1)
+        {
+            Otto.post(FriendListFragment.EMPTY_FRIEND_LIST);
+        }
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, mFriendList.size());
     }

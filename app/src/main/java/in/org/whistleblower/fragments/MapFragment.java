@@ -58,6 +58,7 @@ import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
 import in.org.whistleblower.AddIssueActivity;
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.actions.Image;
@@ -70,7 +71,6 @@ import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.models.NotifyLocation;
-import in.org.whistleblower.models.OttoCommunicator;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
@@ -90,8 +90,6 @@ public class MapFragment extends SupportMapFragment implements
     public static final String SHOW_FAV_PLACE = "showFavPlace";
     public static final String SHOW_ISSUE = "showIssue";
     public static final String HANDLE_ACTION = "handleAction";
-    OttoCommunicator mCommunicator = new OttoCommunicator();
-
     private static final String HOME = "Home";
     public static final String LATLNG = "LATLNG";
     private View mOriginalContentView;
@@ -234,6 +232,7 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("FlowLogs", "onActivityCreated");
         setRetainInstance(true);
         mActivity = (AppCompatActivity) getActivity();
+        mActivity.setTitle(MainActivity.WHISTLE_BLOWER);
         ButterKnife.bind(this, mActivity);
         WhistleBlower.getComponent().inject(this);
         mTravelModeOn = false;
@@ -570,8 +569,7 @@ public class MapFragment extends SupportMapFragment implements
                             .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
                             .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
                             .commit();
-                    mCommunicator.action = LocationTrackingService.STOP_SERVICE;
-                    Otto.post(mCommunicator);
+                    Otto.post(LocationTrackingService.STOP_SERVICE);
                 }
                 return true;
             }
@@ -815,7 +813,7 @@ public class MapFragment extends SupportMapFragment implements
                 + mFavPlace.longitude + "\n"
                 + mFavPlace.radius);
 
-        String result = new FavPlacesDao(mActivity).insert(mFavPlace);
+        String result = new FavPlacesDao().insert(mFavPlace);
         toast(result);
         hideSubmitButtonAndShowSearchIcon();
     }

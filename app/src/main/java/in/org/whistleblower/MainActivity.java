@@ -31,6 +31,10 @@ import in.org.whistleblower.utilities.NavigationUtil;
 
 public class MainActivity extends AppCompatActivity
 {
+    public static final String FAVORITE_PLACES = "Favorite Places";
+    public static final String WHISTLE_BLOWER = "Whistle Blower";
+    public static final String NEWS_FEEDS = "News Feeds";
+    public static final String FRIEND_LIST = "Friends List";
     MiscUtil mUtil;
     FloatingActionsMenu fabMenu;
     NavigationUtil mNavigationUtil;
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity
     RelativeLayout mainActivityContainer;
     ImageView profilePic;
     TextView username, emailId;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -60,9 +65,9 @@ public class MainActivity extends AppCompatActivity
             //preferences = PreferenceManager.getDefaultSharedPreferences(this);
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbar.setTitle("");
             setSupportActionBar(toolbar);
-
             //Navigation Drawer
             NavigationView navigationHeader = (NavigationView) findViewById(R.id.nav_view);
             View header = navigationHeader.getHeaderView(0);
@@ -143,11 +148,11 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy()
     {
         super.onDestroy();
-        if(mNavigationUtil != null)
+        if (mNavigationUtil != null)
         {
             mNavigationUtil.unregisterOtto();
         }
-        if(mFabUtil != null)
+        if (mFabUtil != null)
         {
             mFabUtil.unregisterOtto();
         }
@@ -167,7 +172,7 @@ public class MainActivity extends AppCompatActivity
         {
             drawer.closeDrawer(GravityCompat.START);
         }
-        else if(fabMenu.isExpanded())
+        else if (fabMenu.isExpanded())
         {
             fabMenu.collapse();
         }
@@ -179,14 +184,30 @@ public class MainActivity extends AppCompatActivity
             }
             else
             {
-                super.onBackPressed();
+                if (checkLastFragment())
+                {
+                    super.onBackPressed();
+                }
             }
         }
         else
         {
+            if (checkLastFragment())
+            {
                 super.onBackPressed();
+            }
         }
         Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
+    }
+
+    boolean checkLastFragment()
+    {
+        if (getSupportFragmentManager().getBackStackEntryCount() < 2)
+        {
+            finishAffinity();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -208,6 +229,11 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void setTitle(CharSequence title)
+    {
+        toolbar.setTitle(title);
+    }
 
     public void favPlaceSelector(View view)
     {

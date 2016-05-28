@@ -6,6 +6,8 @@ import android.database.Cursor;
 
 import java.util.ArrayList;
 
+import in.org.whistleblower.WhistleBlower;
+
 public class FavPlacesDao
 {
     public static final String ADD_SUCCESS_MSG = "Added to Favorite Places";
@@ -34,9 +36,9 @@ public class FavPlacesDao
     Context mContext;
     WBDataBase mWBDataBase;
 
-    public FavPlacesDao(Context context)
+    public FavPlacesDao()
     {
-        mContext = context;
+        mContext = WhistleBlower.getAppContext();
         mWBDataBase = new WBDataBase(mContext);
     }
 

@@ -16,8 +16,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.android.volley.VolleyError;
+import com.squareup.otto.Subscribe;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.Bind;
+import butterknife.BindString;
 import butterknife.ButterKnife;
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.FriendListAdapter;
@@ -40,8 +44,12 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
 {
     public static final String FRIEND_LIST_FETCH_ERROR = "FRIEND_LIST_FETCH_ERROR";
     public static final String FRIEND_LIST_FETCHED_FROM_SERVER = "FRIEND_LIST_FETCHED_FROM_SERVER";
+    public static final String EMPTY_FRIEND_LIST = "EMPTY_FRIEND_LIST";
     private SharedPreferences preferences;
     AccountsDao dao;
+
+
+
     public FriendListFragment()
     {
     }
@@ -52,6 +60,8 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Bind(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
 
+    @BindString(R.string.youHaveRemovedAllFriends)
+    String youHaveRemovedAllFriends;
     List<Accounts> mFriendList;
 
     AppCompatActivity mActivity;
@@ -60,6 +70,11 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Bind(R.id.fab_wrapper)
     ViewGroup fabWrapper;
 
+    @Bind(R.id.emptyList)
+    ViewGroup emptyList;
+
+    @Bind(R.id.emptyListTextView)
+    TextView emptyListTextView;
     public static final String KEY_USERS_FETCHED = "KEY_USERS_FETCHED";
 
     @Override
@@ -68,7 +83,9 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     {
         View parentView = inflater.inflate(R.layout.fragment_friend_list, container, false);
         ButterKnife.bind(this, parentView);
+        mActivity = (AppCompatActivity) getActivity();
         swipeRefreshLayout.setOnRefreshListener(this);
+        mActivity.setTitle(MainActivity.FRIEND_LIST);
         return parentView;
     }
 
@@ -76,12 +93,10 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     public void onStart()
     {
         super.onStart();
-        mActivity = (AppCompatActivity) getActivity();
         preferences = WhistleBlower.getPreferences();
-        Log.d("Doodle", "KEY_USERS_FETCHED : "+preferences.getBoolean(KEY_USERS_FETCHED, false));
+        Log.d("Doodle", "KEY_USERS_FETCHED : " + preferences.getBoolean(KEY_USERS_FETCHED, false));
         dao = new AccountsDao();
-        showProgressFab();
-        if(!preferences.getBoolean(KEY_USERS_FETCHED, false))
+        if (!preferences.getBoolean(KEY_USERS_FETCHED, false))
         {
             getFriendListFromServer(this);
         }
@@ -94,7 +109,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     public void hideProgressFab()
     {
         swipeRefreshLayout.setRefreshing(false);
-        Log.d("Doodle","hideProgressFab" );
+        Log.d("Doodle", "hideProgressFab");
     }
 
     public void showProgressFab()
@@ -141,7 +156,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
         });
     }
 
-    private static void saveFriendListInDataBase(String result,final ResultListener<String> listener)
+    private static void saveFriendListInDataBase(String result, final ResultListener<String> listener)
     {
         Log.d("Doodle", "Data base saving");
         AccountsDao accountsDao = new AccountsDao();
@@ -182,7 +197,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
 
         Log.d("Doodle", "mFriendList : " + mFriendList);
 
-        if (null != mFriendList)
+        if (null != mFriendList && mFriendList.size() > 0)
         {
             adapter = new FriendListAdapter(mActivity, mFriendList);
             friendsListRecyclerView.setAdapter(adapter);
@@ -226,9 +241,10 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
                     return false;
                 }
             });
-        }else
+        }
+        else
         {
-            //Show Add friends card.
+            showEmptyListString();
         }
         hideProgressFab();
     }
@@ -242,7 +258,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Override
     public void onSuccess(String result)
     {
-        Log.d("Doodle", "getFriendListFromServer : "+result);
+        Log.d("Doodle", "getFriendListFromServer : " + result);
         showFriendList();
         preferences.edit().putBoolean(KEY_USERS_FETCHED, true).apply();
     }
@@ -251,5 +267,23 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     public void onError(VolleyError error)
     {
         WhistleBlower.toast("Please Try Again!");
+        Log.d("FriendListFragment", error.getMessage());
+        hideProgressFab();
+    }
+
+    @Subscribe
+    public void showEmptyListString(String msg)
+    {
+        if(msg.equals(EMPTY_FRIEND_LIST))
+        {
+            showEmptyListString();
+            emptyListTextView.setText(youHaveRemovedAllFriends);
+        }
+    }
+
+    private void showEmptyListString()
+    {
+        TransitionManager.beginDelayedTransition(emptyList);
+        emptyList.setVisibility(View.VISIBLE);
     }
 }

@@ -17,10 +17,15 @@ import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
 
+import java.util.ArrayList;
+
 import javax.inject.Inject;
 
+import butterknife.BindString;
+import butterknife.ButterKnife;
 import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.LoginActivity;
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
@@ -28,6 +33,7 @@ import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.FavPlaces;
+import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.singletons.Otto;
 
@@ -42,6 +48,14 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
     public static final String FRIEND_LIST_FRAGMENT_TAG = "FRIEND_LIST_FRAGMENT_TAG";
+    public static final String POP_FRAGMENT = "POP_FRAGMENT";
+
+    @BindString(R.string.youHaventAddedFriends)
+    String youHaventAddedFriends;
+
+    @BindString(R.string.youHaventSetAnyFavoritePlaces)
+    String youHaventSetAnyFavoritePlaces;
+
     //To get fragment manager
     AppCompatActivity mActivity;
     public MapFragment mapFragment;
@@ -54,6 +68,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     @Inject
     SharedPreferences mPreferences;
 
+
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
@@ -61,6 +76,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         WhistleBlower.getComponent().inject(this);
         drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
         Otto.register(this);
+        ButterKnife.bind(this, mActivity);
     }
 
     @Subscribe
@@ -211,18 +227,28 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         return true;
     }
 
+
     public void showFavPlacesList()
     {
-        FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
-        if (favoritePlacesFragment == null)
+        ArrayList favPlacesList = new FavPlacesDao().getFavPlacesList();
+        if (favPlacesList != null && favPlacesList.size() > 0)
         {
-            favoritePlacesFragment = new FavoritePlacesFragment();
+            Otto.post(MainActivity.FAVORITE_PLACES);
+            FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
+            if (favoritePlacesFragment == null)
+            {
+                favoritePlacesFragment = new FavoritePlacesFragment();
+            }
+            fragmentManager
+                    .beginTransaction()
+                    .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
         }
-        fragmentManager
-                .beginTransaction()
-                .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
-                .addToBackStack(null)
-                .commit();
+        else
+        {
+            WhistleBlower.toast(youHaventSetAnyFavoritePlaces);
+        }
     }
 
     public void showFriendsList()
@@ -237,6 +263,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 .replace(R.id.content_layout, friendListFragment, FRIEND_LIST_FRAGMENT_TAG)
                 .addToBackStack(null)
                 .commit();
+
     }
 
     public void showMapFragment()
@@ -250,6 +277,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             }
             fragmentManager
                     .beginTransaction()
+                    .addToBackStack(null)
                     .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
                     .commit();
         }
