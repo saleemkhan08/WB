@@ -70,6 +70,8 @@ import in.org.whistleblower.interfaces.PlacesResultListener;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.LocationAlarm;
+import in.org.whistleblower.models.LocationAlarmDao;
 import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
@@ -617,16 +619,16 @@ public class MapFragment extends SupportMapFragment implements
 
     private void setAlarm()
     {
-        preferences.edit()
-                .putBoolean(LocationTrackingService.KEY_ALARM_SET, true)
-                .commit();
-
         Log.d("FlowLogs", "setAlarm");
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
+        LocationAlarm alarm = new LocationAlarm();
+        alarm.status = 1;
+        alarm.radius = getRadius();
+        alarm.address = searchText.getText().toString();
+        alarm.latitude = mGeoCodeLatLng.latitude+"";
+        alarm.longitude = mGeoCodeLatLng.longitude+"";
+        new LocationAlarmDao().insert(alarm);
         intent.putExtra(LocationTrackingService.KEY_ALARM_SET, true);
-        intent.putExtra(LocationTrackingService.KEY_LATLNG, mGeoCodeLatLng);
-        intent.putExtra(LocationTrackingService.KEY_PLACE_NAME, searchText.getText());
-
         mActivity.startService(intent);
         toast("Alarm Set : \n" + searchText.getText());
     }
@@ -783,7 +785,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void notifyLocation()
     {
-        mNotifyLocation.radius = (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
+        mNotifyLocation.radius = getRadius();
         mNotifyLocation.message = searchText.getText().toString();
         mNotifyLocation.latitude = mGeoCodeLatLng.latitude + "";
         mNotifyLocation.longitude = mGeoCodeLatLng.longitude + "";
@@ -797,9 +799,13 @@ public class MapFragment extends SupportMapFragment implements
 
     }
 
+    int getRadius()
+    {
+        return (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
+    }
     private void addFavPlace()
     {
-        mFavPlace.radius = (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
+        mFavPlace.radius = getRadius();
         mFavPlace.addressLine = searchText.getText().toString();
         mFavPlace.latitude = mGeoCodeLatLng.latitude + "";
         mFavPlace.longitude = mGeoCodeLatLng.longitude + "";
@@ -1187,7 +1193,7 @@ public class MapFragment extends SupportMapFragment implements
         hideSearchProgress();
         if (result == null)
         {
-            searchText.setText(getText(R.string.unknown_place));
+            searchText.setText(getText(R.string.unknownPlace));
         }
         else if (result != null)
         {
@@ -1195,7 +1201,7 @@ public class MapFragment extends SupportMapFragment implements
         }
         else
         {
-            searchText.setText(getText(R.string.no_internet));
+            searchText.setText(getText(R.string.noInternet));
         }
     }
 

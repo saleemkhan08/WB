@@ -1,7 +1,6 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -16,9 +15,9 @@ public class ShareLocationDao
 
     private WBDataBase mWBDataBase;
 
-    public ShareLocationDao(Context context)
+    public ShareLocationDao()
     {
-        mWBDataBase = new WBDataBase(context);
+        mWBDataBase = new WBDataBase();
     }
 
     public void insert(ShareLocation account)

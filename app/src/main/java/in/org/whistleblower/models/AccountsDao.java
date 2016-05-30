@@ -1,12 +1,9 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
-
-import in.org.whistleblower.WhistleBlower;
 
 public class AccountsDao
 {
@@ -16,13 +13,11 @@ public class AccountsDao
             + Accounts.PHOTO_URL + " VARCHAR(255),"
             + Accounts.TIME_STAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
             + Accounts.RELATION + " VARCHAR(255))";
-    private Context mContext;
     private WBDataBase mWBDataBase;
 
     public AccountsDao()
     {
-        this.mContext = WhistleBlower.getAppContext();
-        mWBDataBase = new WBDataBase(mContext);
+        mWBDataBase = new WBDataBase();
     }
 
     public void insert(Accounts account)

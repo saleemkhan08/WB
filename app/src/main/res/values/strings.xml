@@ -219,15 +219,30 @@
 
     <string name="crop__done">DONE</string>
     <string name="crop__cancel" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="no_internet">No Internet...</string>
-    <string name="unknown_place">Unknown Place...</string>
+    <string name="noInternet">No Internet...</string>
+    <string name="unknownPlace">Unknown Place...</string>
     <string name="kilometer">km</string>
     <string name="meter">m</string>
     <string name="once">1<sup><small>s</small></sup></string>
-    <string name="realtime">R</string>
+    <string name="realTime">R</string>
     <string name="title_activity_location_list">Location List</string>
-    <string name="youArentSharingLocation">You Aren\'t Sharing Location...</string>
-    <string name="youHaventAddedFriends">You Haven\'t Added Friends Yet...</string>
-    <string name="youHaventSetAnyFavoritePlaces">You Haven\'t Set Any Favorite Places...</string>
-    <string name="youHaveRemovedAllFriends">You Have Removed All Friends...</string>
+    <string name="locationIsntBeingShared">Location Isn\'t Being Shared...</string>
+    <string name="noFriendsAreAddedYet">No Friends Are Added Yet...</string>
+    <string name="noFavoritePlacesAreAdded">No Favorite Places Are Added...</string>
+    <string name="allTheFriendsAreRemoved">All The Friends Are Removed...</string>
+    <string name="allTheFavoritePlacesAreRemoved">All The Favorite Places Are Removed...</string>
+    <string name="allTheLocationAlarmsAreRemoved">All The Location Alarms Are Removed...</string>
+    <string name="locationAlarms">Location Alarms</string>
+    <string name="noLocationAlarmsAreSet">No Location Alarms Are Set ...</string>
+    <string name="noNotificationsAreSet">No Notifications Are Set...</string>
+    <string name="notifyLocation">Notify Location</string>
+    <string name="favoritePlaces">Favorite Places</string>
+    <string name="noFavoritePlacesAdded">No Favorite Places Are Added...</string>
+    <string name="noUsersFound">No Users Found...</string>
+    <string name="loading">Loading...</string>
+    <string name="addFriend">Add Friend</string>
+    <string name="typeNameOrEmailToSearch">Type Name / Email ID To Search...</string>
+    <string name="friendsEmailId">Friend\'s Email ID</string>
+    <string name="friendName">Friend Name</string>
+    <string name="shareLocation">Share Location</string>
 </resources>

@@ -1,7 +1,6 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
@@ -48,13 +47,11 @@ public class IssuesDao
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
     public static final String LATLNG = "LATLNG";
     //TODO write a query to save the old data and just alter the table.
-    Context mContext;
     WBDataBase mWBDataBase;
 
-    public IssuesDao(Context context)
+    public IssuesDao()
     {
-        mContext = context;
-        mWBDataBase = new WBDataBase(mContext);
+        mWBDataBase = new WBDataBase();
     }
 
     public void insert(Issue issue)

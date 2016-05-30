@@ -10,14 +10,14 @@
             android:id="@+id/nav_news"
             android:icon="@mipmap/newsfeeds_icon_accent"
             android:title="News Feeds"/>
-        <item
-            android:id="@+id/nav_fav"
-            android:icon="@mipmap/star_icon_accent"
-            android:title="Favorite Places"/>
     </group>
 
-    <item android:title="Location Util Lists">
+    <item android:title="Location Utils">
         <menu>
+            <item
+                android:id="@+id/nav_fav"
+                android:icon="@mipmap/star_icon_accent"
+                android:title="Favorite Places"/>
             <item
                 android:id="@+id/nav_share_loc"
                 android:icon="@mipmap/share_icon_accent"

@@ -1,31 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="#eee"
-    android:minWidth="300dp"
-    android:orientation="vertical"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:minWidth="300dp"
+              android:background="#eee"
+              android:orientation="vertical"
+              tools:context="in.org.whistleblower.fragments.ShareLocationFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@drawable/dialog_header_bg">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-
-            android:text="Sharing Location"
+            android:text="@string/notifyLocation"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/white"
             android:textStyle="bold"
             />
-
         <ImageView
             android:id="@+id/closeDialog"
             android:layout_width="40dp"
@@ -35,6 +29,7 @@
             android:padding="13dp"
             android:src="@drawable/cross"/>
     </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -42,26 +37,23 @@
         android:visibility="gone"
         >
         <TextView
+            android:id="@+id/emptyListTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:id="@+id/emptyListTextView"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:textSize="18sp"
             android:layout_gravity="center"
             android:padding="10dp"
-            android:text="@string/locationIsntBeingShared"
+            android:textSize="18sp"
+            android:text="@string/noNotificationsAreSet"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/divider"
             android:textStyle="bold"
             />
     </LinearLayout>
-
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/shareLocationList"
+        android:id="@+id/notifyLocationList"
         android:layout_width="match_parent"
-        android:paddingBottom="10dp"
-        android:layout_height="wrap_content">
-    </android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent"
+        android:paddingBottom="10dp"/>
+
 </LinearLayout>

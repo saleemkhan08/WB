@@ -203,12 +203,14 @@
             android:enabled="false"
             android:exported="false">
         </receiver>
-
-        <activity
-            android:name=".LocationListActivity"
-            android:label="@string/title_activity_location_list"
-            android:theme="@style/DialogTheme">
-        </activity>
+        <receiver
+            android:name=".receivers.InternetConnectivityListener"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

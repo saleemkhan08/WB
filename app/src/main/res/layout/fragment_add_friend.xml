@@ -11,7 +11,6 @@
         android:layout_height="wrap_content"
         android:background="@drawable/dialog_header_bg"
         android:orientation="vertical">
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -20,7 +19,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/notifyLocation"
+                android:text="@string/addFriend"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="@color/white"
                 android:textStyle="bold"
@@ -39,70 +38,66 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingLeft="20dp"
-            android:paddingRight="15dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:weightSum="2">
-
-            <EditText
-                android:id="@+id/messageEdit"
-                android:layout_toLeftOf="@+id/editIcon"
-                android:cursorVisible="false"
-                android:layout_centerVertical="true"
-                android:textColor="@color/white"
-                android:background="@android:color/transparent"
-                android:layout_width="match_parent"
-                android:layout_marginBottom="10dp"
-                android:minHeight="40dp"
-                android:layout_height="wrap_content"/>
-
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:padding="10dp"
+                android:padding="7dp"
                 android:id="@+id/editIcon"
-                android:src="@drawable/edit"
+                android:src="@drawable/search_icon"
                 android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"/>
-
+                android:layout_alignParentLeft="true"/>
+            <EditText
+                android:id="@+id/messageEdit"
+                android:padding="5dp"
+                android:layout_toRightOf="@id/editIcon"
+                android:hint="@string/typeNameOrEmailToSearch"
+                android:textColorHint="@color/divider"
+                android:textColor="@color/white"
+                android:layout_centerVertical="true"
+                android:background="@android:color/transparent"
+                android:layout_width="match_parent"
+                android:layout_marginBottom="10dp"
+                android:layout_height="wrap_content"/>
         </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            android:weightSum="101">
-
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                >
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@color/white"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="50">
-
-
-            </LinearLayout>
-        </LinearLayout>
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:background="#eee"
-        android:id="@+id/shareLocationFriendList"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="10dp"/>
+        android:layout_height="60dp"
+        android:id="@+id/emptyList"
+        android:visibility="gone"
+        >
+        <TextView
+            android:id="@+id/emptyListTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center"
+            android:padding="10dp"
+            android:textSize="18sp"
+            android:text="@string/loading"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/divider"
+            android:textStyle="bold"
+            />
+    </LinearLayout>
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/userList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>

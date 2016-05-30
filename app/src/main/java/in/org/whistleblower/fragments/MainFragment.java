@@ -46,7 +46,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private ArrayList<Issue> issuesList = null;
     LocalDataTask mLocalDataTask;
     private SwipeRefreshLayout swipeRefreshLayout;
-
+    IssuesDao issueDao;
     public MainFragment()
     {
 
@@ -57,6 +57,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
         // Create the array
         issuesList = new ArrayList<>();
+        issueDao = new IssuesDao();
         super.onCreate(savedInstanceState);
     }
 
@@ -124,7 +125,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         protected Void doInBackground(Void... params)
         {
             MiscUtil.log("LocalDataTask : doInBackground");
-            issuesList = new IssuesDao(mActivity).getIssuesList();
+            issuesList = issueDao.getIssuesList();
             return null;
         }
 
@@ -164,7 +165,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 try
                 {
                     JSONArray array = new JSONArray(result);
-                    IssuesDao issueDao = new IssuesDao(mActivity);
 
                     if (array != null)
                     {

@@ -9,13 +9,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
 
+import in.org.whistleblower.WhistleBlower;
+
 public class WBDataBase
 {
     private SQLiteDatabase db;
 
-    public WBDataBase(Context context)
+    public WBDataBase()
     {
-        DataBaseHelper dataBaseHelper = new DataBaseHelper(context, 1);
+        DataBaseHelper dataBaseHelper = new DataBaseHelper(WhistleBlower.getAppContext(), 1);
         db = dataBaseHelper.getWritableDatabase();
     }
 

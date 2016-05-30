@@ -14,6 +14,7 @@ public class NotifyLocation implements Parcelable
     public static final String LONGITUDE = "longitude";
     public static final String MESSAGE = "message";
     public static final String RADIUS = "radius";
+
     public static final String FRAGMENT_TAG = "FRAGMENT_TAG";
 
     public String name, email, userEmail, latitude, longitude, photoUrl, message;

@@ -109,7 +109,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         notifyItemRangeChanged(position, mAddressList.size());
         if(mAddressList.size() < 1)
         {
-            Otto.post(FavoritePlacesFragment.SHOW_FAV_PLACE_INTRO_CARD);
+            Otto.post(FavoritePlacesFragment.SHOW_FAV_PLACE_EMPTY_LIST);
         }
     }
     private void deleteFavPlace(String latitude, String longitude)

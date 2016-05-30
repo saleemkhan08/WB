@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity
     public static final String WHISTLE_BLOWER = "Whistle Blower";
     public static final String NEWS_FEEDS = "News Feeds";
     public static final String FRIEND_LIST = "Friends List";
+    public static final String SHARE_LOCATION_LIST = "SHARE_LOCATION_LIST";
     MiscUtil mUtil;
     FloatingActionsMenu fabMenu;
     NavigationUtil mNavigationUtil;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity
     ImageView profilePic;
     TextView username, emailId;
     Toolbar toolbar;
+    private boolean isShareLocationShared;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -159,6 +161,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume()
+    {
+        super.onResume();
+        showShareLocationFragment();
+    }
+
+    private void showShareLocationFragment()
+    {
+        Intent intent = getIntent();
+        if (intent.hasExtra(SHARE_LOCATION_LIST))
+        {
+            mNavigationUtil.showShareLocationList();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        showShareLocationFragment();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState)
     {
         super.onSaveInstanceState(outState, outPersistentState);
@@ -239,4 +264,5 @@ public class MainActivity extends AppCompatActivity
     {
         mNavigationUtil.mapFragment.setFavPlaceType(view);
     }
+
 }

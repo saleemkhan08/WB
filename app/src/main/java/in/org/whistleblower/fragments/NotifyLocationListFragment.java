@@ -21,62 +21,55 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
-import in.org.whistleblower.adapters.PlaceAdapter;
-import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.adapters.NotifyLocationAdapter;
+import in.org.whistleblower.models.NotifyLocation;
+import in.org.whistleblower.models.NotifyLocationDao;
 import in.org.whistleblower.singletons.Otto;
 
-public class FavoritePlacesFragment extends DialogFragment
+public class NotifyLocationListFragment extends DialogFragment
 {
-    public static final String SHOW_FAV_PLACE_EMPTY_LIST = "SHOW_FAV_PLACE_EMPTY_LIST";
+    public static final String NOTIFY_LOC_LIST_EMPTY_TEXT = "NOTIFY_LOC_LIST_EMPTY_TEXT";
+
+    @BindString(R.string.noNotificationsAreSet)
+    String noNotificationsAreSet;
 
     @Bind(R.id.emptyList)
     ViewGroup emptyList;
 
-    @Bind(R.id.favoritePlaceList)
-    RecyclerView favPlacesRecyclerView;
-
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
 
-    @BindString(R.string.allTheFavoritePlacesAreRemoved)
-    String removedAllTheFavoritePlaces;
-
-    public FavoritePlacesFragment()
+    public NotifyLocationListFragment()
     {
     }
+
+    @Bind(R.id.notifyLocationList)
+    RecyclerView notifyLocationListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View parentView = inflater.inflate(R.layout.fragment_fav_places_list, container, false);
+        View parentView = inflater.inflate(R.layout.fragment_notify_location_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        ArrayList<FavPlaces> favPlacesList = new FavPlacesDao().getFavPlacesList();
+        ArrayList<NotifyLocation> mNotifyLocationList = new NotifyLocationDao().getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
-        if (favPlacesList.size() < 1)
+        if(mNotifyLocationList.size() < 1)
         {
             showEmptyListString();
         }
-        favPlacesRecyclerView.setAdapter(new PlaceAdapter(mActivity, favPlacesList));
-        favPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        notifyLocationListView.setAdapter(new NotifyLocationAdapter(mActivity, mNotifyLocationList));
+        notifyLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
         return parentView;
     }
-
-    @OnClick(R.id.closeDialog)
-    public void close()
-    {
-        dismiss();
-    }
-
     @Subscribe
     public void showEmptyListString(String msg)
     {
-        if (msg.equals(SHOW_FAV_PLACE_EMPTY_LIST))
+        if(msg.equals(NOTIFY_LOC_LIST_EMPTY_TEXT))
         {
             showEmptyListString();
-            emptyListTextView.setText(removedAllTheFavoritePlaces);
+            emptyListTextView.setText(noNotificationsAreSet);
         }
     }
 
@@ -91,5 +84,11 @@ public class FavoritePlacesFragment extends DialogFragment
     {
         super.onDestroyView();
         Otto.unregister(this);
+    }
+
+    @OnClick(R.id.closeDialog)
+    public void close()
+    {
+        dismiss();
     }
 }

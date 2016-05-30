@@ -29,10 +29,10 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="@string/youHaventAddedFriends"
+                android:text="@string/noFriendsAreAddedYet"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="@color/divider"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"/>
         </android.support.v7.widget.CardView>
     </RelativeLayout>
@@ -48,6 +48,9 @@
             android:id="@+id/friendsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingBottom="15dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 

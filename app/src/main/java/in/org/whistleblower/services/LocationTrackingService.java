@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -29,8 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.whistleblower.AlarmActivity;
-import in.org.whistleblower.LocationListActivity;
+import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
@@ -79,8 +79,6 @@ public class LocationTrackingService extends Service implements LocationListener
     public static final String KEY_LOCATION_UPDATE_FREQ = "updateFreq";
     private boolean mStartLocationUpdates;
     Location mCurrentLocation;
-    private final IBinder iBinder = new LocalBinder();
-
     private NotifyLocation notifyLocation;
     private ShareLocation shareLocation;
 
@@ -88,16 +86,6 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         Log.d("FlowLogs", "Service : Constructor");
     }
-
-    public class LocalBinder extends Binder
-    {
-        public LocationTrackingService getService()
-        {
-            Log.d("FlowLogs", "Service : getService");
-            return LocationTrackingService.this;
-        }
-    }
-
     NotificationManager mNotificationManager;
     SharedPreferences preferences;
 
@@ -105,7 +93,7 @@ public class LocationTrackingService extends Service implements LocationListener
     public IBinder onBind(Intent intent)
     {
         Log.d("FlowLogs", "Service : onBind");
-        return iBinder;
+        return null;
     }
 
     @Override
@@ -174,6 +162,10 @@ public class LocationTrackingService extends Service implements LocationListener
             {
                 shareLocation = intent.getParcelableExtra(ShareLocation.LOCATION);
                 preferences.edit().putBoolean(KEY_SHARE_LOCATION, true).commit();
+            }
+            else if(intent.hasExtra(KEY_ALARM_SET))
+            {
+
             }
         }
 
@@ -301,6 +293,7 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void updateNotification()
     {
+        WhistleBlower.toast("updateNotification : UPDATE_NOTIFICATION");
         if(mCurrentLocation != null)
         {
             shareRealTimeLocation(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()));
@@ -404,7 +397,7 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void notifyLocation(LatLng latLng)
     {
-        NotifyLocationDao dao = new NotifyLocationDao(this);
+        NotifyLocationDao dao = new NotifyLocationDao();
         ArrayList<NotifyLocation> notifyLocations = dao.getList();
 
         for (NotifyLocation location : notifyLocations)
@@ -447,7 +440,7 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void shareRealTimeLocation(LatLng latLng)
     {
-        ShareLocationDao dao = new ShareLocationDao(this);
+        ShareLocationDao dao = new ShareLocationDao();
         ArrayList<ShareLocation> shareLocations = dao.getList();
 
         if (shareLocations.size() > 0)
@@ -485,8 +478,8 @@ public class LocationTrackingService extends Service implements LocationListener
             }
             message = message.substring(0, message.length()-2);
 
-            Intent intent = new Intent(this, LocationListActivity.class);
-            intent.putExtra(LocationListActivity.SHARE_LOCATION_LIST, true);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(MainActivity.SHARE_LOCATION_LIST, true);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
@@ -537,7 +530,7 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void triggerAlarm(LatLng latLng)
     {
-        LocationAlarmDao dao = new LocationAlarmDao(this);
+        LocationAlarmDao dao = new LocationAlarmDao();
         ArrayList<LocationAlarm> alarms = dao.getList();
         boolean allAlarmsStatus = false;
 

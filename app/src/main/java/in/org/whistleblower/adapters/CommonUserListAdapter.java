@@ -36,7 +36,7 @@ public class CommonUserListAdapter extends RecyclerView.Adapter<CommonUserListAd
     @Override
     public UserSearchViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        View view = inflater.inflate(R.layout.common_user_row, parent, false);
+        View view = inflater.inflate(R.layout.friend_card, parent, false);
         return new UserSearchViewHolder(view);
     }
 
@@ -45,16 +45,16 @@ public class CommonUserListAdapter extends RecyclerView.Adapter<CommonUserListAd
     {
         final Accounts account = mAccountsList.get(position);
         holder.username.setText(account.name);
+        holder.emailId.setText(account.email);
+        holder.userOptions.setVisibility(View.GONE);
         if (account.photo_url == null || account.photo_url.isEmpty())
         {
-            holder.profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
+            holder.profilePic.setImageResource(R.mipmap.user_accent_primary_o);
         }
         else
         {
             mImageUtil.displayImage(account.photo_url, holder.profilePic, true);
         }
-
-
         holder.itemView.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -74,15 +74,17 @@ public class CommonUserListAdapter extends RecyclerView.Adapter<CommonUserListAd
     class UserSearchViewHolder extends RecyclerView.ViewHolder
     {
         View itemView;
-
-        @Bind(R.id.username)
+        @Bind(R.id.friendsName)
         TextView username;
 
-        @Bind(R.id.profilePic)
+        @Bind(R.id.friendCardIcon)
         ImageView profilePic;
 
-        @Bind(R.id.userOptionsIcon)
-        ImageView userOptionsIcon;
+        @Bind(R.id.friendsEmail)
+        TextView emailId;
+
+        @Bind(R.id.friendCardOptions)
+        ImageView userOptions;
 
         public UserSearchViewHolder(View itemView)
         {

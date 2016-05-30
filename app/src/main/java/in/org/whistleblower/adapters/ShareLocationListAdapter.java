@@ -15,8 +15,9 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.fragments.ShareLocationListFragment;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
@@ -43,7 +44,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
     @Override
     public UserSearchViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        View view = inflater.inflate(R.layout.common_user_row, parent, false);
+        View view = inflater.inflate(R.layout.friend_card, parent, false);
         return new UserSearchViewHolder(view);
     }
 
@@ -52,6 +53,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
     {
         final ShareLocation shareLocation = mAccountsList.get(position);
         holder.username.setText(shareLocation.name);
+        holder.email.setText(shareLocation.email);
         if (shareLocation.photoUrl == null || shareLocation.photoUrl.isEmpty())
         {
             holder.profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
@@ -69,7 +71,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             @Override
             public void onClick(View v)
             {
-                ShareLocationDao dao = new ShareLocationDao(mContext);
+                ShareLocationDao dao = new ShareLocationDao();
                 dao.delete(shareLocation.userEmail);
                 removeAt(position);
             }
@@ -86,13 +88,16 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
     {
         View itemView;
 
-        @Bind(R.id.username)
+        @Bind(R.id.friendsName)
         TextView username;
 
-        @Bind(R.id.profilePic)
+        @Bind(R.id.friendsEmail)
+        TextView email;
+
+        @Bind(R.id.friendCardIcon)
         ImageView profilePic;
 
-        @Bind(R.id.userOptionsIcon)
+        @Bind(R.id.friendCardOptions)
         ImageView userOptionsIcon;
 
         public UserSearchViewHolder(View itemView)
@@ -112,10 +117,11 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             int size = mAccountsList.size();
             if(size < 1)
             {
-                Otto.post(LocationListActivity.FINISH_ACTIVITY);
+                Otto.post(ShareLocationListFragment.SHARE_LOC_LIST_EMPTY_TEXT);
             }
             else
             {
+                WhistleBlower.toast("Adapter : UPDATE_NOTIFICATION");
                 Otto.post(LocationTrackingService.UPDATE_NOTIFICATION);
             }
             notifyItemRemoved(position);

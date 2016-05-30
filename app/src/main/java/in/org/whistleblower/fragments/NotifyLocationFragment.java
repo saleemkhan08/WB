@@ -61,29 +61,15 @@ public class NotifyLocationFragment extends DialogFragment
     {
         View parentView = inflater.inflate(R.layout.fragment_notify_location, container, false);
         ButterKnife.bind(this, parentView);
+        Otto.register(this);
 
         Bundle bundle = getArguments();
         mNotifyLocation = bundle.getParcelable(NotifyLocation.FRAGMENT_TAG);
-
-        String[] addressLines = mNotifyLocation.message.split(",");
-        String msg = "";
-        int len = addressLines.length;
-        Log.d("NotifyLocation", "Size : " + len);
-
-        for (int i = 0; i < len; i++)
-        {
-            if (i < 3)
-            {
-                msg += addressLines[i] + ", ";
-            }
-        }
-
-        msg = msg.substring(0, msg.length() - 2);
-
+        String msg = getAddressLines(mNotifyLocation.message, 3);
         messageEdit.setText("Hi! I reached " + msg);
         mActivity = (AppCompatActivity) getActivity();
         preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        Otto.register(this);
+
 
         AccountsDao dao = new AccountsDao();
         mFriendList = dao.getFriendsList();
@@ -121,7 +107,7 @@ public class NotifyLocationFragment extends DialogFragment
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         intent.putExtra(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
 
-        NotifyLocationDao dao = new NotifyLocationDao(mActivity);
+        NotifyLocationDao dao = new NotifyLocationDao();
         intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
 
         mNotifyLocation.name = account.name;
@@ -159,5 +145,26 @@ public class NotifyLocationFragment extends DialogFragment
 
         InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(messageEdit, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    public static String getAddressLines(String address, int noOfLines)
+    {
+        String[] addressLines = address.split(",");
+        String msg = "";
+        int len = addressLines.length;
+        for (int i = 0; i < len; i++)
+        {
+            if (i < (noOfLines - 1))
+            {
+                msg += addressLines[i] + ", ";
+            }
+        }
+        return msg.substring(0, msg.length() - 2);
+    }
+
+    @OnClick(R.id.closeDialog)
+    public void close()
+    {
+        dismiss();
     }
 }

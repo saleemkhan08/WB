@@ -1,12 +1,9 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
-
-import in.org.whistleblower.WhistleBlower;
 
 public class FavPlacesDao
 {
@@ -32,14 +29,11 @@ public class FavPlacesDao
     private static final float OFFSET_LAT = 0.008983f;
     private static final float OFFSET_LNG = 0.015060f;
 
-    //TODO write a query to save the old data and just alter the table.
-    Context mContext;
     WBDataBase mWBDataBase;
 
     public FavPlacesDao()
     {
-        mContext = WhistleBlower.getAppContext();
-        mWBDataBase = new WBDataBase(mContext);
+        mWBDataBase = new WBDataBase();
     }
 
     public String insert(FavPlaces favPlaces)

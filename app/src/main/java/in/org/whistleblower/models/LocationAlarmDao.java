@@ -1,26 +1,23 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
 
 public class LocationAlarmDao
 {
-
     public static final String TABLE_SCHEMA = "CREATE TABLE " + LocationAlarm.TABLE + " ("
             + LocationAlarm.ADDRESS + " VARCHAR(255) PRIMARY KEY, "
             + LocationAlarm.RADIUS + " INTEGER, "
             + LocationAlarm.LATITUDE + " VARCHAR(255), "
             + LocationAlarm.STATUS + " INTEGER, "
             + LocationAlarm.LONGITUDE + " VARCHAR(255));";
-
     private WBDataBase mWBDataBase;
 
-    public LocationAlarmDao(Context context)
+    public LocationAlarmDao()
     {
-        mWBDataBase = new WBDataBase(context);
+        mWBDataBase = new WBDataBase();
     }
 
     public void insert(LocationAlarm locationAlarm)
@@ -44,7 +41,7 @@ public class LocationAlarmDao
 
     public void delete(String address)
     {
-        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ADDRESS + " = " + address, null);
+        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ADDRESS + " = '" + address+"'", null);
     }
 
     public ArrayList<LocationAlarm> getList()
@@ -66,6 +63,26 @@ public class LocationAlarmDao
             cursor.close();
         }
         return alarmList;
+    }
+
+    public LocationAlarm getAlarm(String address)
+    {
+        LocationAlarm alarm = null;
+        Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null,  LocationAlarm.ADDRESS + " = '" + address+"'", null, null, null);
+        if (null != cursor)
+        {
+            if (cursor.moveToFirst())
+            {
+                alarm = new LocationAlarm();
+                alarm.address = cursor.getString(cursor.getColumnIndex(LocationAlarm.ADDRESS));
+                alarm.radius = cursor.getInt(cursor.getColumnIndex(LocationAlarm.RADIUS));
+                alarm.latitude =  cursor.getString(cursor.getColumnIndex(LocationAlarm.LATITUDE));
+                alarm.longitude =  cursor.getString(cursor.getColumnIndex(LocationAlarm.LONGITUDE));
+                alarm.status = cursor.getInt(cursor.getColumnIndex(LocationAlarm.STATUS));
+            }
+            cursor.close();
+        }
+        return alarm;
     }
 
     public void update(String address, int status)

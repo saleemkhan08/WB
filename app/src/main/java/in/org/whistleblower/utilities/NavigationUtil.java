@@ -13,27 +13,22 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
 
-import java.util.ArrayList;
-
-import javax.inject.Inject;
-
 import butterknife.BindString;
 import butterknife.ButterKnife;
-import in.org.whistleblower.LocationListActivity;
 import in.org.whistleblower.LoginActivity;
-import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.fragments.FriendListFragment;
+import in.org.whistleblower.fragments.LocationAlarmListFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.NotifyLocationListFragment;
+import in.org.whistleblower.fragments.ShareLocationListFragment;
 import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.singletons.Otto;
 
@@ -48,32 +43,34 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
     public static final String FRIEND_LIST_FRAGMENT_TAG = "FRIEND_LIST_FRAGMENT_TAG";
-    public static final String POP_FRAGMENT = "POP_FRAGMENT";
+    public static final String NOTIFY_LOCATION_FRAGMENT_TAG = "NOTIFY_LOCATION_FRAGMENT_TAG";
+    public static final String SHARE_LOCATION_LIST_FRAGMENT_TAG = "SHARE_LOCATION_LIST_FRAGMENT_TAG";
+    public static final String LOCATION_ALARM_FRAGMENT_TAG = "LOCATION_ALARM_FRAGMENT_TAG";
 
-    @BindString(R.string.youHaventAddedFriends)
+    @BindString(R.string.noFriendsAreAddedYet)
     String youHaventAddedFriends;
 
-    @BindString(R.string.youHaventSetAnyFavoritePlaces)
+    @BindString(R.string.noFavoritePlacesAreAdded)
     String youHaventSetAnyFavoritePlaces;
 
+    @BindString(R.string.noLocationAlarmsAreSet)
+    String youHaventSetAnyLocationAlarm;
     //To get fragment manager
     AppCompatActivity mActivity;
     public MapFragment mapFragment;
 
-    FragmentManager fragmentManager;
+    FragmentManager mFragmentManager;
     public NavigationView navigationView;
     public MainFragment mainFragment;
-    private DrawerLayout drawer;
+    public DrawerLayout drawer;
 
-    @Inject
     SharedPreferences mPreferences;
-
 
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
-        fragmentManager = mActivity.getSupportFragmentManager();
-        WhistleBlower.getComponent().inject(this);
+        mFragmentManager = mActivity.getSupportFragmentManager();
+        mPreferences = WhistleBlower.getPreferences();
         drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
         Otto.register(this);
         ButterKnife.bind(this, mActivity);
@@ -125,7 +122,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             if (!mapFragment.isVisible())
             {
                 mapFragment.setArguments(bundle);
-                fragmentManager
+                mFragmentManager
                         .beginTransaction()
                         .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
                         .addToBackStack(null)
@@ -195,13 +192,13 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                         mActivity.finish();
                         break;
                     case R.id.nav_notify_loc:
-                        Toast.makeText(mActivity, "Notify Location", Toast.LENGTH_SHORT).show();
+                        showNotifyLocationList();
                         break;
-
+                    case R.id.nav_loc_alarm:
+                        showAlarmFragment();
+                        break;
                     case R.id.nav_share_loc:
-                        Intent shareLocationList = new Intent(mActivity, LocationListActivity.class);
-                        shareLocationList.putExtra(LocationListActivity.SHARE_LOCATION_LIST, true);
-                        mActivity.startActivity(shareLocationList);
+                        showShareLocationList();
                         break;
 
                     case R.id.nav_friends:
@@ -227,42 +224,81 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         return true;
     }
 
+    public void showShareLocationList()
+    {
+        ShareLocationListFragment shareLocationListFragment = (ShareLocationListFragment)
+                mFragmentManager.findFragmentByTag(SHARE_LOCATION_LIST_FRAGMENT_TAG);
+        if (shareLocationListFragment == null)
+        {
+            shareLocationListFragment = new ShareLocationListFragment();
+        }
+        mFragmentManager.executePendingTransactions();
+        if(!shareLocationListFragment.isAdded())
+        {
+            shareLocationListFragment.show(mFragmentManager, SHARE_LOCATION_LIST_FRAGMENT_TAG);
+        }
+    }
+
+    public void showNotifyLocationList()
+    {
+        NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
+                mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
+        if (notifyLocationListFragment == null)
+        {
+            notifyLocationListFragment = new NotifyLocationListFragment();
+        }
+        mFragmentManager.executePendingTransactions();
+        if(!notifyLocationListFragment.isAdded())
+        {
+            notifyLocationListFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
+        }
+    }
+
+    public void showAlarmFragment()
+    {
+        LocationAlarmListFragment locationAlarmListFragment = (LocationAlarmListFragment)
+                mFragmentManager.findFragmentByTag(LOCATION_ALARM_FRAGMENT_TAG);
+        if (locationAlarmListFragment == null)
+        {
+            locationAlarmListFragment = new LocationAlarmListFragment();
+        }
+        mFragmentManager.executePendingTransactions();
+        if(!locationAlarmListFragment.isAdded())
+        {
+            locationAlarmListFragment.show(mFragmentManager, LOCATION_ALARM_FRAGMENT_TAG);
+        }
+    }
 
     public void showFavPlacesList()
     {
-        ArrayList favPlacesList = new FavPlacesDao().getFavPlacesList();
-        if (favPlacesList != null && favPlacesList.size() > 0)
+        FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mFragmentManager.findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
+        if (favoritePlacesFragment == null)
         {
-            Otto.post(MainActivity.FAVORITE_PLACES);
-            FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
-            if (favoritePlacesFragment == null)
-            {
-                favoritePlacesFragment = new FavoritePlacesFragment();
-            }
-            fragmentManager
-                    .beginTransaction()
-                    .replace(R.id.content_layout, favoritePlacesFragment, FAV_PLACE_FRAGMENT_TAG)
-                    .addToBackStack(null)
-                    .commit();
+            favoritePlacesFragment = new FavoritePlacesFragment();
         }
-        else
+        mFragmentManager.executePendingTransactions();
+        if(!favoritePlacesFragment.isAdded())
         {
-            WhistleBlower.toast(youHaventSetAnyFavoritePlaces);
+            favoritePlacesFragment.show(mFragmentManager, FAV_PLACE_FRAGMENT_TAG);
         }
     }
 
     public void showFriendsList()
     {
-        FriendListFragment friendListFragment = (FriendListFragment) mActivity.getSupportFragmentManager().findFragmentByTag(FRIEND_LIST_FRAGMENT_TAG);
+        FriendListFragment friendListFragment = (FriendListFragment) mFragmentManager.findFragmentByTag(FRIEND_LIST_FRAGMENT_TAG);
         if (friendListFragment == null)
         {
             friendListFragment = new FriendListFragment();
         }
-        fragmentManager
-                .beginTransaction()
-                .replace(R.id.content_layout, friendListFragment, FRIEND_LIST_FRAGMENT_TAG)
-                .addToBackStack(null)
-                .commit();
+        mFragmentManager.executePendingTransactions();
+        if(!friendListFragment.isAdded())
+        {
+            mFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.content_layout, friendListFragment, FRIEND_LIST_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        }
 
     }
 
@@ -270,27 +306,26 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     {
         if (MiscUtil.isGoogleServicesOk(mActivity))
         {
-            mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+            mapFragment = (MapFragment) mFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
             if (mapFragment == null)
             {
                 mapFragment = new MapFragment();
             }
-            fragmentManager
-                    .beginTransaction()
-                    .addToBackStack(null)
-                    .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
-                    .commit();
+            mFragmentManager.executePendingTransactions();
+            if(!mapFragment.isAdded())
+            {
+                mFragmentManager
+                        .beginTransaction()
+                        .addToBackStack(null)
+                        .replace(R.id.content_layout, mapFragment, MAP_FRAGMENT_TAG)
+                        .commit();
+            }
         }
     }
 
     public MapFragment getMapFragment()
     {
-        if (fragmentManager == null)
-        {
-            fragmentManager = mActivity.getSupportFragmentManager();
-        }
-
-        MapFragment mapFragment = (MapFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        MapFragment mapFragment = (MapFragment) mFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapFragment == null)
         {
             mapFragment = new MapFragment();
@@ -300,16 +335,20 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showNewsFeedsFragment()
     {
-        mainFragment = (MainFragment) mActivity.getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);
+        mainFragment = (MainFragment) mFragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG);
         if (mainFragment == null)
         {
             mainFragment = new MainFragment();
         }
-        fragmentManager
-                .beginTransaction()
-                .replace(R.id.content_layout, mainFragment, MAIN_FRAGMENT_TAG)
-                .addToBackStack(null)
-                .commit();
+        mFragmentManager.executePendingTransactions();
+        if(!mainFragment.isAdded())
+        {
+            mFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.content_layout, mainFragment, MAIN_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     public static void highlightNavigationDrawerMenu(AppCompatActivity mActivity, int id)

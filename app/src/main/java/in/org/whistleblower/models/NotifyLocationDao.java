@@ -1,7 +1,6 @@
 package in.org.whistleblower.models;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -20,9 +19,9 @@ public class NotifyLocationDao
 
     private WBDataBase mWBDataBase;
 
-    public NotifyLocationDao(Context context)
+    public NotifyLocationDao()
     {
-        mWBDataBase = new WBDataBase(context);
+        mWBDataBase = new WBDataBase();
     }
 
     public void insert(NotifyLocation account)
@@ -49,7 +48,7 @@ public class NotifyLocationDao
 
     public void delete(String email)
     {
-        mWBDataBase.delete(NotifyLocation.TABLE, NotifyLocation.USER_EMAIL + " = " + email, null);
+        mWBDataBase.delete(NotifyLocation.TABLE, NotifyLocation.USER_EMAIL + " = '" + email+"'", null);
     }
 
     public ArrayList<NotifyLocation> getList()

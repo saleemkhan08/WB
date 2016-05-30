@@ -2,7 +2,6 @@ package in.org.whistleblower.fragments;
 
 
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,62 +20,55 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
-import in.org.whistleblower.adapters.PlaceAdapter;
-import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.adapters.ShareLocationListAdapter;
+import in.org.whistleblower.models.ShareLocation;
+import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.singletons.Otto;
 
-public class FavoritePlacesFragment extends DialogFragment
+public class ShareLocationListFragment extends android.support.v4.app.DialogFragment
 {
-    public static final String SHOW_FAV_PLACE_EMPTY_LIST = "SHOW_FAV_PLACE_EMPTY_LIST";
+    public static final String SHARE_LOC_LIST_EMPTY_TEXT = "SHARE_LOC_LIST_EMPTY_TEXT";
+    public ShareLocationListFragment()
+    {
+    }
+
+    @BindString(R.string.locationIsntBeingShared)
+    String locationIsntBeingShared;
 
     @Bind(R.id.emptyList)
     ViewGroup emptyList;
 
-    @Bind(R.id.favoritePlaceList)
-    RecyclerView favPlacesRecyclerView;
-
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
 
-    @BindString(R.string.allTheFavoritePlacesAreRemoved)
-    String removedAllTheFavoritePlaces;
-
-    public FavoritePlacesFragment()
-    {
-    }
+    @Bind(R.id.shareLocationList)
+    RecyclerView shareLocationListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View parentView = inflater.inflate(R.layout.fragment_fav_places_list, container, false);
+        View parentView = inflater.inflate(R.layout.fragment_share_location_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        ArrayList<FavPlaces> favPlacesList = new FavPlacesDao().getFavPlacesList();
+
+        ArrayList<ShareLocation> mShareLocationList = new ShareLocationDao().getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
-        if (favPlacesList.size() < 1)
+        if(mShareLocationList.size() < 1)
         {
             showEmptyListString();
         }
-        favPlacesRecyclerView.setAdapter(new PlaceAdapter(mActivity, favPlacesList));
-        favPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        shareLocationListView.setAdapter(new ShareLocationListAdapter(mActivity, mShareLocationList));
+        shareLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
         return parentView;
     }
-
-    @OnClick(R.id.closeDialog)
-    public void close()
-    {
-        dismiss();
-    }
-
     @Subscribe
     public void showEmptyListString(String msg)
     {
-        if (msg.equals(SHOW_FAV_PLACE_EMPTY_LIST))
+        if(msg.equals(SHARE_LOC_LIST_EMPTY_TEXT))
         {
             showEmptyListString();
-            emptyListTextView.setText(removedAllTheFavoritePlaces);
+            emptyListTextView.setText(locationIsntBeingShared);
         }
     }
 
@@ -91,5 +83,11 @@ public class FavoritePlacesFragment extends DialogFragment
     {
         super.onDestroyView();
         Otto.unregister(this);
+    }
+
+    @OnClick(R.id.closeDialog)
+    public void close()
+    {
+        dismiss();
     }
 }

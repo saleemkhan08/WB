@@ -18,71 +18,67 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#e0ffffff"
-        android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
-        android:paddingTop="10dp"
+        android:padding="5dp"
         >
-
-        <ImageView
-            android:id="@+id/placeTypeImgBg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_centerVertical="true"
-            android:src="@mipmap/my_loc_dot_big"/>
-
-        <ImageView
-            android:id="@+id/placeTypeImg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_centerVertical="true"
-            android:padding="15dp"
-            android:src="@mipmap/others_primary_dark"/>
 
         <LinearLayout
             android:id="@+id/placeTypeContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/favPlaceOptionsIcon"
-            android:layout_toRightOf="@+id/placeTypeImg"
+            android:layout_toLeftOf="@+id/actionContainer"
             android:orientation="vertical"
             android:paddingLeft="10dp">
 
             <TextView
-                android:id="@+id/placeTypeName"
-                android:layout_width="fill_parent"
+                android:id="@+id/alarmAddress"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
                 android:gravity="center_vertical"
-                android:text="Place Type"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:text="Alarm Address"
                 android:textColor="@color/colorPrimaryDark"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 />
 
             <TextView
-                android:id="@+id/addressLine"
+                android:id="@+id/range"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginTop="4dp"
-                android:ellipsize="end"
                 android:gravity="center_vertical"
-                android:maxLines="2"
-                android:text="Address Line"
+                android:text="Range"
                 android:textColor="@color/grey"
-                android:textSize="13sp"
+                android:textSize="15sp"
                 />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/favPlaceOptionsIcon"
-            android:layout_width="40dp"
-            android:layout_height="60dp"
-            android:layout_alignParentRight="true"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:id="@+id/actionContainer"
+            android:orientation="vertical"
             android:layout_centerVertical="true"
-            android:background="@drawable/bg_drawable"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:src="@drawable/options_primary_dark"/>
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/deleteAlarm"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_drawable"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
+                android:src="@mipmap/delete_accent"/>
+            <ImageView
+                android:id="@+id/cancelAlarm"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_drawable"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
+                android:src="@drawable/bell_cross_accent"/>
+        </LinearLayout>
     </RelativeLayout>
 </android.support.v7.widget.CardView>

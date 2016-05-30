@@ -3,6 +3,7 @@ package in.org.whistleblower.fragments;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -46,6 +47,9 @@ public class ShareLocationFragment extends DialogFragment
 
     private SharedPreferences preferences;
     private boolean isContinuouslyClicked = true;
+
+    Typeface normal = Typeface.defaultFromStyle(Typeface.NORMAL);
+    Typeface bold = Typeface.defaultFromStyle(Typeface.BOLD);
 
     public ShareLocationFragment()
     {
@@ -100,7 +104,7 @@ public class ShareLocationFragment extends DialogFragment
 
         if (isContinuouslyClicked)
         {
-            ShareLocationDao dao = new ShareLocationDao(mActivity);
+            ShareLocationDao dao = new ShareLocationDao();
             intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
 
             location.name = account.name;
@@ -134,24 +138,36 @@ public class ShareLocationFragment extends DialogFragment
     }
 
     @BindColor(R.color.colorAccent)
-    int colorAccent;
+    int enabled;
 
-    @BindColor(R.color.white)
-    int colorWhite;
+    @BindColor(R.color.divider)
+    int disabled;
 
     @OnClick(R.id.continuously)
     public void onContinuouslyClick()
     {
-        continuously.setTextColor(colorAccent);
-        justOnce.setTextColor(colorWhite);
+        continuously.setTextColor(enabled);
+        justOnce.setTextColor(disabled);
         isContinuouslyClicked = true;
+
+        continuously.setTypeface(bold);
+        justOnce.setTypeface(normal);
     }
 
     @OnClick(R.id.justOnce)
     public void onJustOnceClick()
     {
         isContinuouslyClicked = false;
-        continuously.setTextColor(colorWhite);
-        justOnce.setTextColor(colorAccent);
+        continuously.setTextColor(disabled);
+        justOnce.setTextColor(enabled);
+
+        continuously.setTypeface(normal);
+        justOnce.setTypeface(bold);
+    }
+
+    @OnClick(R.id.closeDialog)
+    public void close()
+    {
+        dismiss();
     }
 }

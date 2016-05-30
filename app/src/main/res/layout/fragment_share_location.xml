@@ -12,18 +12,28 @@
         android:layout_height="wrap_content"
         android:background="@drawable/dialog_header_bg"
         android:orientation="vertical">
-
-        <TextView
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="20dp"
-            android:gravity="center_horizontal"
-            android:text="Share Location"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            />
+            android:layout_height="60dp"
+            android:background="@drawable/dialog_header_bg">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/shareLocation"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                />
+            <ImageView
+                android:id="@+id/closeDialog"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/bg_drawable"
+                android:padding="13dp"
+                android:src="@drawable/cross"/>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -40,14 +50,8 @@
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"
                 android:text="Real Time"
+                android:textStyle="bold"
                 android:textColor="@color/colorAccent"/>
-
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="5dp"
-                android:background="@color/white"
-                />
 
             <TextView
                 android:id="@+id/justOnce"
@@ -58,38 +62,7 @@
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"
                 android:text="Just Once"
-                android:textColor="@color/white"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            android:weightSum="101">
-
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                >
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@color/white"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="50">
-
-
-            </LinearLayout>
+                android:textColor="@color/divider"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -97,7 +70,6 @@
         android:id="@+id/shareLocationFriendList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"/>
+        android:paddingBottom="10dp"/>
 
 </LinearLayout>
