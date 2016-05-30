@@ -14,7 +14,7 @@ import in.org.whistleblower.WhistleBlower;
 public class WBDataBase
 {
     private SQLiteDatabase db;
-
+    public static final String DATABASE_NAME = "whistle_blower";
     public WBDataBase()
     {
         DataBaseHelper dataBaseHelper = new DataBaseHelper(WhistleBlower.getAppContext(), 1);
@@ -23,7 +23,6 @@ public class WBDataBase
 
     class DataBaseHelper extends SQLiteOpenHelper
     {
-        public static final String DATABASE_NAME = "whistle_blower";
         String[] mTableSchema = {
                 IssuesDao.TABLE_SCHEMA,
                 FavPlacesDao.TABLE_SCHEMA,
@@ -89,6 +88,12 @@ public class WBDataBase
     {
         Log.d("DatabaseProblem","insert : tblname : "+tblname +", values : "+values );
         return db.insertWithOnConflict(tblname, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
+    public long insertShow(String tblname, ContentValues values)
+    {
+        Log.d("DatabaseProblem","insert : tblname : "+tblname +", values : "+values );
+        return db.insert(tblname, null, values);
     }
 
     public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String groupBy, String orderBy)

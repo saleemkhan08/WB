@@ -14,6 +14,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.R;
+import in.org.whistleblower.fragments.UserListFragment;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
@@ -63,6 +64,25 @@ public class CommonUserListAdapter extends RecyclerView.Adapter<CommonUserListAd
                 Otto.post(account);
             }
         });
+    }
+
+    public void remove(Accounts account)
+    {
+        int size = mAccountsList.size();
+        for(int mPosition = 0; mPosition < size; mPosition++ )
+        {
+            if(account.email.equals(mAccountsList.get(mPosition).email))
+            {
+                mAccountsList.remove(mPosition);
+                if(mAccountsList.size() < 1)
+                {
+                    Otto.post(UserListFragment.LIST_EMPTY_TEXT);
+                }
+                notifyItemRemoved(mPosition);
+                notifyItemRangeChanged(mPosition, mAccountsList.size());
+                break;
+            }
+        }
     }
 
     @Override

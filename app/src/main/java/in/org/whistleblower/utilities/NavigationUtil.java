@@ -65,6 +65,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public DrawerLayout drawer;
 
     SharedPreferences mPreferences;
+    private FavoritePlacesFragment favoritePlacesFragment;
 
     public NavigationUtil(Context context)
     {
@@ -90,6 +91,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         Bundle bundle = new Bundle();
         bundle.putParcelable(MapFragment.SHOW_FAV_PLACE, address);
         showMapFragment(bundle);
+        favoritePlacesFragment.dismiss();
     }
 
     @Subscribe
@@ -271,7 +273,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showFavPlacesList()
     {
-        FavoritePlacesFragment favoritePlacesFragment = (FavoritePlacesFragment) mFragmentManager.findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
+        favoritePlacesFragment = (FavoritePlacesFragment) mFragmentManager.findFragmentByTag(FAV_PLACE_FRAGMENT_TAG);
         if (favoritePlacesFragment == null)
         {
             favoritePlacesFragment = new FavoritePlacesFragment();

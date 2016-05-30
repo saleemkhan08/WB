@@ -36,6 +36,7 @@ import com.google.android.gms.common.api.Status;
 import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.models.WBDataBase;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
@@ -192,9 +193,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         util = new MiscUtil(this);
-
+        deleteDatabase(WBDataBase.DATABASE_NAME);
+        WhistleBlower.getPreferences().edit().clear().apply();
         mFont = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)

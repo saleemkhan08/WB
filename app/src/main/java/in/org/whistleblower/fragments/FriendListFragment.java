@@ -104,6 +104,47 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
         {
             showFriendList();
         }
+
+        friendsListRecyclerView.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if (event.getAction() == MotionEvent.ACTION_DOWN)
+                {
+                    TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                    fabWrapper.setVisibility(View.GONE);
+                }
+                else if (event.getAction() == MotionEvent.ACTION_UP)
+                {
+                    Handler myHandler = new Handler();
+                    myHandler.postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                            fabWrapper.setVisibility(View.VISIBLE);
+                        }
+                    }, 1000);
+                }
+                else if (event.getAction() == MotionEvent.ACTION_CANCEL)
+                {
+                    Handler myHandler = new Handler();
+                    myHandler.postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                            fabWrapper.setVisibility(View.VISIBLE);
+                        }
+                    }, 500);
+                }
+                return false;
+            }
+        });
+
         return parentView;
     }
 
@@ -152,7 +193,10 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
             public void onError(VolleyError error)
             {
                 Log.d("ToastMsg", "error : " + error.getMessage());
-                listener.onError(error);
+                if(listener != null)
+                {
+                    listener.onError(error);
+                }
             }
         });
     }
@@ -173,75 +217,36 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
                 account.photo_url = json.getString(Accounts.PHOTO_URL);
                 account.name = json.getString(Accounts.NAME);
                 account.relation = json.getString(Accounts.RELATION);
-                if (account.relation.equals(Accounts.FRIEND))
-                {
-                    accountsDao.insert(account);
-                }
+                accountsDao.insert(account);
             }
-            listener.onSuccess(FRIEND_LIST_FETCHED_FROM_SERVER);
+            if(listener!=null)
+            {
+                listener.onSuccess(FRIEND_LIST_FETCHED_FROM_SERVER);
+            }
         }
         catch (Exception e)
         {
             e.printStackTrace();
             accountsDao.delete();
             Log.d("ToastMsg", "Error occurred deleting from Data base : " + e.getMessage());
-            listener.onError(new VolleyError(e.getMessage()));
+            if(listener!=null)
+            {
+                listener.onError(new VolleyError(e.getMessage()));
+            }
         }
     }
 
     void showFriendList()
     {
-        if (mFriendList == null || mFriendList.size() <= 0)
-        {
-            mFriendList = dao.getFriendsList();
-        }
-
-        Log.d("Doodle", "mFriendList : " + mFriendList);
+        hideEmptyListString();
+        mFriendList = dao.getFriendsList();
+        Log.d("mFriendList", "mFriendList : " + mFriendList);
 
         if (null != mFriendList && mFriendList.size() > 0)
         {
             adapter = new FriendListAdapter(mActivity, mFriendList);
             friendsListRecyclerView.setAdapter(adapter);
             friendsListRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-            friendsListRecyclerView.setOnTouchListener(new View.OnTouchListener()
-            {
-                @Override
-                public boolean onTouch(View v, MotionEvent event)
-                {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN)
-                    {
-                        TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
-                        fabWrapper.setVisibility(View.GONE);
-                    }
-                    else if (event.getAction() == MotionEvent.ACTION_UP)
-                    {
-                        Handler myHandler = new Handler();
-                        myHandler.postDelayed(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
-                                fabWrapper.setVisibility(View.VISIBLE);
-                            }
-                        }, 1000);
-                    }
-                    else if (event.getAction() == MotionEvent.ACTION_CANCEL)
-                    {
-                        Handler myHandler = new Handler();
-                        myHandler.postDelayed(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
-                                fabWrapper.setVisibility(View.VISIBLE);
-                            }
-                        }, 500);
-                    }
-                    return false;
-                }
-            });
         }
         else
         {
@@ -253,6 +258,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Override
     public void onRefresh()
     {
+        dao.delete();
         getFriendListFromServer(this);
     }
 
@@ -269,13 +275,14 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     {
         WhistleBlower.toast("Please Try Again!");
         Log.d("FriendListFragment", "Error : " + error.getMessage());
+        preferences.edit().putBoolean(KEY_USERS_FETCHED, false).apply();
         hideProgressFab();
     }
 
     @Subscribe
     public void showEmptyListString(String msg)
     {
-        if(msg.equals(EMPTY_FRIEND_LIST))
+        if (msg.equals(EMPTY_FRIEND_LIST))
         {
             showEmptyListString();
             emptyListTextView.setText(youHaveRemovedAllFriends);
@@ -286,6 +293,14 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     {
         TransitionManager.beginDelayedTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setEnabled(false);
+    }
+
+    private void hideEmptyListString()
+    {
+        TransitionManager.beginDelayedTransition(emptyList);
+        emptyList.setVisibility(View.GONE);
+        swipeRefreshLayout.setEnabled(true);
     }
 
     @OnClick(R.id.addFriendFab)
@@ -297,15 +312,15 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
 
     private void showAddUserFragment()
     {
-        FragmentManager manager =  mActivity.getSupportFragmentManager();
+        FragmentManager manager = mActivity.getSupportFragmentManager();
         UserListFragment userListFragment = (UserListFragment)
-               manager.findFragmentByTag(ADD_USER_FRAGMENT_TAG);
+                manager.findFragmentByTag(ADD_USER_FRAGMENT_TAG);
         if (userListFragment == null)
         {
             userListFragment = new UserListFragment();
         }
         manager.executePendingTransactions();
-        if(!userListFragment.isAdded())
+        if (!userListFragment.isAdded())
         {
             userListFragment.show(manager, ADD_USER_FRAGMENT_TAG);
         }
@@ -315,9 +330,10 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Subscribe
     public void showAddFriendFab(String action)
     {
-        if(action.equals(UserListFragment.ADD_FRIEND_DIALOG_CLOSED))
+        if (action.equals(UserListFragment.ADD_FRIEND_DIALOG_CLOSED))
         {
             addFriendFab.setVisibility(View.VISIBLE);
+            onRefresh();
         }
     }
 

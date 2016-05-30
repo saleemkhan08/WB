@@ -1,12 +1,16 @@
 package in.org.whistleblower.adapters;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -17,6 +21,7 @@ import in.org.whistleblower.fragments.LocationAlarmListFragment;
 import in.org.whistleblower.fragments.NotifyLocationFragment;
 import in.org.whistleblower.models.LocationAlarm;
 import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
 public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHolder>
@@ -64,14 +69,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             public void onClick(View v)
             {
                 int status = dao.getAlarm(alarm.address).status;
-                if(status == LocationAlarm.ALARM_ON)
+                if (status == LocationAlarm.ALARM_ON)
                 {
-                    dao.update(alarm.address, LocationAlarm.ALARM_OFF);
+                    setAlarm(alarm, false);
                     holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
                 }
                 else
                 {
-                    dao.update(alarm.address, LocationAlarm.ALARM_ON);
+                    setAlarm(alarm, true);
                     holder.cancelAlarm.setImageResource(R.drawable.bell_cross_accent);
                 }
             }
@@ -86,6 +91,36 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
                 removeAt(position);
             }
         });
+    }
+
+    void setAlarm(LocationAlarm alarm, boolean isSet)
+    {
+        if(isSet)
+        {
+            Log.d("FlowLogs", "setAlarm");
+            dao.update(alarm.address, LocationAlarm.ALARM_ON);
+            toast("Alarm Set : \n" + alarm.address);
+        }
+        else
+        {
+            Log.d("FlowLogs", "resetAlarm");
+            dao.update(alarm.address, LocationAlarm.ALARM_OFF);
+            toast("Alarm Turned off : \n" + alarm.address);
+        }
+
+        Intent intent = new Intent(mActivity, LocationTrackingService.class);
+        intent.putExtra(LocationTrackingService.KEY_ALARM_SET, true);
+        mActivity.startService(intent);
+
+    }
+
+    private void toast(String str)
+    {
+        Toast toast = Toast.makeText(mActivity, str, Toast.LENGTH_LONG);
+        ViewGroup view = (ViewGroup) toast.getView();
+        ((TextView) view.getChildAt(0)).setGravity(Gravity.CENTER);
+        toast.setView(view);
+        toast.show();
     }
 
     private String getRadiusText(int radius)

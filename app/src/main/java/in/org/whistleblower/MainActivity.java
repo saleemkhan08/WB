@@ -21,6 +21,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import javax.inject.Inject;
 
+import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.singletons.Otto;
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
         }
+        FriendListFragment.getFriendListFromServer(null);
     }
 
     @Override

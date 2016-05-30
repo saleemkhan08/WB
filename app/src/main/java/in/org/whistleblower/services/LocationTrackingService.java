@@ -165,7 +165,7 @@ public class LocationTrackingService extends Service implements LocationListener
             }
             else if(intent.hasExtra(KEY_ALARM_SET))
             {
-
+                preferences.edit().putBoolean(KEY_ALARM_SET, true).commit();
             }
         }
 

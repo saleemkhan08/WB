@@ -92,4 +92,11 @@ public class FavoritePlacesFragment extends DialogFragment
         super.onDestroyView();
         Otto.unregister(this);
     }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Otto.unregister(this);
+    }
 }

@@ -2,6 +2,7 @@ package in.org.whistleblower.models;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class AccountsDao
             values.put(Accounts.EMAIL, account.email);
             values.put(Accounts.PHOTO_URL, account.photo_url);
             values.put(Accounts.RELATION, account.relation);
-            mWBDataBase.insert(Accounts.TABLE, values);
+            Log.d("AccountsDao", "insert : "+mWBDataBase.insertShow(Accounts.TABLE, values));
         }
     }
 
@@ -97,8 +98,9 @@ public class AccountsDao
                 account.name = cursor.getString(cursor.getColumnIndex(Accounts.NAME));
                 account.email = cursor.getString(cursor.getColumnIndex(Accounts.EMAIL));
                 account.relation = cursor.getString(cursor.getColumnIndex(Accounts.RELATION));
-                accountsList.add(account);
                 account.photo_url = cursor.getString(cursor.getColumnIndex(Accounts.PHOTO_URL));
+
+                accountsList.add(account);
             }
             cursor.close();
         }

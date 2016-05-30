@@ -51,7 +51,7 @@
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"/>
             <EditText
-                android:id="@+id/messageEdit"
+                android:id="@+id/userSearch"
                 android:padding="5dp"
                 android:layout_toRightOf="@id/editIcon"
                 android:hint="@string/typeNameOrEmailToSearch"
