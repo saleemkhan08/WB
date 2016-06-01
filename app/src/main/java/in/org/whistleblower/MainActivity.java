@@ -10,6 +10,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -166,15 +167,25 @@ public class MainActivity extends AppCompatActivity
     protected void onResume()
     {
         super.onResume();
-        showShareLocationFragment();
+        Intent intent = getIntent();
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "Extras : " + intent.getExtras());
+        if (intent.hasExtra(NavigationUtil.DIALOG_FRAGMENT_TAG))
+        {
+            showDialogFragment(intent.getStringExtra(NavigationUtil.DIALOG_FRAGMENT_TAG));
+        }
     }
 
-    private void showShareLocationFragment()
+    private void showDialogFragment(String tag)
     {
-        Intent intent = getIntent();
-        if (intent.hasExtra(SHARE_LOCATION_LIST))
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "has extra : " + tag);
+        switch (tag)
         {
-            mNavigationUtil.showShareLocationList();
+            case NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG:
+                mNavigationUtil.showAlarmFragment();
+                break;
+            case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG:
+                mNavigationUtil.showShareLocationList();
+                break;
         }
     }
 
@@ -182,7 +193,17 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
-        showShareLocationFragment();
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "onNewIntent");
+        if(preferences.contains(NavigationUtil.DIALOG_FRAGMENT_TAG))
+        {
+            String tag = preferences.getString(NavigationUtil.DIALOG_FRAGMENT_TAG, null);
+            Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "tag : "+tag);
+            if(tag!=null)
+            {
+                showDialogFragment(tag);
+                preferences.edit().putString(NavigationUtil.DIALOG_FRAGMENT_TAG, null).apply();
+            }
+        }
     }
 
     @Override

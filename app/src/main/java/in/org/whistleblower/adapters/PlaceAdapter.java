@@ -28,6 +28,9 @@ import in.org.whistleblower.utilities.MiscUtil;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>
 {
+    public static final int TYPE_ISSUE = -1;
+    public static final int TYPE_ALARM = -2;
+    public static final int TYPE_NOTIFY = -3;
     AppCompatActivity mActivity;
     LayoutInflater inflater;
     List<FavPlaces> mAddressList;
@@ -88,7 +91,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
                                 notifyLoc();
                                 break;
                             case R.id.deleteFavPlace:
-                                deleteFavPlace(address.latitude, address.longitude);
+                                new FavPlacesDao().delete(address.addressLine);
                                 removeAt(position);
                                 Toast.makeText(mActivity, "Deleted : " + address.placeType, Toast.LENGTH_SHORT).show();
                                 break;
@@ -111,10 +114,6 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         {
             Otto.post(FavoritePlacesFragment.SHOW_FAV_PLACE_EMPTY_LIST);
         }
-    }
-    private void deleteFavPlace(String latitude, String longitude)
-    {
-        new FavPlacesDao().delete(latitude, longitude);
     }
 
     private void notifyLoc()
@@ -177,8 +176,12 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
                 return R.mipmap.coffee_shop_primay_dark;
             case 14:
                 return R.mipmap.bar_primary_dark;
-            case -1:
+            case TYPE_ISSUE:
                 return R.mipmap.issue_primary_dark;
+            case TYPE_NOTIFY:
+                return R.mipmap.comment_primary_dark;
+            case TYPE_ALARM:
+                return R.mipmap.bell_icon_primary_dark;
             default:
                 return R.mipmap.others_primary_dark;
         }

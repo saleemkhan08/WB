@@ -2,6 +2,7 @@ package in.org.whistleblower.fragments;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -32,7 +33,6 @@ import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.AccountsDao;
 import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.models.NotifyLocationDao;
-import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
@@ -101,7 +101,7 @@ public class NotifyLocationFragment extends DialogFragment
         mNotifyLocation.email = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
         mNotifyLocation.userEmail = account.email;
         mNotifyLocation.photoUrl = preferences.getString(Accounts.PHOTO_URL, "");
-        mNotifyLocation.name = preferences.getString(ShareLocation.NAME, "Saleem");
+        mNotifyLocation.name = preferences.getString(Accounts.NAME, "Saleem");
         mNotifyLocation.message = messageEdit.getText().toString();
 
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
@@ -114,16 +114,9 @@ public class NotifyLocationFragment extends DialogFragment
         mNotifyLocation.photoUrl = account.photo_url;
 
         dao.insert(mNotifyLocation);
-        Log.d("shareLocation", "continuously : checked");
+        Otto.post(mNotifyLocation);
         mActivity.startService(intent);
         Log.d("shareLocation", "startService");
-    }
-
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        dismiss();
     }
 
     @Override
@@ -166,5 +159,19 @@ public class NotifyLocationFragment extends DialogFragment
     public void close()
     {
         dismiss();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        dismiss();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog)
+    {
+        super.onDismiss(dialog);
+        Otto.post(MapFragment.DIALOG_DISMISS);
     }
 }

@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -32,6 +31,7 @@ import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.NotifyLocationFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
 import in.org.whistleblower.models.Accounts;
@@ -41,9 +41,10 @@ import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.models.NotifyLocationDao;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
-import in.org.whistleblower.receivers.ShareLocationStopReceiver;
+import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
+import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.PermissionUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
 
@@ -86,6 +87,7 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         Log.d("FlowLogs", "Service : Constructor");
     }
+
     NotificationManager mNotificationManager;
     SharedPreferences preferences;
 
@@ -101,7 +103,7 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         super.onCreate();
         Otto.register(this);
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = WhistleBlower.getPreferences();
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
@@ -163,7 +165,7 @@ public class LocationTrackingService extends Service implements LocationListener
                 shareLocation = intent.getParcelableExtra(ShareLocation.LOCATION);
                 preferences.edit().putBoolean(KEY_SHARE_LOCATION, true).commit();
             }
-            else if(intent.hasExtra(KEY_ALARM_SET))
+            else if (intent.hasExtra(KEY_ALARM_SET))
             {
                 preferences.edit().putBoolean(KEY_ALARM_SET, true).commit();
             }
@@ -197,22 +199,26 @@ public class LocationTrackingService extends Service implements LocationListener
         });
     }
 
-    void showNotification(String name, String action)
+    void showAlarmNotification(String name, int noOfAlarms)
     {
-        Intent cancelIntent = new Intent(this, ShareLocationStopReceiver.class);
-        cancelIntent.putExtra(action, true);
+        Intent cancelIntent = new Intent(this, NotificationActionReceiver.class);
+        cancelIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, NotificationActionReceiver.CANCEL_ALL_ALARMS);
         PendingIntent cancelPendingIntent = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), cancelIntent, 0);
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        Intent contentIntent = new Intent(this, NotificationActionReceiver.class);
+        contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG);
+        PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setContentTitle("Sharing Location ")
+        mBuilder.setContentTitle("Location Alarm")
                 .setSmallIcon(R.drawable.bullhorn_white)
                 .setAutoCancel(false)
                 .setOngoing(true)
-                .setContentText("Click on notification to stop sharing");
-
-        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-
+                .setContentText(name)
+                .setContentIntent(contentPendingIntent)
+                .addAction(R.mipmap.bell_cross_accent, (noOfAlarms > 1) ? "Turn Off All Alarms" : "Turn Off Alarm", cancelPendingIntent);
+        mNotificationManager.notify(NotificationActionReceiver.NOTIFICATION_ID_ALARMS, mBuilder.build());
     }
 
     private void startLocationUpdates()
@@ -294,9 +300,9 @@ public class LocationTrackingService extends Service implements LocationListener
     private void updateNotification()
     {
         WhistleBlower.toast("updateNotification : UPDATE_NOTIFICATION");
-        if(mCurrentLocation != null)
+        if (mCurrentLocation != null)
         {
-            shareRealTimeLocation(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()));
+            shareRealTimeLocation(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
         }
     }
 
@@ -472,15 +478,16 @@ public class LocationTrackingService extends Service implements LocationListener
                     @Override
                     public void onError(VolleyError error)
                     {
-                        Log.d("RealTime","Error : "+error.getMessage());
+                        Log.d("RealTime", "Error : " + error.getMessage());
                     }
                 });
             }
-            message = message.substring(0, message.length()-2);
+            message = message.substring(0, message.length() - 2);
 
             Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(MainActivity.SHARE_LOCATION_LIST, true);
+            intent.putExtra(NavigationUtil.DIALOG_FRAGMENT_TAG, NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
+
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
             mBuilder.setContentTitle("Sharing Location To:")
@@ -489,6 +496,7 @@ public class LocationTrackingService extends Service implements LocationListener
                     .setOngoing(true)
                     .setContentText(message)
                     .setContentIntent(pendingIntent);
+
             mNotificationManager.notify(SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID, mBuilder.build());
         }
         else
@@ -499,7 +507,7 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void shareLocation(LatLng latLng)
     {
-        if(shareLocation != null)
+        if (shareLocation != null)
         {
             Map<String, String> data = new HashMap<>();
             data.put(ShareLocation.EMAIL, shareLocation.email);
@@ -522,7 +530,7 @@ public class LocationTrackingService extends Service implements LocationListener
                 @Override
                 public void onError(VolleyError error)
                 {
-                    Log.d("shareLocation", ""+error.getMessage());
+                    Log.d("shareLocation", "" + error.getMessage());
                 }
             });
         }
@@ -533,7 +541,8 @@ public class LocationTrackingService extends Service implements LocationListener
         LocationAlarmDao dao = new LocationAlarmDao();
         ArrayList<LocationAlarm> alarms = dao.getList();
         boolean allAlarmsStatus = false;
-
+        String locations = "No Alarms Set...";
+        int noOfLocations = 0;
         for (LocationAlarm alarm : alarms)
         {
             if (alarm.status == LocationAlarm.ALARM_ON)
@@ -553,8 +562,18 @@ public class LocationTrackingService extends Service implements LocationListener
                     startActivity(intent);
                     currentAlarm = false;
                     dao.update(alarm.address, LocationAlarm.ALARM_OFF);
-                    // Make it Notification with audio and vibration.
-                    /*mNotificationManager.cancel(ALARM_NOTIFICATION);*/
+                }
+                else
+                {
+                    noOfLocations++;
+                    if (noOfLocations > 1)
+                    {
+                        locations = "Click here to view the list...";
+                    }
+                    else
+                    {
+                        locations = NotifyLocationFragment.getAddressLines(alarm.address, 3);
+                    }
                 }
                 allAlarmsStatus = currentAlarm;
             }
@@ -562,6 +581,10 @@ public class LocationTrackingService extends Service implements LocationListener
         if (!allAlarmsStatus)
         {
             preferences.edit().putBoolean(KEY_ALARM_SET, false).apply();
+        }
+        else
+        {
+            showAlarmNotification(locations, noOfLocations);
         }
     }
 
@@ -581,9 +604,9 @@ public class LocationTrackingService extends Service implements LocationListener
         isNotifyArrival = preferences.getBoolean(KEY_NOTIFY_ARRIVAL, false);
         isShareLocation = preferences.getBoolean(KEY_SHARE_LOCATION_REAL_TIME, false);
         isTravellingMode = preferences.getBoolean(KEY_TRAVELLING_MODE, false);
-        if(!isShareLocation)
+        if (!isShareLocation)
         {
-            if(mNotificationManager!=null)
+            if (mNotificationManager != null)
             {
                 mNotificationManager.cancel(SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
             }

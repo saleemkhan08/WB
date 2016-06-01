@@ -1,6 +1,7 @@
 package in.org.whistleblower.fragments;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -92,5 +93,19 @@ public class LocationAlarmListFragment extends DialogFragment
     public void close()
     {
         dismiss();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        dismiss();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog)
+    {
+        super.onDismiss(dialog);
+        Otto.post(MapFragment.DIALOG_DISMISS);
     }
 }

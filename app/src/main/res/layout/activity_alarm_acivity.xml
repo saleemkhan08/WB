@@ -15,28 +15,54 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:textStyle="bold"
+            android:id="@+id/youHaveReached"
+            android:gravity="center"
+            android:paddingTop="70dp"
+            android:textColor="@color/white"
+            android:layout_marginTop="40dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginLeft="30dp"
+            android:textSize="60sp"
+            android:layout_marginBottom="-30dp"
+            android:text="@string/youHaveReached"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
             android:id="@+id/message"
             android:gravity="center"
-            android:textColor="@color/white"
-            android:layout_margin="30dp"
             android:paddingBottom="60dp"
-            android:textSize="60sp"
-            android:text="You've Reached The Paradise!!"/>
+            android:textSize="40sp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/youHaveReached"
+            android:text=" The Paradise!!"/>
 
     </RelativeLayout>
-    <com.getbase.floatingactionbutton.FloatingActionButton
-        android:id="@+id/stopAlarm"
-        android:layout_gravity="bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/multiple_actions"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/multiple_actions"
-        app:fab_icon="@drawable/bell_cross"
-        android:layout_marginBottom="20dp"
-        fab:fab_colorNormal="@color/colorAccent"
-        fab:fab_colorPressed="@color/colorAccentPressed"/>
+    <in.org.whistleblower.custom.view.RippleBackground
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/content"
+        app:rb_color="@color/colorAccent"
+        app:rb_radius="60dp"
+        app:rb_rippleAmount="1"
+        app:rb_duration="1175"
+        app:rb_scale="8">
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/stopAlarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/multiple_actions"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_alignRight="@+id/multiple_actions"
+            app:fab_icon="@drawable/bell_cross"
+            android:layout_marginBottom="20dp"
+            fab:fab_colorNormal="@color/colorAccent"
+            fab:fab_colorPressed="@color/colorAccentPressed"/>
+    </in.org.whistleblower.custom.view.RippleBackground>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -91,4 +91,11 @@ public class LocationAlarmDao
         values.put(LocationAlarm.STATUS, status);
         mWBDataBase.update(LocationAlarm.TABLE, values, LocationAlarm.ADDRESS + " = '" + address + "'", null);
     }
+
+    public void cancelAllAlarms()
+    {
+        ContentValues values = new ContentValues();
+        values.put(LocationAlarm.STATUS, LocationAlarm.ALARM_OFF);
+        mWBDataBase.update(LocationAlarm.TABLE, values, null, null);
+    }
 }

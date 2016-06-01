@@ -124,13 +124,6 @@ public class ShareLocationFragment extends DialogFragment
     }
 
     @Override
-    public void onPause()
-    {
-        super.onPause();
-        dismiss();
-    }
-
-    @Override
     public void onDestroyView()
     {
         super.onDestroyView();
@@ -168,6 +161,13 @@ public class ShareLocationFragment extends DialogFragment
     @OnClick(R.id.closeDialog)
     public void close()
     {
+        dismiss();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
         dismiss();
     }
 }

@@ -90,4 +90,11 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
     {
         dismiss();
     }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        dismiss();
+    }
 }

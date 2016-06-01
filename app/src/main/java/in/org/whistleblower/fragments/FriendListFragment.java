@@ -62,7 +62,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Bind(R.id.addFriendFab)
     View addFriendFab;
 
-    @Bind(R.id.swipe_refresh_layout)
+    @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
 
     @BindString(R.string.allTheFriendsAreRemoved)

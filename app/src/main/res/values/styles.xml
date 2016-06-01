@@ -101,4 +101,13 @@
         <item name="android:text">@string/crop__cancel</item>
     </style>
 
+    <style name="style_dialog_tab">
+        <item name="tabTextAppearance">@style/TabText</item>
+        <item name="tabSelectedTextColor">@color/colorAccent</item>
+    </style>
+    <style name="TabText" parent="TextAppearance.AppCompat.Button">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
 </resources>

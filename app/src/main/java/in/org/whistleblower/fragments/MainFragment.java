@@ -46,7 +46,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private ArrayList<Issue> issuesList = null;
     LocalDataTask mLocalDataTask;
     private SwipeRefreshLayout swipeRefreshLayout;
-    IssuesDao issueDao;
     public MainFragment()
     {
 
@@ -57,7 +56,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     {
         // Create the array
         issuesList = new ArrayList<>();
-        issueDao = new IssuesDao();
         super.onCreate(savedInstanceState);
     }
 
@@ -70,7 +68,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         WhistleBlower.getComponent().inject(this);
 
         mUtil = new MiscUtil(mActivity);
-        swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout = (SwipeRefreshLayout) parentView.findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
         MiscUtil.log("onCreateView");
         return parentView;
@@ -125,7 +123,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         protected Void doInBackground(Void... params)
         {
             MiscUtil.log("LocalDataTask : doInBackground");
-            issuesList = issueDao.getIssuesList();
+            issuesList = new IssuesDao().getIssuesList();
             return null;
         }
 
@@ -168,6 +166,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
                     if (array != null)
                     {
+                        IssuesDao issueDao = new IssuesDao();
                         issueDao.delete();//TODO Find a better Logic to do this
                         issuesList = new ArrayList<>();
                         int totalNoOfIssues = array.length();

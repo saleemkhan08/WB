@@ -75,6 +75,11 @@ public class IssuesDao
         mWBDataBase.delete(IssuesDao.TABLE, null, null);
     }
 
+    public void delete(String issueId)
+    {
+        mWBDataBase.delete(IssuesDao.TABLE, ISSUE_ID + " = '"+issueId+"'", null);
+    }
+
     public ArrayList<Issue> getIssuesList()
     {
         ArrayList<Issue> issuesList = new ArrayList<>();

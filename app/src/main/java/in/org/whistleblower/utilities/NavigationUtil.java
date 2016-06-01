@@ -26,8 +26,8 @@ import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.fragments.LocationAlarmListFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
-import in.org.whistleblower.fragments.NotifyLocationListFragment;
 import in.org.whistleblower.fragments.ShareLocationListFragment;
+import in.org.whistleblower.fragments.TabbedDialogFragment;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.Issue;
 import in.org.whistleblower.singletons.Otto;
@@ -46,6 +46,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String NOTIFY_LOCATION_FRAGMENT_TAG = "NOTIFY_LOCATION_FRAGMENT_TAG";
     public static final String SHARE_LOCATION_LIST_FRAGMENT_TAG = "SHARE_LOCATION_LIST_FRAGMENT_TAG";
     public static final String LOCATION_ALARM_FRAGMENT_TAG = "LOCATION_ALARM_FRAGMENT_TAG";
+    public static final String DIALOG_FRAGMENT_TAG = "dialogFragmentTag";
 
     @BindString(R.string.noFriendsAreAddedYet)
     String youHaventAddedFriends;
@@ -228,6 +229,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showShareLocationList()
     {
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG,"showShareLocationList");
         ShareLocationListFragment shareLocationListFragment = (ShareLocationListFragment)
                 mFragmentManager.findFragmentByTag(SHARE_LOCATION_LIST_FRAGMENT_TAG);
         if (shareLocationListFragment == null)
@@ -243,21 +245,35 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showNotifyLocationList()
     {
-        NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
+        TabbedDialogFragment tabbedDialogFragment = (TabbedDialogFragment)
                 mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
-        if (notifyLocationListFragment == null)
+        if (tabbedDialogFragment == null)
         {
-            notifyLocationListFragment = new NotifyLocationListFragment();
+            tabbedDialogFragment = new TabbedDialogFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!notifyLocationListFragment.isAdded())
+        if(!tabbedDialogFragment.isAdded())
         {
-            notifyLocationListFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
+            tabbedDialogFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
         }
+
+//        NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
+//                mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
+//        if (notifyLocationListFragment == null)
+//        {
+//            notifyLocationListFragment = new NotifyLocationListFragment();
+//        }
+//        mFragmentManager.executePendingTransactions();
+//        if(!notifyLocationListFragment.isAdded())
+//        {
+//            notifyLocationListFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
+//        }
     }
 
     public void showAlarmFragment()
     {
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG,"showAlarmFragment");
+
         LocationAlarmListFragment locationAlarmListFragment = (LocationAlarmListFragment)
                 mFragmentManager.findFragmentByTag(LOCATION_ALARM_FRAGMENT_TAG);
         if (locationAlarmListFragment == null)

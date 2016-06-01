@@ -1,6 +1,7 @@
 package in.org.whistleblower.fragments;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -87,6 +88,13 @@ public class FavoritePlacesFragment extends DialogFragment
     }
 
     @Override
+    public void onPause()
+    {
+        super.onPause();
+        dismiss();
+    }
+
+    @Override
     public void onDestroyView()
     {
         super.onDestroyView();
@@ -98,5 +106,12 @@ public class FavoritePlacesFragment extends DialogFragment
     {
         super.onDestroy();
         Otto.unregister(this);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog)
+    {
+        super.onDismiss(dialog);
+        Otto.post(MapFragment.DIALOG_DISMISS);
     }
 }

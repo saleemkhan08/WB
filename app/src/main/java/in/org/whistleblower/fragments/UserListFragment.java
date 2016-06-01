@@ -59,7 +59,7 @@ public class UserListFragment extends DialogFragment
     @Bind(R.id.emptyList)
     ViewGroup emptyList;
 
-    @Bind(R.id.swipe_refresh_layout)
+    @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
 
     @Bind(R.id.userSearch)
@@ -302,5 +302,12 @@ public class UserListFragment extends DialogFragment
                 Log.d("ToastMsg", "Error : " + error.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        dismiss();
     }
 }

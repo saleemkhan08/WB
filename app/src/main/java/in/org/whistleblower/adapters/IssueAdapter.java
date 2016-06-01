@@ -209,7 +209,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         });
     }
 
-    private void deleteIssue(String issueId, final int position)
+    private void deleteIssue(final String issueId, final int position)
     {
         mUtil.showIndeterminateProgressDialog("Deleting...");
         Map<String, String> map = new HashMap<>();
@@ -225,6 +225,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
                 if(result.equals("Deleted"))
                 {
                     removeAt(position);
+                    new IssuesDao().delete(issueId);
                 }
             }
 

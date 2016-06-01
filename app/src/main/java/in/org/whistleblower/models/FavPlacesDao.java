@@ -17,13 +17,12 @@ public class FavPlacesDao
     public static final String POSTAL_CODE = "POSTAL_CODE";
     private static final String RADIUS = "RADIUS";
     public static final String TABLE_SCHEMA = "CREATE TABLE " + TABLE + "("
-            + ADDRESS_LINE + " VARCHAR(255), "
+            + ADDRESS_LINE + " VARCHAR(255) PRIMARY KEY, "
             + PLACE_TYPE + " VARCHAR(255), "
             + PLACE_TYPE_INDEX + " INTEGER, "
             + RADIUS + " INTEGER, "
             + LONGITUDE + " VARCHAR(255), "
-            + LATITUDE + " VARCHAR(255), " +
-            "PRIMARY KEY (" + LATITUDE + ", " + LONGITUDE + ") );";
+            + LATITUDE + " VARCHAR(255));";
 
     public static final String ALTER_TABLE_SCHEMA = TABLE_SCHEMA;
     private static final float OFFSET_LAT = 0.008983f;
@@ -58,10 +57,10 @@ public class FavPlacesDao
         mWBDataBase.delete(TABLE, null, null);
     }
 
-    public void delete(String lat, String lng)
+    public void delete(String address)
     {
-        String whereClause = LATITUDE+" = ? AND "+ LONGITUDE +" = ?";
-        String whereArgs[] = {lat, lng};
+        String whereClause = ADDRESS_LINE+" = ?";
+        String whereArgs[] = {address};
         mWBDataBase.delete(TABLE, whereClause, whereArgs);
     }
 

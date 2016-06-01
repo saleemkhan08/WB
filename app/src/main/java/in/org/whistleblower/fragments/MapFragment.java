@@ -47,10 +47,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.otto.Subscribe;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -66,13 +66,14 @@ import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.asynctasks.GeoCoderTask;
 import in.org.whistleblower.asynctasks.GetNearByPlaces;
 import in.org.whistleblower.interfaces.GeoCodeListener;
-import in.org.whistleblower.interfaces.PlacesResultListener;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.FavPlacesDao;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
 import in.org.whistleblower.models.LocationAlarm;
 import in.org.whistleblower.models.LocationAlarmDao;
 import in.org.whistleblower.models.NotifyLocation;
+import in.org.whistleblower.models.NotifyLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
@@ -83,17 +84,18 @@ import in.org.whistleblower.utilities.TouchableWrapper;
 
 public class MapFragment extends SupportMapFragment implements
         View.OnClickListener,
-        PlacesResultListener,
         TouchableWrapper.OnMapTouchListener,
         GeoCodeListener,
         GoogleMap.OnCameraChangeListener
 {
-
+    public static final String DIALOG_DISMISS = "dialogDismiss";
+    double dist;
     public static final String SHOW_FAV_PLACE = "showFavPlace";
     public static final String SHOW_ISSUE = "showIssue";
     public static final String HANDLE_ACTION = "handleAction";
     private static final String HOME = "Home";
     public static final String LATLNG = "LATLNG";
+    public static final String REMOVE_MARKER_CIRCLE = "removeMarkerCircle";
     private View mOriginalContentView;
     private int searchBarMargin;
     public boolean isSubmitButtonShown;
@@ -117,8 +119,8 @@ public class MapFragment extends SupportMapFragment implements
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
     private static final String MY_LOC = "MY_LOC";
     public static final String ACCURACY = "ACCURACY";
-    private Map<String, Marker> markerMap = new HashMap<>();
-    private Map<String, Circle> circleMap = new HashMap<>();
+    private Map<String, Marker> markerMap = new ConcurrentHashMap<>();
+    private Map<String, Circle> circleMap = new ConcurrentHashMap<>();
     private GoogleMap mGoogleMap;
 
     AppCompatActivity mActivity;
@@ -211,15 +213,14 @@ public class MapFragment extends SupportMapFragment implements
     //Implementation done
     public MapFragment()
     {
-        Log.d("FlowLogs", "Constructor");
-        Otto.register(this);
+        Log.d("MapFragmentFlowLogs", "Constructor");
     }
 
     //Implementation done
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
     {
-        Log.d("FlowLogs", "onCreateView");
+        Log.d("MapFragmentFlowLogs", "onCreateView");
         mOriginalContentView = super.onCreateView(inflater, parent, savedInstanceState);
         TouchableWrapper mTouchView = new TouchableWrapper(getActivity(), this);
         mTouchView.addView(mOriginalContentView);
@@ -231,7 +232,7 @@ public class MapFragment extends SupportMapFragment implements
     public void onActivityCreated(Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-        Log.d("FlowLogs", "onActivityCreated");
+        Log.d("MapFragmentFlowLogs", "onActivityCreated");
         setRetainInstance(true);
         mActivity = (AppCompatActivity) getActivity();
         mActivity.setTitle(MainActivity.WHISTLE_BLOWER);
@@ -243,7 +244,7 @@ public class MapFragment extends SupportMapFragment implements
                 .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
                 .commit();
         startLocationTrackingService();
-        Log.d("FlowLogs", "Start Service Called");
+        Log.d("MapFragmentFlowLogs", "Start Service Called");
 
         setupRadiusSeekBar();
 
@@ -255,11 +256,13 @@ public class MapFragment extends SupportMapFragment implements
 
     }
 
+
     @Override
     public void onResume()
     {
         super.onResume();
-        Log.d("FlowLogs", "onResume");
+        Otto.register(this);
+        Log.d("MapFragmentFlowLogs", "onResume");
         map_fab_buttons.setVisibility(View.VISIBLE);
         select_location.setVisibility(View.VISIBLE);
         searchBar.setVisibility(View.VISIBLE);//
@@ -270,17 +273,79 @@ public class MapFragment extends SupportMapFragment implements
         {
             mGoogleMap.setMyLocationEnabled(false);
         }
-        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
         mGoogleMap.setOnCameraChangeListener(this);
+        clearMap();
+        NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_map);
         bundle = getArguments();
         reloadMapParameters(bundle);
+    }
+
+    private void clearMap()
+    {
+        for (String key : circleMap.keySet())
+        {
+            removeMarkerAndCircle(key);
+        }
+        Log.d("MapFragmentFlowLogs", "clearMap");
+    }
+
+    private void updateNotifyLocationMarkers()
+    {
+        ArrayList<NotifyLocation> notifyLocations = new NotifyLocationDao().getList();
+        for (NotifyLocation location : notifyLocations)
+        {
+            LatLng latLng = getLatLng(location.latitude, location.longitude);
+            showMarker(latLng, location.userEmail, PlaceAdapter.TYPE_NOTIFY);
+            showAccuracyCircle(latLng, location.radius, location.userEmail);
+        }
+    }
+
+    LatLng getLatLng(String lat, String lng)
+    {
+        double latDouble = Double.parseDouble(lat);
+        double lngDouble = Double.parseDouble(lng);
+        return new LatLng(latDouble, lngDouble);
+    }
+
+    private void updateIssueMarkers()
+    {
+        ArrayList<Issue> issues = new IssuesDao().getIssuesList();
+        for (Issue issue : issues)
+        {
+            LatLng latLng = getLatLng(issue.latitude, issue.longitude);
+            showMarker(latLng, issue.issueId, PlaceAdapter.TYPE_ISSUE);
+            showAccuracyCircle(latLng, issue.radius, issue.issueId);
+        }
+    }
+
+    private void updateAlarmMarkers()
+    {
+        ArrayList<LocationAlarm> locationAlarms = new LocationAlarmDao().getList();
+        for (LocationAlarm alarm : locationAlarms)
+        {
+            LatLng latLng = getLatLng(alarm.latitude, alarm.longitude);
+            showMarker(latLng, alarm.address, PlaceAdapter.TYPE_ALARM);
+            showAccuracyCircle(latLng, alarm.radius, alarm.address);
+        }
+    }
+
+    private void updateFavoritePlaceMarkers()
+    {
+        Log.d("MapFragmentFlowLogs", "updateFavoritePlaceMarkers");
+        ArrayList<FavPlaces> favPlaces = new FavPlacesDao().getFavPlacesList();
+        for (FavPlaces place : favPlaces)
+        {
+            LatLng latLng = getLatLng(place.latitude, place.longitude);
+            showMarker(latLng, place.addressLine, place.placeTypeIndex);
+            showAccuracyCircle(latLng, place.radius, place.addressLine);
+        }
     }
 
 
     //Implementation done
     public void reloadMapParameters(Bundle bundle)
     {
-        Log.d("FlowLogs", "reloadMapParameters : " + bundle);
+        Log.d("MapFragmentFlowLogs", "reloadMapParameters : " + bundle);
         if (bundle != null)
         {
             Set<String> keys = bundle.keySet();
@@ -312,13 +377,13 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             moveCameraToMyLocOnLocUpdate = true;
-            Log.d("showMyLocOnMap", "reloadMapParameters");
             showMyLocOnMap(false);
         }
     }
 
     private void showMyLocOnMap(boolean animate)
     {
+        Log.d("MapFragmentFlowLogs", "showMyLocOnMap");
         LatLng latLng = getLatLng();
         showMarker(latLng, MY_LOC, 0);
         showAccuracyCircle(latLng, (int) getAccuracy(), MY_LOC);
@@ -327,6 +392,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void showIssueOnMap(Issue issue)
     {
+        Log.d("MapFragmentFlowLogs", "showIssueOnMap");
         LatLng latLng = new LatLng(Double.parseDouble(issue.latitude), Double.parseDouble(issue.longitude));
         showMarker(latLng, issue.issueId, -1);
         showAccuracyCircle(latLng, issue.radius, issue.issueId);
@@ -335,6 +401,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void showFavPlaceOnMap(FavPlaces favPlace)
     {
+        Log.d("MapFragmentFlowLogs", "showFavPlaceOnMap");
         mFavPlace = favPlace;
         LatLng latLng = new LatLng(Double.parseDouble(favPlace.latitude), Double.parseDouble(favPlace.longitude));
         showMarker(latLng, favPlace.latitude + favPlace.longitude, favPlace.placeTypeIndex);
@@ -344,6 +411,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void hideMyLocMarker()
     {
+        Log.d("MapFragmentFlowLogs", "hideMyLocMarker");
         boolean hide = false;
         if (markerMap.containsKey(MY_LOC))
         {
@@ -357,6 +425,7 @@ public class MapFragment extends SupportMapFragment implements
                     double dist = distFrom(latLng.latitude, latLng.longitude, myLocLatLng.latitude, myLocLatLng.longitude);
                     if (dist < 50)
                     {
+                        Log.d("MapFragmentFlowLogs", "hideMyLocMarker : " + key);
                         hide = true;
                     }
                 }
@@ -504,7 +573,6 @@ public class MapFragment extends SupportMapFragment implements
         TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
         radiusSeekBarInnerWrapper.setVisibility(View.GONE);
         removeMarkerAndCircle(action);
-        Log.d("hjki", "radius : Gone");
         showShareLocationOptions();
         Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
     }
@@ -514,7 +582,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         super.onStop();
         Otto.unregister(this);
-        hideSubmitButtonAndShowSearchIcon();
+        //hideSubmitButtonAndShowSearchIcon();
         map_fab_buttons.setVisibility(View.GONE);
         searchBar.setVisibility(View.GONE);
         select_location.setVisibility(View.GONE);
@@ -526,9 +594,6 @@ public class MapFragment extends SupportMapFragment implements
 
     public void setUpMyLocationButton()
     {
-        /*buttonMyLoc.setIconDrawable(mActivity.getDrawable(R.mipmap.my_loc_icon));
-        buttonMyLoc.setStrokeVisible(false);
-        */
         buttonMyLoc.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -537,7 +602,7 @@ public class MapFragment extends SupportMapFragment implements
                 moveCameraToMyLocOnLocUpdate = true;
                 showTravellingModeHint();
                 startLocationTrackingService();
-                Log.d("showMyLocOnMap", "onClick");
+                Log.d("MapFragmentFlowLogs", "My Loc : onClick");
                 showMyLocOnMap(true);
             }
         });
@@ -548,7 +613,7 @@ public class MapFragment extends SupportMapFragment implements
             public boolean onLongClick(View v)
             {
                 moveCameraToMyLocOnLocUpdate = true;
-                Log.d("showMyLocOnMap", "onLongClick");
+                Log.d("MapFragmentFlowLogs", "My Loc onLongClick");
                 showMyLocOnMap(true);
                 if (!mTravelModeOn)
                 {
@@ -581,6 +646,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void updateTravellingModeUI()
     {
+
         if (mTravelModeOn)
         {
             buttonMyLoc.setColorNormal(travelModeColor);
@@ -612,25 +678,28 @@ public class MapFragment extends SupportMapFragment implements
 
     private void startLocationTrackingService()
     {
-        Log.d("FlowLogs", "startLocationTrackingService");
+        Log.d("MapFragmentFlowLogs", "startLocationTrackingService");
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         mActivity.startService(intent);
     }
 
     private void setAlarm()
     {
-        Log.d("FlowLogs", "setAlarm");
+        Log.d("MapFragmentFlowLogs", "setAlarm");
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         LocationAlarm alarm = new LocationAlarm();
         alarm.status = 1;
         alarm.radius = getRadius();
         alarm.address = searchText.getText().toString();
-        alarm.latitude = mGeoCodeLatLng.latitude+"";
-        alarm.longitude = mGeoCodeLatLng.longitude+"";
+        alarm.latitude = mGeoCodeLatLng.latitude + "";
+        alarm.longitude = mGeoCodeLatLng.longitude + "";
+
         new LocationAlarmDao().insert(alarm);
         intent.putExtra(LocationTrackingService.KEY_ALARM_SET, true);
         mActivity.startService(intent);
         toast("Alarm Set : \n" + searchText.getText());
+
+        reloadFragment();
     }
 
     public static CameraPosition getCameraPos(LatLng latLng)
@@ -749,7 +818,6 @@ public class MapFragment extends SupportMapFragment implements
                                 break;
 
                             case FABUtil.ADD_ISSUE:
-
                                 Intent intent = new Intent(mActivity, AddIssueActivity.class);
                                 intent.putExtra(LATLNG, mGeoCodeLatLng);
                                 intent.putExtra(ADDRESS, searchText.getText().toString());
@@ -785,6 +853,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void notifyLocation()
     {
+        Log.d("MapFragmentFlowLogs", "notifyLocation : Before");
         mNotifyLocation.radius = getRadius();
         mNotifyLocation.message = searchText.getText().toString();
         mNotifyLocation.latitude = mGeoCodeLatLng.latitude + "";
@@ -795,33 +864,43 @@ public class MapFragment extends SupportMapFragment implements
         Bundle bundle = new Bundle();
         bundle.putParcelable(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
         dialog.setArguments(bundle);
-        dialog.show(manager, "ShareLocationFragment");
+        dialog.show(manager, NavigationUtil.NOTIFY_LOCATION_FRAGMENT_TAG);
 
+    }
+
+    @Subscribe
+    public void notifyLocation(NotifyLocation location)
+    {
+        reloadFragment();
+    }
+
+    private void reloadFragment()
+    {
+        WhistleBlower.toast("Reload Fragment");
+        mActivity.getSupportFragmentManager().beginTransaction()
+                .remove(this)
+                .add(this, NavigationUtil.MAP_FRAGMENT_TAG)
+                .commit();
     }
 
     int getRadius()
     {
         return (radiusSeekBar.getProgress() + 1) * (isKm ? 1000 : 100);
     }
+
     private void addFavPlace()
     {
+        Log.d("MapFragmentFlowLogs", "addFavPlace");
+
         mFavPlace.radius = getRadius();
         mFavPlace.addressLine = searchText.getText().toString();
         mFavPlace.latitude = mGeoCodeLatLng.latitude + "";
         mFavPlace.longitude = mGeoCodeLatLng.longitude + "";
         mFavPlace.placeTypeIndex = placeTypeIndex;
         mFavPlace.placeType = placeType;
-
-        Log.d("latLng", mFavPlace.addressLine + "\n"
-                + mFavPlace.placeTypeIndex + "\n"
-                + mFavPlace.placeType + "\n"
-                + mFavPlace.latitude + "\n"
-                + mFavPlace.longitude + "\n"
-                + mFavPlace.radius);
-
         String result = new FavPlacesDao().insert(mFavPlace);
         toast(result);
-        hideSubmitButtonAndShowSearchIcon();
+        reloadFragment();
     }
 
     private void toast(String str)
@@ -945,7 +1024,7 @@ public class MapFragment extends SupportMapFragment implements
     @Subscribe
     public void onLocationChanged(Location location)
     {
-        Log.d("showMyLocOnMap", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);
+        Log.d("MapFragmentFlowLogs", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);
         setCameraPosition(location);
         if (moveCameraToMyLocOnLocUpdate)
         {
@@ -958,19 +1037,22 @@ public class MapFragment extends SupportMapFragment implements
         Marker marker = null;
         if (markerMap.containsKey(key))
         {
-            Log.d("FlowLogs", "getting marker from map");
+            Log.d("MapFragmentFlowLogs", "getting marker from map");
             marker = markerMap.get(key);
         }
         if (marker != null && marker.isVisible())
         {
-            Log.d("FlowLogs", "marker setPosition");
+            Log.d("MapFragmentFlowLogs", "marker remove : " + key);
             marker.remove();
         }
+
         if (markerMap.containsKey(key + "img"))
         {
+            Log.d("MapFragmentFlowLogs", "marker remove img : " + key + "img");
             markerMap.remove(key + "img");
         }
-        Log.d("FlowLogs", "creating marker first time");
+
+        Log.d("MapFragmentFlowLogs", "creating marker : " + key);
         if (key.equals(MY_LOC))
         {
             markerMap.put(key, mGoogleMap.addMarker(new MarkerOptions()
@@ -978,7 +1060,6 @@ public class MapFragment extends SupportMapFragment implements
                     .anchor(0.5f, 0.5f)
                     .flat(true)
                     .icon(MiscUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot_48, 17))));
-
         }
         else
         {
@@ -996,29 +1077,41 @@ public class MapFragment extends SupportMapFragment implements
                     .flat(true)
                     .icon(MiscUtil.getMapMarker(mActivity, imgId, 20))));
         }
-
     }
 
     void removeMarkerAndCircle(String key)
     {
-        if (circleMap.containsKey(key))
+        Log.d("MapFragmentFlowLogs", "removeMarkerAndCircle : " + key);
+        if (circleMap != null && circleMap.containsKey(key))
         {
+            Log.d("MapFragmentFlowLogs", "circleMap : " + key);
+
             Circle circle = circleMap.get(key);
             circleMap.remove(key);
             circle.remove();
         }
-        if (markerMap.containsKey(key))
+        if (markerMap != null && markerMap.containsKey(key))
         {
+            Log.d("MapFragmentFlowLogs", "markerMap : " + key);
             Marker marker = markerMap.get(key);
             markerMap.remove(key);
             marker.remove();
+
+            marker = markerMap.get(key + "img");
+            markerMap.remove(key + "img");
+            Log.d("MapFragmentFlowLogs", "marker : " + marker);
+            if (marker != null)
+            {
+                Log.d("MapFragmentFlowLogs", "markerMap : " + key + "img");
+                marker.remove();
+            }
         }
     }
 
     void showAccuracyCircle(LatLng latLng, float accuracy, String key)
     {
         Circle circle = null;
-        Log.d("hijk", "Circle : showAccuracyCircle");
+
         if (circleMap.containsKey(key))
         {
             circle = circleMap.get(key);
@@ -1027,10 +1120,11 @@ public class MapFragment extends SupportMapFragment implements
         if (circle != null && circle.isVisible())
         {
             circle.remove();
+            circleMap.remove(key);
+            Log.d("MapFragmentFlowLogs", "removeAccuracyCircle : " + key);
         }
 
-        Log.d("hijk", "circleMap : " + circleMap + ", mGoogleMap : " + mGoogleMap);
-
+        Log.d("MapFragmentFlowLogs", "addingAccuracyCircle : " + key);
         circleMap.put(key, mGoogleMap.addCircle(new CircleOptions()
                 .radius(accuracy)
                 .strokeWidth(2)
@@ -1040,24 +1134,9 @@ public class MapFragment extends SupportMapFragment implements
     }
 
     @Override
-    public void onListObtained(List<HashMap<String, String>> list)
-    {
-        int index = 0;
-        for (HashMap<String, String> map : list)
-        {
-            Log.d("PlacesList", "List Index" + index++);
-            for (String key : map.keySet())
-            {
-                Log.d("PlacesList", "Key :" + key + ", Value : " + map.get(key));
-            }
-        }
-    }
-
-    double dist;
-
-    @Override
     public void onCameraChange(CameraPosition cameraPosition)
     {
+        Log.d("MapFragmentFlowLogs", "onCameraChange");
         dist = distFrom(cameraPosition.target.latitude, cameraPosition.target.longitude, getLatLng().latitude, getLatLng().longitude);
         int threshold = 1000;
         currentZoom = cameraPosition.zoom;
@@ -1077,18 +1156,27 @@ public class MapFragment extends SupportMapFragment implements
         updateLocationInfo(MiscUtil.isConnected(mActivity));
         retryAttemptsCount = 0;
 
-        Log.d("hijk", "Circle : isSubmitButtonShown : " + isSubmitButtonShown + ", Dist : " + dist);
+        Log.d("MapFragmentFlowLogs", "Circle : isSubmitButtonShown : " + isSubmitButtonShown + ", Dist : " + dist);
         if (isSubmitButtonShown)
         {
             drawCircleOnMap();
         }
         showShareLocationOptions();
+        updateMarkersAndCircles();
+    }
+
+    private void updateMarkersAndCircles()
+    {
+        updateFavoritePlaceMarkers();
+        updateAlarmMarkers();
+        updateIssueMarkers();
+        updateNotifyLocationMarkers();
     }
 
     private void drawCircleOnMap()
     {
         mRadius = radiusSeekBar.getProgress() + 1;
-        Log.d("hijk", "Circle : radius : " + mRadius);
+        Log.d("MapFragmentFlowLogs", "Circle : radius : " + mRadius);
 
         if (isKm)
         {
@@ -1098,7 +1186,7 @@ public class MapFragment extends SupportMapFragment implements
         {
             mRadius *= 100;
         }
-        Log.d("zoom", "zoom : radius : " + mRadius);
+        Log.d("MapFragmentFlowLogs", "zoom : radius : " + mRadius);
         showAccuracyCircle(mGeoCodeLatLng, mRadius, action);
         setZoomLevel(mRadius);
     }
@@ -1158,6 +1246,7 @@ public class MapFragment extends SupportMapFragment implements
 
     void updateLocationInfo(boolean internet)
     {
+        Log.d("MapFragmentFlowLogs", "updateLocationInfo");
         if (internet)
         {
             showSearchProgress();
@@ -1246,24 +1335,8 @@ public class MapFragment extends SupportMapFragment implements
 
     public void setFavPlaceType(View view)
     {
+        Log.d("MapFragmentFlowLogs", "setFavPlaceType");
         String[] favPlaceTypeName = mActivity.getResources().getStringArray(R.array.fav_place_type);
-        /*
-        <item>Home</item>
-        <item>Friend's Place</item>
-        <item>Work Place</item>
-        <item>School / College</item>
-        <item>Shopping Mall</item>
-        <item>Cinema Hall</item>
-        <item>Library</item>
-        <item>Play Ground</item>
-        <item>Hospital</item>
-        <item>Jogging Place</item>
-        <item>Gym</item>
-        <item>Restaurant</item>
-        <item>Coffee Shop</item>
-        <item>Pub</item>
-        <item>Others</item>
-        */
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_home)).setIcon(R.mipmap.home_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_friendsPlace)).setIcon(R.mipmap.friends_place_gray);
         ((FloatingActionButton) mActivity.findViewById(R.id.fav_work)).setIcon(R.mipmap.work_gray);
@@ -1355,8 +1428,6 @@ public class MapFragment extends SupportMapFragment implements
         }
 
         placeType = favPlaceTypeName[placeTypeIndex];
-        Log.d("Tracking", "Index : " + placeTypeIndex);
-        Log.d("Tracking", "Place Type : " + placeType);
         if (!isOther)
         {
             Toast.makeText(mActivity, placeType, Toast.LENGTH_SHORT).show();
@@ -1366,6 +1437,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void cancelToast(int i)
     {
+        Log.d("MapFragmentFlowLogs", "cancelToast");
         Bundle bundle = new Bundle();
         bundle.putBoolean(FABUtil.HIDE_DESCRIPTION_TOAST, true);
         bundle.putInt(FABUtil.TOAST_INDEX, i);
@@ -1374,6 +1446,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void showFavPlaceNameEditDialog()
     {
+        Log.d("MapFragmentFlowLogs", "showFavPlaceNameEditDialog");
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
         builder.setTitle("Title");
 
@@ -1401,6 +1474,7 @@ public class MapFragment extends SupportMapFragment implements
 
     void showShareLocationOptions()
     {
+        Log.d("MapFragmentFlowLogs", "showShareLocationOptions : " + dist);
         if (dist < 10 && showShareLocationOptions)
         {
             TransitionManager.beginDelayedTransition(shareLocationOptions);
@@ -1408,14 +1482,35 @@ public class MapFragment extends SupportMapFragment implements
         }
         else
         {
-            TransitionManager.beginDelayedTransition(shareLocationOptions);
-            shareLocationOptions.setVisibility(View.GONE);
+            hideShareLocationOptions();
         }
     }
 
     void hideShareLocationOptions()
     {
+        Log.d("MapFragmentFlowLogs", "hideShareLocationOptions");
         TransitionManager.beginDelayedTransition(shareLocationOptions);
         shareLocationOptions.setVisibility(View.GONE);
+    }
+
+//    @Subscribe
+//    public void removeMarkerCircle(ConcurrentHashMap<String, String> map)
+//    {
+//        Log.d("MapFragmentFlowLogs", "removeMarkerCircle : map keys : " + map.keySet());
+//        if (map.containsKey(REMOVE_MARKER_CIRCLE))
+//        {
+//            Log.d("MapFragmentFlowLogs", "removeMarkerCircle : map value : " + map.get(REMOVE_MARKER_CIRCLE));
+//            removeMarkerAndCircle(map.get(REMOVE_MARKER_CIRCLE));
+//        }
+//    }
+
+    @Subscribe
+    public void onDialogDismiss(String str)
+    {
+        if(str.equals(DIALOG_DISMISS))
+        {
+            WhistleBlower.toast("DIALOG_DISMISS");
+            reloadFragment();
+        }
     }
 }
