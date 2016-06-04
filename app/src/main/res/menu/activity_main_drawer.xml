@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:checkableBehavior="single">
         <item
@@ -8,6 +9,7 @@
             android:title="Map"/>
         <item
             android:id="@+id/nav_news"
+            app:actionLayout="@layout/badge"
             android:icon="@mipmap/newsfeeds_icon_accent"
             android:title="News Feeds"/>
     </group>
@@ -20,14 +22,17 @@
                 android:title="Favorite Places"/>
             <item
                 android:id="@+id/nav_share_loc"
+                app:actionLayout="@layout/badge"
                 android:icon="@mipmap/share_icon_accent"
                 android:title="Share Location"/>
             <item
                 android:id="@+id/nav_notify_loc"
+                app:actionLayout="@layout/badge"
                 android:icon="@mipmap/comment_accent"
                 android:title="Notify Location"/>
             <item
                 android:id="@+id/nav_loc_alarm"
+                app:actionLayout="@layout/badge"
                 android:icon="@mipmap/bell_icon_accent_pad"
                 android:title="Location Alarm"/>
         </menu>

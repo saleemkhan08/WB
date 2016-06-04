@@ -1,9 +1,6 @@
 package in.org.whistleblower;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -12,16 +9,18 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Slide;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -40,16 +39,57 @@ import in.org.whistleblower.models.WBDataBase;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener, ViewPager.OnPageChangeListener, ConnectivityListener
+        ViewPager.OnPageChangeListener, ConnectivityListener
 {
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     private MiscUtil util;
-    static Typeface mFont;
-    private ViewPager mViewPager;
-    private TextView mTxtPageIndicator;
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
-    private boolean isReceiverRegistered;
+    public static Typeface typeface;
+    RelativeLayout pageIndicator;
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+        util = new MiscUtil(this);
+        pageIndicator = (RelativeLayout) findViewById(R.id.selected);
+        deleteDatabase(WBDataBase.DATABASE_NAME);
+        WhistleBlower.getPreferences().edit().clear().apply();
+        typeface = Typeface.createFromAsset(getAssets(), "Gabriola.ttf");
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null)
+        {
+            actionBar.hide();
+        }
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOnPageChangeListener(this);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        // Build GoogleAPIClient with the Google Sign-In API and the above options.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
+        signInButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                util.isConnected((ConnectivityListener) LoginActivity.this);
+            }
+        });
+        signInButton.setSize(SignInButton.SIZE_WIDE);
+        signInButton.setScopes(gso.getScopeArray());
+    }
 
     @Override
     public void onInternetConnected()
@@ -73,21 +113,23 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onPageSelected(int position)
     {
         Log.d(TAG, "onPageSelected :: " + position);
-        String pageIndicator = "";
+
+        TransitionManager.beginDelayedTransition(pageIndicator, new Slide());
+        RelativeLayout.LayoutParams params =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         switch (position)
         {
             case 0:
-                pageIndicator = pageIndicator + getString(R.string.current_page) + " " + getString(R.string.other_page) + " " + getString(R.string.other_page);
+                params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                 break;
             case 1:
-                pageIndicator = pageIndicator + getString(R.string.other_page) + " " + getString(R.string.current_page) + " " + getString(R.string.other_page);
+                params.addRule(RelativeLayout.CENTER_HORIZONTAL);
                 break;
             case 2:
-                pageIndicator = pageIndicator + getString(R.string.other_page) + " " + getString(R.string.other_page) + " " + getString(R.string.current_page);
+                params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 break;
-
         }
-        mTxtPageIndicator.setText(pageIndicator);
+        pageIndicator.setLayoutParams(params); //causes layout update
     }
 
     @Override
@@ -118,23 +160,21 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                                  Bundle savedInstanceState)
         {
             View rootView = inflater.inflate(R.layout.fragment_image, container, false);
-            TextView iconTextView = (TextView) rootView.findViewById(R.id.fragmentIcon);
+            ImageView iconView = (ImageView) rootView.findViewById(R.id.fragmentIcon);
             TextView descTextView = (TextView) rootView.findViewById(R.id.fragmentDesc);
-
-            iconTextView.setTypeface(mFont);
-
+            descTextView.setTypeface(typeface);
             switch (getArguments().getInt(ARG_SECTION_NUMBER))
             {
                 case 1:
-                    iconTextView.setText(R.string.user_icon);
+                    iconView.setImageResource(R.mipmap.notifier);
                     descTextView.setText(R.string.user_text);
                     break;
                 case 2:
-                    iconTextView.setText(R.string.whistle_blower_icon);
+                    iconView.setImageResource(R.mipmap.whistle_blower);
                     descTextView.setText(R.string.whistle_blower_text);
                     break;
                 case 3:
-                    iconTextView.setText(R.string.volunteer_icon);
+                    iconView.setImageResource(R.mipmap.volunteer);
                     descTextView.setText(R.string.volunteer_text);
             }
             return rootView;
@@ -187,99 +227,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private GoogleApiClient mGoogleApiClient;
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        util = new MiscUtil(this);
-        deleteDatabase(WBDataBase.DATABASE_NAME);
-        WhistleBlower.getPreferences().edit().clear().apply();
-        mFont = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null)
-        {
-            actionBar.hide();
-        }
-        // Button click listeners
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        mTxtPageIndicator = (TextView) findViewById(R.id.pageIndicator);
-        mTxtPageIndicator.setTypeface(mFont);
-        mTxtPageIndicator.setText("" + getString(R.string.current_page) + " " + getString(R.string.other_page) + " " + getString(R.string.other_page));
-
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOnPageChangeListener(this);
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-        // Build GoogleAPIClient with the Google Sign-In API and the above options.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
-        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
-        signInButton.setSize(SignInButton.SIZE_WIDE);
-        signInButton.setScopes(gso.getScopeArray());
-
-        mRegistrationBroadcastReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                SharedPreferences sharedPreferences =
-                        PreferenceManager.getDefaultSharedPreferences(context);
-                boolean sentToken = sharedPreferences
-                        .getBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER, false);
-                if (sentToken)
-                {
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    util.hideProgressDialog();
-                    finish();
-                }
-                else
-                {
-                    Toast.makeText(LoginActivity.this, "Please Try Again Later!", Toast.LENGTH_SHORT).show();
-                    util.hideProgressDialog();
-                    signOut();
-                }
-            }
-        };
-        registerReceiver();
-    }
-
-    private void registerReceiver()
-    {
-        if (!isReceiverRegistered)
-        {
-            LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                    new IntentFilter(RegistrationIntentService.REGISTRATION_COMPLETE));
-            isReceiverRegistered = true;
-        }
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        registerReceiver();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        isReceiverRegistered = false;
-        super.onPause();
-    }
-
     private void signOut()
     {
         if(mGoogleApiClient.isConnected())
@@ -312,7 +259,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -338,8 +284,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             .putString(Accounts.GOOGLE_ID, acct.getId())
                             .commit();
 
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    util.hideProgressDialog();
                     Intent intent = new Intent(this, RegistrationIntentService.class);
                     startService(intent);
+                    finish();
                 }
             }
         }
@@ -362,16 +311,5 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_GET_TOKEN);
         util.showIndeterminateProgressDialog(SIGNING_IN);
-    }
-
-    @Override
-    public void onClick(View v)
-    {
-        switch (v.getId())
-        {
-            case R.id.sign_in_button:
-                util.isConnected((ConnectivityListener) this);
-                break;
-        }
     }
 }

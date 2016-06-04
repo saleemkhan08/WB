@@ -4,32 +4,33 @@
               android:layout_height="match_parent"
               android:gravity="center"
               android:orientation="vertical"
-              android:weightSum="10"
-              android:background="@color/colorPrimary"
+              android:weightSum="11"
               tools:context="com.shoppinfever.fragments.ImageFragment"
     >
 
-    <TextView
+    <ImageView
         android:id="@+id/fragmentIcon"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="8"
-        android:text="G"
+        android:layout_weight="9"
         android:gravity="center"
-        android:textAlignment="center"
-        android:textColor="#ffffff"
-        android:textSize="250sp"/>
+        android:padding="50dp"
+        android:src="@mipmap/notifier"
+        />
 
     <TextView
         android:id="@+id/fragmentDesc"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:text="Description"
         android:gravity="top"
+        android:text="Description"
+        android:textStyle="bold"
+        android:textSize="40sp"
+        android:textAppearance="?android:textAppearanceLarge"
         android:textAlignment="center"
         android:textColor="#ffffff"
-        android:textSize="25sp"/>
+        />
 
 
 </LinearLayout>

@@ -30,7 +30,7 @@ public class AccountsDao
             values.put(Accounts.EMAIL, account.email);
             values.put(Accounts.PHOTO_URL, account.photo_url);
             values.put(Accounts.RELATION, account.relation);
-            Log.d("AccountsDao", "insert : "+mWBDataBase.insertShow(Accounts.TABLE, values));
+            Log.d("AccountsDao", "insert : "+mWBDataBase.insert(Accounts.TABLE, values));
         }
     }
 
@@ -41,7 +41,7 @@ public class AccountsDao
 
     public void delete(String email)
     {
-        mWBDataBase.delete(Accounts.TABLE, Accounts.EMAIL + " = " + email, null);
+        mWBDataBase.delete(Accounts.TABLE, Accounts.EMAIL + " = '" + email+"'", null);
     }
 
     public ArrayList<Accounts> getUsersList()

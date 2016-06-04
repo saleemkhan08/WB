@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
 
@@ -26,10 +27,15 @@ import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.fragments.LocationAlarmListFragment;
 import in.org.whistleblower.fragments.MainFragment;
 import in.org.whistleblower.fragments.MapFragment;
+import in.org.whistleblower.fragments.NotificationsFragment;
+import in.org.whistleblower.fragments.NotifyLocationListFragment;
 import in.org.whistleblower.fragments.ShareLocationListFragment;
-import in.org.whistleblower.fragments.TabbedDialogFragment;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.Issue;
+import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.models.NotifyLocationDao;
+import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.singletons.Otto;
 
 public class NavigationUtil implements NavigationView.OnNavigationItemSelectedListener
@@ -47,6 +53,9 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String SHARE_LOCATION_LIST_FRAGMENT_TAG = "SHARE_LOCATION_LIST_FRAGMENT_TAG";
     public static final String LOCATION_ALARM_FRAGMENT_TAG = "LOCATION_ALARM_FRAGMENT_TAG";
     public static final String DIALOG_FRAGMENT_TAG = "dialogFragmentTag";
+    public static final String NOTIFICATION_FRAGMENT_TAG = "NOTIFICATION_FRAGMENT_TAG";
+    public static final String NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG = "NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG";
+
 
     @BindString(R.string.noFriendsAreAddedYet)
     String youHaventAddedFriends;
@@ -66,16 +75,67 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public DrawerLayout drawer;
 
     SharedPreferences mPreferences;
+    int shareLocationSize, alarmSize, issueSize, notificationSize;
     private FavoritePlacesFragment favoritePlacesFragment;
+
+    Menu menu;
+    private void getSize()
+    {
+        new Thread(new Runnable()
+        {
+            public void run()
+            {
+                shareLocationSize = new ShareLocationDao().getList().size();
+                notificationSize = new NotifyLocationDao().getList().size();
+                issueSize = new IssuesDao().getIssuesList().size();
+                alarmSize = new LocationAlarmDao().getList().size();
+            }
+        }).start();
+
+    }
 
     public NavigationUtil(Context context)
     {
         this.mActivity = (AppCompatActivity) context;
+        getSize();
         mFragmentManager = mActivity.getSupportFragmentManager();
         mPreferences = WhistleBlower.getPreferences();
         drawer = ((DrawerLayout) mActivity.findViewById(R.id.drawer_layout));
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener()
+        {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset)
+            {
+                getSize();
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView)
+            {
+                setUp();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView)
+            {
+                getSize();
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState)
+            {
+
+            }
+        });
         Otto.register(this);
         ButterKnife.bind(this, mActivity);
+        navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
+        navigationView.setNavigationItemSelectedListener(this);
+        menu = navigationView.getMenu();
+        hideBadge(R.id.nav_loc_alarm);
+        hideBadge(R.id.nav_news);
+        hideBadge(R.id.nav_share_loc);
+        hideBadge(R.id.nav_notify_loc);
     }
 
     @Subscribe
@@ -143,18 +203,36 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         Otto.unregister(this);
     }
 
-    public void setUp(MiscUtil util)
+    public void showBadge(int id, int size)
     {
-        navigationView = ((NavigationView) mActivity.findViewById(R.id.nav_view));
-        navigationView.setNavigationItemSelectedListener(this);
-        Menu menu = navigationView.getMenu();
-        /*menu.getItem(0).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
-        menu.getItem(1).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));//newsfeeds_icon_accent
-        menu.getItem(2).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
-        menu.getItem(3).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
-        menu.findItem(R.id.nav_share_loc).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
-        menu.findItem(R.id.nav_notify_loc).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));
-        menu.findItem(R.id.nav_logout).setIcon(mActivity.getDrawable(R.drawable.map_marker_icon_accent));*/
+        Log.d("Badge", "showBadge");
+        View actionView = menu.findItem(id).getActionView();
+        TextView text = (TextView) actionView.findViewById(R.id.badge);
+        Log.d("Badge", "size : " + size);
+        if (size > 0)
+        {
+            actionView.setVisibility(View.VISIBLE);
+            text.setText("" + size);
+        }
+        else
+        {
+            actionView.setVisibility(View.GONE);
+        }
+    }
+
+    public void hideBadge(int id)
+    {
+        View actionView = menu.findItem(id).getActionView();
+        actionView.setVisibility(View.GONE);
+    }
+
+    public void setUp()
+    {
+        Log.d("Badge", "setUp");
+        showBadge(R.id.nav_share_loc, shareLocationSize);
+        showBadge(R.id.nav_notify_loc, notificationSize);
+        showBadge(R.id.nav_news, issueSize);
+        showBadge(R.id.nav_loc_alarm, alarmSize);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -169,12 +247,14 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             public void onDrawerSlide(View drawerView, float slideOffset)
             {
                 Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
+                setUp();
             }
 
             @Override
             public void onDrawerOpened(View drawerView)
             {
                 Otto.post(FABUtil.HIDE_DESCRIPTION_TOAST);
+                setUp();
             }
 
             @Override
@@ -229,7 +309,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showShareLocationList()
     {
-        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG,"showShareLocationList");
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "showShareLocationList");
         ShareLocationListFragment shareLocationListFragment = (ShareLocationListFragment)
                 mFragmentManager.findFragmentByTag(SHARE_LOCATION_LIST_FRAGMENT_TAG);
         if (shareLocationListFragment == null)
@@ -237,7 +317,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             shareLocationListFragment = new ShareLocationListFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!shareLocationListFragment.isAdded())
+        if (!shareLocationListFragment.isAdded())
         {
             shareLocationListFragment.show(mFragmentManager, SHARE_LOCATION_LIST_FRAGMENT_TAG);
         }
@@ -245,34 +325,22 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
 
     public void showNotifyLocationList()
     {
-        TabbedDialogFragment tabbedDialogFragment = (TabbedDialogFragment)
+        NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
                 mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
-        if (tabbedDialogFragment == null)
+        if (notifyLocationListFragment == null)
         {
-            tabbedDialogFragment = new TabbedDialogFragment();
+            notifyLocationListFragment = new NotifyLocationListFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!tabbedDialogFragment.isAdded())
+        if (!notifyLocationListFragment.isAdded())
         {
-            tabbedDialogFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
+            notifyLocationListFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
         }
-
-//        NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
-//                mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
-//        if (notifyLocationListFragment == null)
-//        {
-//            notifyLocationListFragment = new NotifyLocationListFragment();
-//        }
-//        mFragmentManager.executePendingTransactions();
-//        if(!notifyLocationListFragment.isAdded())
-//        {
-//            notifyLocationListFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
-//        }
     }
 
     public void showAlarmFragment()
     {
-        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG,"showAlarmFragment");
+        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "showAlarmFragment");
 
         LocationAlarmListFragment locationAlarmListFragment = (LocationAlarmListFragment)
                 mFragmentManager.findFragmentByTag(LOCATION_ALARM_FRAGMENT_TAG);
@@ -281,7 +349,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             locationAlarmListFragment = new LocationAlarmListFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!locationAlarmListFragment.isAdded())
+        if (!locationAlarmListFragment.isAdded())
         {
             locationAlarmListFragment.show(mFragmentManager, LOCATION_ALARM_FRAGMENT_TAG);
         }
@@ -295,7 +363,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             favoritePlacesFragment = new FavoritePlacesFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!favoritePlacesFragment.isAdded())
+        if (!favoritePlacesFragment.isAdded())
         {
             favoritePlacesFragment.show(mFragmentManager, FAV_PLACE_FRAGMENT_TAG);
         }
@@ -309,7 +377,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             friendListFragment = new FriendListFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!friendListFragment.isAdded())
+        if (!friendListFragment.isAdded())
         {
             mFragmentManager
                     .beginTransaction()
@@ -330,7 +398,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
                 mapFragment = new MapFragment();
             }
             mFragmentManager.executePendingTransactions();
-            if(!mapFragment.isAdded())
+            if (!mapFragment.isAdded())
             {
                 mFragmentManager
                         .beginTransaction()
@@ -359,7 +427,7 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             mainFragment = new MainFragment();
         }
         mFragmentManager.executePendingTransactions();
-        if(!mainFragment.isAdded())
+        if (!mainFragment.isAdded())
         {
             mFragmentManager
                     .beginTransaction()
@@ -376,5 +444,20 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         MenuItem menuItem = navigationMenu.findItem(id);
         menuItem.setChecked(true);
         menuItem.setEnabled(true);
+    }
+
+    public void showNotificationsFragment()
+    {
+        NotificationsFragment notificationsFragment = (NotificationsFragment)
+                mFragmentManager.findFragmentByTag(NOTIFICATION_FRAGMENT_TAG);
+        if (notificationsFragment == null)
+        {
+            notificationsFragment = new NotificationsFragment();
+        }
+        mFragmentManager.executePendingTransactions();
+        if (!notificationsFragment.isAdded())
+        {
+            notificationsFragment.show(mFragmentManager, NOTIFY_LOCATION_FRAGMENT_TAG);
+        }
     }
 }

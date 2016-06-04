@@ -29,7 +29,8 @@ public class WBDataBase
                 AccountsDao.TABLE_SCHEMA,
                 LocationAlarmDao.TABLE_SCHEMA,
                 ShareLocationDao.TABLE_SCHEMA,
-                NotifyLocationDao.TABLE_SCHEMA
+                NotifyLocationDao.TABLE_SCHEMA,
+                NotificationsDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
                 IssuesDao.DROP_TABLE,
@@ -37,7 +38,8 @@ public class WBDataBase
                 AccountsDao.TABLE_SCHEMA,
                 LocationAlarmDao.TABLE_SCHEMA,
                 ShareLocationDao.TABLE_SCHEMA,
-                NotifyLocationDao.TABLE_SCHEMA
+                NotifyLocationDao.TABLE_SCHEMA,
+                NotificationsDao.TABLE_SCHEMA
         };
 
         Context mContext;

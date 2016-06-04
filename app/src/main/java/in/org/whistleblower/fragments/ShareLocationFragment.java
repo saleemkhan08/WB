@@ -10,6 +10,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Slide;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +46,18 @@ public class ShareLocationFragment extends DialogFragment
 
     @Bind(R.id.justOnce)
     TextView justOnce;
+
+    @BindColor(R.color.colorAccent)
+    int colorAccent;
+
+    @BindColor(R.color.transparent)
+    int transparent;
+
+    @Bind(R.id.continuouslyHighlight)
+    ViewGroup continuouslyHighlight;
+
+    @Bind(R.id.justOnceHighlight)
+    ViewGroup justOnceHighlight;
 
     private SharedPreferences preferences;
     private boolean isContinuouslyClicked = true;
@@ -145,6 +159,10 @@ public class ShareLocationFragment extends DialogFragment
 
         continuously.setTypeface(bold);
         justOnce.setTypeface(normal);
+
+        TransitionManager.beginDelayedTransition(continuouslyHighlight, new Slide());
+        continuouslyHighlight.setBackgroundColor(colorAccent);
+        justOnceHighlight.setBackgroundColor(transparent);
     }
 
     @OnClick(R.id.justOnce)
@@ -156,6 +174,11 @@ public class ShareLocationFragment extends DialogFragment
 
         continuously.setTypeface(normal);
         justOnce.setTypeface(bold);
+
+        TransitionManager.beginDelayedTransition(justOnceHighlight, new Slide());
+        continuouslyHighlight.setBackgroundColor(transparent);
+        justOnceHighlight.setBackgroundColor(colorAccent);
+
     }
 
     @OnClick(R.id.closeDialog)

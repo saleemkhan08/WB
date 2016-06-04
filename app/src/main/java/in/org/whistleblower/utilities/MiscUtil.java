@@ -252,7 +252,6 @@ public class MiscUtil
             mProgressDialog = new ProgressDialog(mContext);
             mProgressDialog.setCanceledOnTouchOutside(false);
             mProgressDialog.setMessage(msg);
-            mProgressDialog.setCancelable(false);
             mProgressDialog.setIndeterminate(true);
         }
         mProgressDialog.show();

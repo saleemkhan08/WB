@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.services.GetNotificationIntentService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
 import in.org.whistleblower.utilities.ImageUtil;
@@ -66,7 +67,10 @@ public class MainActivity extends AppCompatActivity
         {
             setContentView(R.layout.activity_main);
             WhistleBlower.getComponent().inject(this);
-            //preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+            Intent getNotificationsService = new Intent(this, GetNotificationIntentService.class);
+            startService(getNotificationsService);
+
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
             toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -102,8 +106,6 @@ public class MainActivity extends AppCompatActivity
             MiscUtil.log("OnCreate");
 
             mNavigationUtil = new NavigationUtil(this);
-            mNavigationUtil.setUp(mUtil);
-
             mFabUtil = new FABUtil(this);
             mFabUtil.setUp();
             if (savedInstanceState == null)
@@ -194,11 +196,11 @@ public class MainActivity extends AppCompatActivity
     {
         super.onNewIntent(intent);
         Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "onNewIntent");
-        if(preferences.contains(NavigationUtil.DIALOG_FRAGMENT_TAG))
+        if (preferences.contains(NavigationUtil.DIALOG_FRAGMENT_TAG))
         {
             String tag = preferences.getString(NavigationUtil.DIALOG_FRAGMENT_TAG, null);
-            Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "tag : "+tag);
-            if(tag!=null)
+            Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "tag : " + tag);
+            if (tag != null)
             {
                 showDialogFragment(tag);
                 preferences.edit().putString(NavigationUtil.DIALOG_FRAGMENT_TAG, null).apply();
@@ -269,11 +271,16 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-        if (id == R.id.settings)
+        switch (id)
         {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
+            case R.id.settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            case R.id.notifications :
+                mNavigationUtil.showNotificationsFragment();
+                return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

@@ -1,13 +1,14 @@
-<LinearLayout android:id="@+id/main_layout"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:weightSum="10"
-              android:background="@color/colorPrimary"
-              tools:context=".legacy.MainActivity">
+<LinearLayout
+    android:id="@+id/main_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_bg"
+    android:orientation="vertical"
+    android:weightSum="10"
+    tools:context=".legacy.MainActivity">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/container"
@@ -20,25 +21,65 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
-        android:background="@color/colorPrimary">
+        >
 
-        <TextView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
-            android:id="@+id/pageIndicator"
-            android:layout_above="@+id/sign_in_button"
-            android:layout_centerHorizontal="true"
-            android:textColor="@android:color/white"
-            android:textSize="15sp"/>
+            android:layout_marginTop="20dp"
+            android:paddingLeft="150dp"
+            android:paddingRight="150dp">
+
+            <ImageView
+                android:id="@+id/first"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_margin="1dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/my_loc_dot"
+                />
+
+            <ImageView
+                android:id="@+id/second"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_margin="1dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/my_loc_dot"
+                />
+
+            <ImageView
+                android:id="@+id/third"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_margin="1dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/my_loc_dot"
+                />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/selected"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_centerVertical="true"
+                    android:src="@mipmap/my_loc_dot_48"
+                    />
+            </RelativeLayout>
+        </RelativeLayout>
 
         <com.google.android.gms.common.SignInButton
-            android:layout_marginTop="20dp"
             android:id="@+id/sign_in_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_marginTop="20dp"
             android:visibility="visible"
             />
     </RelativeLayout>

@@ -9,25 +9,32 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/dialog_header_bg">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/notifyLocation"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        <ImageView
-            android:id="@+id/closeDialog"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/bg_drawable"
-            android:padding="13dp"
-            android:src="@drawable/cross"/>
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_header_bg"
+        android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/header"
+            android:background="@drawable/dialog_header_bg">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/notifyLocation"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                />
+            <ImageView
+                android:id="@+id/closeDialog"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/bg_drawable"
+                android:padding="13dp"
+                android:src="@drawable/cross"/>
+        </RelativeLayout>
     </RelativeLayout>
 
     <LinearLayout

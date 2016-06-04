@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import in.org.whistleblower.gcm.RegistrationIntentService;
+import in.org.whistleblower.services.GetNotificationIntentService;
+
 public class InternetConnectivityListener extends BroadcastReceiver
 {
     public InternetConnectivityListener()
@@ -20,7 +23,11 @@ public class InternetConnectivityListener extends BroadcastReceiver
             NetworkInfo ni = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
             if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED)
             {
+                Intent registrationService = new Intent( context, RegistrationIntentService.class);
+                context.startService(registrationService);
 
+                Intent getNotificationsService = new Intent(context, GetNotificationIntentService.class);
+                context.startService(getNotificationsService);
             }
         }
     }

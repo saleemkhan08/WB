@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="25dp"
+        android:id="@+id/badge"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="0"
+        android:background="@mipmap/my_loc_dot_big"
+        android:textColor="@color/colorPrimaryDark"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceSmall"
+        android:layout_height="25dp"/>
+
+</RelativeLayout>

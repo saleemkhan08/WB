@@ -41,10 +41,10 @@ import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.models.NotifyLocationDao;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.models.ShareLocationDao;
-import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
+import in.org.whistleblower.utilities.NotificationsUtil;
 import in.org.whistleblower.utilities.PermissionUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
 
@@ -197,28 +197,6 @@ public class LocationTrackingService extends Service implements LocationListener
             {
             }
         });
-    }
-
-    void showAlarmNotification(String name, int noOfAlarms)
-    {
-        Intent cancelIntent = new Intent(this, NotificationActionReceiver.class);
-        cancelIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, NotificationActionReceiver.CANCEL_ALL_ALARMS);
-        PendingIntent cancelPendingIntent = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), cancelIntent, 0);
-
-        Intent contentIntent = new Intent(this, NotificationActionReceiver.class);
-        contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG);
-        PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setContentTitle("Location Alarm")
-                .setSmallIcon(R.drawable.bullhorn_white)
-                .setAutoCancel(false)
-                .setOngoing(true)
-                .setContentText(name)
-                .setContentIntent(contentPendingIntent)
-                .addAction(R.mipmap.bell_cross_accent, (noOfAlarms > 1) ? "Turn Off All Alarms" : "Turn Off Alarm", cancelPendingIntent);
-        mNotificationManager.notify(NotificationActionReceiver.NOTIFICATION_ID_ALARMS, mBuilder.build());
     }
 
     private void startLocationUpdates()
@@ -584,7 +562,7 @@ public class LocationTrackingService extends Service implements LocationListener
         }
         else
         {
-            showAlarmNotification(locations, noOfLocations);
+            NotificationsUtil.showAlarmNotification(this, locations, noOfLocations);
         }
     }
 
