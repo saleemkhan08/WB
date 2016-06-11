@@ -36,7 +36,6 @@
                 android:padding="13dp"
                 android:src="@drawable/cross"/>
         </RelativeLayout>
-
         <LinearLayout
             android:layout_below="@+id/header"
             android:id="@+id/tab"
@@ -53,7 +52,7 @@
                 android:textSize="@dimen/dialog_sub_title"
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"
-                android:text="Real Time"
+                android:text="@string/realTime"
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"/>
 
@@ -65,10 +64,9 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"
-                android:text="Just Once"
+                android:text="@string/justOnce"
                 android:textColor="@color/divider"/>
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:id="@+id/highlight"

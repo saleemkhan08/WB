@@ -130,8 +130,8 @@
     <string name="unknownPlace">Unknown Place…</string>
     <string name="kilometer">km</string>
     <string name="meter">m</string>
-    <string name="once">1<sup><small>s</small></sup></string>
-    <string name="realTime">R</string>
+    <string name="justOnce">Just Once</string>
+    <string name="realTime">Real Time</string>
     <string name="title_activity_location_list">Location List</string>
     <string name="locationIsntBeingShared">Location Isn\'t Being Shared…</string>
     <string name="noFriendsAreAddedYet">No Friends Are Added Yet…</string>
@@ -141,7 +141,7 @@
     <string name="allTheLocationAlarmsAreRemoved">All The Location Alarms Are Removed…</string>
     <string name="locationAlarms">Location Alarms</string>
     <string name="noLocationAlarmsAreSet">No Location Alarms Are Set …</string>
-    <string name="noNotificationsAreSet">No Notifications Are Set…</string>
+    <string name="noLocationNotificationsAreSet">No Location Notifications Are Set…</string>
     <string name="notifyLocation">Notify Location</string>
     <string name="favoritePlaces">Favorite Places</string>
     <string name="noFavoritePlacesAdded">No Favorite Places Are Added…</string>
@@ -167,4 +167,7 @@
     <string name="noNotifications">No New Notifications…</string>
     <string name="sending">Sending</string>
     <string name="receiving">Receiving</string>
+    <string name="sharing">Sharing</string>
+    <string name="locationIsntBeingReceived">Location I\'snt Being Received…</string>
+    <string name="noLocationNotificationsAreReceived">No Location Notifications Are Received…</string>
 </resources>

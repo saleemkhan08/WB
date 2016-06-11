@@ -84,7 +84,7 @@ public class ShareLocationFragment extends DialogFragment
         TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
         dialogTitle.setTypeface(WhistleBlower.getTypeface());
 
-        continuously.setTypeface(WhistleBlower.getTypeface());
+        continuously.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
         justOnce.setTypeface(WhistleBlower.getTypeface());
 
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);

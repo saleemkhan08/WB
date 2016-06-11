@@ -321,8 +321,6 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
             bundle.putBoolean(arguments[0], true);
             shareLocationListFragment.setArguments(bundle);
         }
-
-
         mFragmentManager.executePendingTransactions();
         if (!shareLocationListFragment.isAdded())
         {

@@ -2,11 +2,13 @@ package in.org.whistleblower.fragments;
 
 
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ import com.squareup.otto.Subscribe;
 import java.util.ArrayList;
 
 import butterknife.Bind;
+import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -33,14 +36,44 @@ public class NotifyLocationListFragment extends DialogFragment
 {
     public static final String NOTIFY_LOC_LIST_EMPTY_TEXT = "NOTIFY_LOC_LIST_EMPTY_TEXT";
 
-    @BindString(R.string.noNotificationsAreSet)
-    String noNotificationsAreSet;
+    @BindString(R.string.noLocationNotificationsAreSet)
+    String noLocationNotificationsAreSet;
+
+    @BindString(R.string.noLocationNotificationsAreReceived)
+    String noLocationNotificationsAreReceived;
 
     @Bind(R.id.emptyList)
     ViewGroup emptyList;
 
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
+
+    @Bind(R.id.sending)
+    TextView sending;
+
+    @Bind(R.id.receiving)
+    TextView receiving;
+
+    @BindColor(R.color.colorAccent)
+    int colorAccent;
+
+    @BindColor(R.color.transparent)
+    int transparent;
+
+    @BindColor(R.color.colorAccent)
+    int enabled;
+
+    @BindColor(R.color.divider)
+    int disabled;
+
+    @Bind(R.id.sendingHighlight)
+    ViewGroup sendingHighlight;
+
+    @Bind(R.id.receivingHighlight)
+    ViewGroup receivingHighlight;
+
+    private boolean isSendingClicked = true;
+
 
     public NotifyLocationListFragment()
     {
@@ -62,7 +95,7 @@ public class NotifyLocationListFragment extends DialogFragment
 
         ArrayList<NotifyLocation> mNotifyLocationList = NotifyLocationDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
-        if(mNotifyLocationList.size() < 1)
+        if (mNotifyLocationList.size() < 1)
         {
             showEmptyListString();
         }
@@ -76,29 +109,31 @@ public class NotifyLocationListFragment extends DialogFragment
     {
         super.onStart();
         Bundle bundle = getArguments();
-        if(bundle.containsKey(NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG))
+        if (bundle != null && bundle.containsKey(NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG))
         {
-            //show receiving Tab
+            onReceivingClick();
         }
         else
         {
-            //show sending Tab
+            onSendingClick();
         }
     }
+
 
     @Subscribe
     public void showEmptyListString(String msg)
     {
-        if(msg.equals(NOTIFY_LOC_LIST_EMPTY_TEXT))
+        if (msg.equals(NOTIFY_LOC_LIST_EMPTY_TEXT))
         {
             showEmptyListString();
-            emptyListTextView.setText(noNotificationsAreSet);
+            emptyListTextView.setText(isSendingClicked ? noLocationNotificationsAreSet : noLocationNotificationsAreReceived);
         }
     }
 
     private void showEmptyListString()
     {
         TransitionManager.beginDelayedTransition(emptyList);
+        emptyListTextView.setText(isSendingClicked ? noLocationNotificationsAreSet : noLocationNotificationsAreReceived);
         emptyList.setVisibility(View.VISIBLE);
     }
 
@@ -127,5 +162,35 @@ public class NotifyLocationListFragment extends DialogFragment
     {
         super.onDismiss(dialog);
         Otto.post(MapFragment.DIALOG_DISMISS);
+    }
+
+    @OnClick(R.id.sending)
+    public void onSendingClick()
+    {
+        sending.setTextColor(enabled);
+        receiving.setTextColor(disabled);
+        isSendingClicked = true;
+
+        sending.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
+        receiving.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
+
+        TransitionManager.beginDelayedTransition(sendingHighlight, new Slide());
+        sendingHighlight.setBackgroundColor(colorAccent);
+        receivingHighlight.setBackgroundColor(transparent);
+    }
+
+    @OnClick(R.id.receiving)
+    public void onReceivingClick()
+    {
+        isSendingClicked = false;
+        sending.setTextColor(disabled);
+        receiving.setTextColor(enabled);
+
+        sending.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
+        receiving.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
+
+        TransitionManager.beginDelayedTransition(receivingHighlight, new Slide());
+        sendingHighlight.setBackgroundColor(transparent);
+        receivingHighlight.setBackgroundColor(colorAccent);
     }
 }

@@ -180,6 +180,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+
     private void showDialogFragment(String tag)
     {
         Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "has extra : " + tag);

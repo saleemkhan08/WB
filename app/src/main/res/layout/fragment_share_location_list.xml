@@ -12,29 +12,91 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/dialog_header_bg">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:id="@+id/dialogTitle"
-            android:text="Sharing Location"
-            android:textSize="@dimen/dialog_title"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-
-        <ImageView
-            android:id="@+id/closeDialog"
-            android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_header_bg"
+        android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/header"
+            android:background="@drawable/dialog_header_bg">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/shareLocation"
+                android:id="@+id/dialogTitle"
+                android:textColor="@color/white"
+                android:textSize="@dimen/dialog_title"
+                android:textStyle="bold"
+                />
+            <ImageView
+                android:id="@+id/closeDialog"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/bg_drawable"
+                android:padding="13dp"
+                android:src="@drawable/cross"/>
+        </RelativeLayout>
+        <LinearLayout
+            android:layout_below="@+id/header"
+            android:id="@+id/tab"
+            android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/bg_drawable"
-            android:padding="13dp"
-            android:src="@drawable/cross"/>
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <TextView
+                android:id="@+id/sharing"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="@dimen/dialog_sub_title"
+                android:background="@drawable/bg_drawable"
+                android:gravity="center"
+                android:text="@string/sharing"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"/>
+
+            <TextView
+                android:id="@+id/receiving"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textSize="@dimen/dialog_sub_title"
+                android:layout_weight="1"
+                android:background="@drawable/bg_drawable"
+                android:gravity="center"
+                android:text="@string/receiving"
+                android:textColor="@color/divider"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:id="@+id/highlight"
+            android:layout_below="@+id/tab"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+            <LinearLayout
+                android:id="@+id/sharingHighlight"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:background="@color/colorAccent"/>
+
+            <LinearLayout
+                android:id="@+id/receivingHighlight"
+                android:orientation="horizontal"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                />
+        </LinearLayout>
     </RelativeLayout>
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
