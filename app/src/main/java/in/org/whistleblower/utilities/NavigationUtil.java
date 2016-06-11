@@ -32,29 +32,26 @@ import in.org.whistleblower.fragments.NotifyLocationListFragment;
 import in.org.whistleblower.fragments.ShareLocationListFragment;
 import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.models.IssuesDao;
-import in.org.whistleblower.models.LocationAlarmDao;
-import in.org.whistleblower.models.NotifyLocationDao;
-import in.org.whistleblower.models.ShareLocationDao;
+import in.org.whistleblower.dao.IssuesDao;
+import in.org.whistleblower.dao.LocationAlarmDao;
+import in.org.whistleblower.dao.NotifyLocationDao;
+import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.singletons.Otto;
 
 public class NavigationUtil implements NavigationView.OnNavigationItemSelectedListener
 {
     public static final String MAP_FRAGMENT_TAG = "mapFragmentTag";
     public static final String MAIN_FRAGMENT_TAG = "mainFragmentTag";
-    public static final String KEY_CATEGORY = "KEY_CATEGORY";
-    public static final String ADD_FRIEND = "ADD_FRIEND";
-    public static final String FRIEND_LIST = "FRIEND_LIST";
-    public static final String ADD_FAV_PLACE = "ADD_FAV_PLACE";
-    public static final String FAV_PLACE = "FAV_PLACE";
     public static final String FAV_PLACE_FRAGMENT_TAG = "FAV_PLACE_FRAGMENT_TAG";
     public static final String FRIEND_LIST_FRAGMENT_TAG = "FRIEND_LIST_FRAGMENT_TAG";
     public static final String NOTIFY_LOCATION_FRAGMENT_TAG = "NOTIFY_LOCATION_FRAGMENT_TAG";
-    public static final String SHARE_LOCATION_LIST_FRAGMENT_TAG = "SHARE_LOCATION_LIST_FRAGMENT_TAG";
     public static final String LOCATION_ALARM_FRAGMENT_TAG = "LOCATION_ALARM_FRAGMENT_TAG";
     public static final String DIALOG_FRAGMENT_TAG = "dialogFragmentTag";
     public static final String NOTIFICATION_FRAGMENT_TAG = "NOTIFICATION_FRAGMENT_TAG";
     public static final String NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG = "NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG";
+    public static final String NOTIFY_LOCATION_LIST_FRAGMENT_TAG = "NOTIFY_LOCATION_LIST_FRAGMENT_TAG";
+    public static final String SHARE_LOCATION_LIST_FRAGMENT_TAG = "SHARE_LOCATION_LIST_FRAGMENT_TAG";
+    public static final String SHARE_LOCATION_RECEIVING_FRAGMENT_TAG = "SHARE_LOCATION_RECEIVING_FRAGMENT_TAG";
 
 
     @BindString(R.string.noFriendsAreAddedYet)
@@ -85,10 +82,10 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         {
             public void run()
             {
-                shareLocationSize = new ShareLocationDao().getList().size();
-                notificationSize = new NotifyLocationDao().getList().size();
-                issueSize = new IssuesDao().getIssuesList().size();
-                alarmSize = new LocationAlarmDao().getList().size();
+                shareLocationSize = ShareLocationDao.getList().size();
+                notificationSize = NotifyLocationDao.getList().size();
+                issueSize = IssuesDao.getList().size();
+                alarmSize = LocationAlarmDao.getList().size();
             }
         }).start();
 
@@ -307,15 +304,25 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         return true;
     }
 
-    public void showShareLocationList()
+    public void showShareLocationList(String... arguments)
     {
         Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "showShareLocationList");
         ShareLocationListFragment shareLocationListFragment = (ShareLocationListFragment)
                 mFragmentManager.findFragmentByTag(SHARE_LOCATION_LIST_FRAGMENT_TAG);
+
         if (shareLocationListFragment == null)
         {
             shareLocationListFragment = new ShareLocationListFragment();
         }
+
+        if(arguments!= null && arguments.length > 0)
+        {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(arguments[0], true);
+            shareLocationListFragment.setArguments(bundle);
+        }
+
+
         mFragmentManager.executePendingTransactions();
         if (!shareLocationListFragment.isAdded())
         {
@@ -323,13 +330,19 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
         }
     }
 
-    public void showNotifyLocationList()
+    public void showNotifyLocationList(String... arguments)
     {
         NotifyLocationListFragment notifyLocationListFragment = (NotifyLocationListFragment)
                 mFragmentManager.findFragmentByTag(NOTIFY_LOCATION_FRAGMENT_TAG);
         if (notifyLocationListFragment == null)
         {
             notifyLocationListFragment = new NotifyLocationListFragment();
+        }
+        if(arguments!= null && arguments.length > 0)
+        {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(arguments[0], true);
+            notifyLocationListFragment.setArguments(bundle);
         }
         mFragmentManager.executePendingTransactions();
         if (!notifyLocationListFragment.isAdded())

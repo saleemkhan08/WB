@@ -8,14 +8,16 @@
     <string name="sign_out">Sign Out</string>
     <string name="disconnect">Disconnect</string>
     <string name="user_icon">&#xf041;</string>
-    <string name="user_text">Notifier</string>
+    <string name="notifier_title">Notifier</string>
+    <string name="notifier_text">Get Location Based Notifications…</string>
     <string name="whistle_blower_icon">&#xf083;</string>
-    <string name="whistle_blower_text">Whistle Blower</string>
+    <string name="whistle_blower_title">Whistle Blower</string>
+    <string name="whistle_blower_text">Have Concerns? Raise them…</string>
     <string name="volunteer_icon">&#xf02e;</string>
     <string name="search_icon">&#xf002;</string>
     <string name="my_loc_icon">&#xf05b;</string>
-
-    <string name="volunteer_text">Volunteer</string>
+    <string name="volunteer_title">Volunteer</string>
+    <string name="volunteer_text">Make This World A Better Place…</string>
     <string name="signing_in">Signing in…</string>
     <string name="logout">Logout</string>
     <string name="no_network_access">Please Check Your Internet Connectivity &amp; Try Again!</string>
@@ -67,18 +69,18 @@
         <item>4</item>
     </string-array>
     <string-array name="loc_update_freq">
-        <item>Very Less</item>
-        <item>Less</item>
-        <item>Medium</item>
-        <item>High</item>
-        <item>Very High</item>
+        <item>Very Rarely</item>
+        <item>Rarely</item>
+        <item>Normally</item>
+        <item>Frequently</item>
+        <item>Very Frequently</item>
     </string-array>
     <string-array name="loc_update_freq_val">
-        <item>60000</item>
-        <item>30000</item>
-        <item>20000</item>
-        <item>10000</item>
-        <item>5000</item>
+        <item>1000</item>
+        <item>900</item>
+        <item>750</item>
+        <item>600</item>
+        <item>500</item>
     </string-array>
 
     <string name="title_activity_search">Search</string>

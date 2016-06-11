@@ -39,7 +39,7 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.FriendListAdapter;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.VolleyUtil;
 
@@ -50,7 +50,6 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     public static final String EMPTY_FRIEND_LIST = "EMPTY_FRIEND_LIST";
     private static final String ADD_USER_FRAGMENT_TAG = "ADD_USER_FRAGMENT_TAG";
     private SharedPreferences preferences;
-    AccountsDao dao;
 
     public FriendListFragment()
     {
@@ -95,7 +94,6 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
         swipeRefreshLayout.setOnRefreshListener(this);
         mActivity.setTitle(MainActivity.FRIEND_LIST);
         Log.d("Doodle", "KEY_USERS_FETCHED : " + preferences.getBoolean(KEY_USERS_FETCHED, false));
-        dao = new AccountsDao();
         if (!preferences.getBoolean(KEY_USERS_FETCHED, false))
         {
             getFriendListFromServer(this);
@@ -204,7 +202,6 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     private static void saveFriendListInDataBase(String result, final ResultListener<String> listener)
     {
         Log.d("Doodle", "Data base saving");
-        AccountsDao accountsDao = new AccountsDao();
         try
         {
             JSONArray array = new JSONArray(result);
@@ -217,7 +214,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
                 account.photo_url = json.getString(Accounts.PHOTO_URL);
                 account.name = json.getString(Accounts.NAME);
                 account.relation = json.getString(Accounts.RELATION);
-                accountsDao.insert(account);
+                AccountsDao.insert(account);
             }
             if(listener!=null)
             {
@@ -227,7 +224,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
         catch (Exception e)
         {
             e.printStackTrace();
-            accountsDao.delete();
+            AccountsDao.delete();
             Log.d("ToastMsg", "Error occurred deleting from Data base : " + e.getMessage());
             if(listener!=null)
             {
@@ -239,7 +236,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     void showFriendList()
     {
         hideEmptyListString();
-        mFriendList = dao.getFriendsList();
+        mFriendList = AccountsDao.getFriendsList();
         Log.d("mFriendList", "mFriendList : " + mFriendList);
 
         if (null != mFriendList && mFriendList.size() > 0)
@@ -258,7 +255,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
     @Override
     public void onRefresh()
     {
-        dao.delete();
+        AccountsDao.delete();
         getFriendListFromServer(this);
     }
 

@@ -143,4 +143,35 @@ public class VolleyUtil
     public static final String KEY_PARTIAL_STR ="str";
     public static final String KEY_OFFSET ="offset";
     public static final String KEY_LIMIT ="limit";
+
+
+    public static void exponentialFallBack(final Map<String, String> postData, final ResultListener<String> listener)
+    {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ResultListener.URL,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        listener.onSuccess(response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        listener.onError(error);
+                    }
+                })
+        {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                return postData;
+            }
+        };
+        RequestQueue requestQueue = VolleySingleton.getInstance().getRequestQueue();
+        requestQueue.add(stringRequest);
+    }
 }

@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import in.org.whistleblower.services.UploadIssueService;
-import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.services.AddIssueService;
 
 public class StopRetryReceiver extends BroadcastReceiver

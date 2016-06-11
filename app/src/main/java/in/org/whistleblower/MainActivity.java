@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity
     RelativeLayout mainActivityContainer;
     ImageView profilePic;
     TextView username, emailId;
-    Toolbar toolbar;
     private boolean isShareLocationShared;
+    private TextView toolbarTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -73,9 +73,12 @@ public class MainActivity extends AppCompatActivity
 
             mainActivityContainer = (RelativeLayout) findViewById(R.id.mainActivityContainer);
             //Toolbar
-            toolbar = (Toolbar) findViewById(R.id.toolbar);
-            toolbar.setTitle("");
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+            toolbarTitle.setTypeface(WhistleBlower.getTypeface());
+
             setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             //Navigation Drawer
             NavigationView navigationHeader = (NavigationView) findViewById(R.id.nav_view);
             View header = navigationHeader.getHeaderView(0);
@@ -188,6 +191,18 @@ public class MainActivity extends AppCompatActivity
             case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG:
                 mNavigationUtil.showShareLocationList();
                 break;
+            case NavigationUtil.NOTIFICATION_FRAGMENT_TAG:
+                mNavigationUtil.showNotificationsFragment();
+                break;
+            case NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG:
+                mNavigationUtil.showShareLocationList(NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG);
+                break;
+            case NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG:
+                mNavigationUtil.showNotifyLocationList();
+                break;
+            case NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG:
+                mNavigationUtil.showNotifyLocationList(NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG);
+                break;
         }
     }
 
@@ -276,7 +291,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
-            case R.id.notifications :
+            case R.id.notifications:
                 mNavigationUtil.showNotificationsFragment();
                 return true;
         }
@@ -287,7 +302,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void setTitle(CharSequence title)
     {
-        toolbar.setTitle(title);
+        toolbarTitle.setText(title);
     }
 
     public void favPlaceSelector(View view)

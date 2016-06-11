@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import in.org.whistleblower.R;
 import in.org.whistleblower.interfaces.DialogUtilListener;
-import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.dao.IssuesDao;
 
 public class DialogsUtil
 {

@@ -17,7 +17,7 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Notifications;
-import in.org.whistleblower.models.NotificationsDao;
+import in.org.whistleblower.dao.NotificationsDao;
 import in.org.whistleblower.utilities.VolleyUtil;
 
 public class GetNotificationIntentService extends IntentService
@@ -41,7 +41,6 @@ public class GetNotificationIntentService extends IntentService
             @Override
             public void onSuccess(final String result)
             {
-                final NotificationsDao dao = new NotificationsDao();
                 try
                 {
                     JSONArray array = new JSONArray(result);
@@ -61,7 +60,7 @@ public class GetNotificationIntentService extends IntentService
                         notification.longitude = json.getString(Notifications.LONGITUDE);
                         notification.timeStamp = json.getLong(Notifications.TIME_STAMP);
                         notification.status = json.getInt(Notifications.STATUS);
-                        dao.insert(notification);
+                        NotificationsDao.insert(notification);
                     }
                 }
                 catch (Exception e)

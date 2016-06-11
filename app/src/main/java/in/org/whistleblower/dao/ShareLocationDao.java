@@ -1,9 +1,11 @@
-package in.org.whistleblower.models;
+package in.org.whistleblower.dao;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
 import java.util.ArrayList;
+
+import in.org.whistleblower.models.ShareLocation;
 
 public class ShareLocationDao
 {
@@ -13,15 +15,9 @@ public class ShareLocationDao
             + ShareLocation.PHOTO_URL + " VARCHAR(255), "
             + ShareLocation.USER_EMAIL + " VARCHAR(255) PRIMARY KEY );";
 
-    private WBDataBase mWBDataBase;
-
-    public ShareLocationDao()
+    public static void insert(ShareLocation account)
     {
-        mWBDataBase = new WBDataBase();
-    }
-
-    public void insert(ShareLocation account)
-    {
+        WBDataBase mWBDataBase = new WBDataBase();
         if (null != account)
         {
             ContentValues values = new ContentValues();
@@ -31,20 +27,26 @@ public class ShareLocationDao
             values.put(ShareLocation.USER_EMAIL, account.userEmail);
             mWBDataBase.insert(ShareLocation.TABLE, values);
         }
+        mWBDataBase.closeDb();
     }
 
-    public void delete()
+    public static void delete()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.delete(ShareLocation.TABLE, null, null);
+        mWBDataBase.closeDb();
     }
 
-    public void delete(String email)
+    public static void delete(String email)
     {
-        mWBDataBase.delete(ShareLocation.TABLE, ShareLocation.USER_EMAIL + " = '" + email+"'", null);
+        WBDataBase mWBDataBase = new WBDataBase();
+        mWBDataBase.delete(ShareLocation.TABLE, ShareLocation.USER_EMAIL + " = ? ", new String []{email});
+        mWBDataBase.closeDb();
     }
 
-    public ArrayList<ShareLocation> getList()
+    public static ArrayList<ShareLocation> getList()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<ShareLocation> accountsList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(ShareLocation.TABLE, null, null, null, null, null);
         if (null != cursor)
@@ -60,6 +62,7 @@ public class ShareLocationDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return accountsList;
     }
 }

@@ -22,9 +22,10 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.AlarmAdapter;
 import in.org.whistleblower.models.LocationAlarm;
-import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.dao.LocationAlarmDao;
 import in.org.whistleblower.singletons.Otto;
 
 public class LocationAlarmListFragment extends DialogFragment
@@ -54,12 +55,15 @@ public class LocationAlarmListFragment extends DialogFragment
         View parentView = inflater.inflate(R.layout.fragment_location_alarm_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        ArrayList<LocationAlarm> mAlarmList = new LocationAlarmDao().getList();
+        ArrayList<LocationAlarm> mAlarmList = LocationAlarmDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mAlarmList.size() < 1)
         {
             showEmptyListString();
         }
+
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
 
         locationAlarmList.setAdapter(new AlarmAdapter(mActivity, mAlarmList));
         locationAlarmList.setLayoutManager(new LinearLayoutManager(mActivity));

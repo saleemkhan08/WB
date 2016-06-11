@@ -20,7 +20,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/addFriend"
-                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/dialogTitle"
+                android:textSize="@dimen/dialog_title"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 />

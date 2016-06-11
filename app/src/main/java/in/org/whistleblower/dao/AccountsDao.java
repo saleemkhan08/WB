@@ -1,10 +1,12 @@
-package in.org.whistleblower.models;
+package in.org.whistleblower.dao;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Log;
 
 import java.util.ArrayList;
+
+import in.org.whistleblower.models.Accounts;
 
 public class AccountsDao
 {
@@ -14,15 +16,11 @@ public class AccountsDao
             + Accounts.PHOTO_URL + " VARCHAR(255),"
             + Accounts.TIME_STAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
             + Accounts.RELATION + " VARCHAR(255))";
-    private WBDataBase mWBDataBase;
+    private static WBDataBase mWBDataBase;
 
-    public AccountsDao()
+    public static void insert(Accounts account)
     {
         mWBDataBase = new WBDataBase();
-    }
-
-    public void insert(Accounts account)
-    {
         if (null != account)
         {
             ContentValues values = new ContentValues();
@@ -34,20 +32,24 @@ public class AccountsDao
         }
     }
 
-    public void delete()
+    public static void delete()
     {
+        mWBDataBase = new WBDataBase();
         mWBDataBase.delete(Accounts.TABLE, null, null);
     }
 
-    public void delete(String email)
+    public static void delete(String email)
     {
-        mWBDataBase.delete(Accounts.TABLE, Accounts.EMAIL + " = '" + email+"'", null);
+        mWBDataBase = new WBDataBase();
+        mWBDataBase.delete(Accounts.TABLE, Accounts.EMAIL + " = ? ", new String[]{email});
+        mWBDataBase.closeDb();
     }
 
-    public ArrayList<Accounts> getUsersList()
+    public static ArrayList<Accounts> getUsersList()
     {
+        mWBDataBase = new WBDataBase();
         ArrayList<Accounts> accountsList = new ArrayList<>();
-        Cursor cursor = mWBDataBase.query(Accounts.TABLE, null, Accounts.RELATION + " != '"+Accounts.FRIEND+"'",null, null, null);
+        Cursor cursor = mWBDataBase.query(Accounts.TABLE, null, Accounts.RELATION + " != ? ",new String[]{Accounts.FRIEND}, null, null);
         if (null != cursor)
         {
             while (cursor.moveToNext())
@@ -61,11 +63,13 @@ public class AccountsDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return accountsList;
     }
 
-    public ArrayList<Accounts> getList()
+    public static ArrayList<Accounts> getList()
     {
+        mWBDataBase = new WBDataBase();
         ArrayList<Accounts> accountsList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(Accounts.TABLE, null, null, null, null, null);
         if (null != cursor)
@@ -82,14 +86,16 @@ public class AccountsDao
             cursor.close();
 
         }
+        mWBDataBase.closeDb();
         return accountsList;
     }
 
 
-    public ArrayList<Accounts> getFriendsList()
+    public static ArrayList<Accounts> getFriendsList()
     {
+        mWBDataBase = new WBDataBase();
         ArrayList<Accounts> accountsList = new ArrayList<>();
-        Cursor cursor = mWBDataBase.query(Accounts.TABLE, null, Accounts.RELATION+" = '"+Accounts.FRIEND+"' ",null, null, null);
+        Cursor cursor = mWBDataBase.query(Accounts.TABLE, null, Accounts.RELATION+" = ? ",new String[]{Accounts.FRIEND}, null, null);
         if (null != cursor)
         {
             while (cursor.moveToNext())
@@ -104,13 +110,16 @@ public class AccountsDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return accountsList;
     }
 
-    public void update(String email, String relation, String friend)
+    public static void update(String email, String relation, String friend)
     {
+        mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(relation, friend);
-        mWBDataBase.update(Accounts.TABLE, values, Accounts.EMAIL + " = '" + email + "'", null);
+        mWBDataBase.update(Accounts.TABLE, values, Accounts.EMAIL + " = ? ", new String[]{email});
+        mWBDataBase.closeDb();
     }
 }

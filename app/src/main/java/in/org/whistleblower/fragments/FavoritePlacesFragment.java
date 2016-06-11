@@ -22,9 +22,10 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.PlaceAdapter;
 import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.dao.FavPlacesDao;
 import in.org.whistleblower.singletons.Otto;
 
 public class FavoritePlacesFragment extends DialogFragment
@@ -54,7 +55,7 @@ public class FavoritePlacesFragment extends DialogFragment
         View parentView = inflater.inflate(R.layout.fragment_fav_places_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        ArrayList<FavPlaces> favPlacesList = new FavPlacesDao().getFavPlacesList();
+        ArrayList<FavPlaces> favPlacesList = FavPlacesDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if (favPlacesList.size() < 1)
         {
@@ -62,6 +63,10 @@ public class FavoritePlacesFragment extends DialogFragment
         }
         favPlacesRecyclerView.setAdapter(new PlaceAdapter(mActivity, favPlacesList));
         favPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
         return parentView;
     }
 

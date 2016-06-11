@@ -10,7 +10,7 @@ import android.util.Log;
 import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.gcm.RegistrationIntentService;
-import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.dao.LocationAlarmDao;
 import in.org.whistleblower.utilities.NavigationUtil;
 
 public class NotificationActionReceiver extends BroadcastReceiver
@@ -20,6 +20,8 @@ public class NotificationActionReceiver extends BroadcastReceiver
     public static final int NOTIFICATION_ID_ALARMS = 181;
     public static final String NOTIFICATION_ACTION_2 = "notificationAction2";
     public static final int NOTIFICATION_ID_RECEIVING_LOCATION_NOTIFICATION = 182;
+    public static final int SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID = 183;
+    public static final int NOTIFY_LOCATION_NOTIFICATION_ID = 184 ;
 
     static int retryCnt = 0;
     public NotificationActionReceiver()
@@ -41,14 +43,16 @@ public class NotificationActionReceiver extends BroadcastReceiver
 
             case CANCEL_ALL_ALARMS :
                 NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                new LocationAlarmDao().cancelAllAlarms();
+                LocationAlarmDao.cancelAllAlarms();
                 notificationManager.cancel(NOTIFICATION_ID_ALARMS);
                 break;
 
-            case NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG :
-            case NavigationUtil.NOTIFY_LOCATION_FRAGMENT_TAG :
-            case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG :
             case NavigationUtil.NOTIFICATION_FRAGMENT_TAG :
+            case NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG :
+            case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG :
+            case NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG :
+            case NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG :
+            case NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG :
                 context.startActivity(getMainActivityDialogIntent(context, action));
                 break;
         }

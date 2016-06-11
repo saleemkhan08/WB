@@ -1,9 +1,11 @@
-package in.org.whistleblower.models;
+package in.org.whistleblower.dao;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
 import java.util.ArrayList;
+
+import in.org.whistleblower.models.LocationAlarm;
 
 public class LocationAlarmDao
 {
@@ -13,15 +15,10 @@ public class LocationAlarmDao
             + LocationAlarm.LATITUDE + " VARCHAR(255), "
             + LocationAlarm.STATUS + " INTEGER, "
             + LocationAlarm.LONGITUDE + " VARCHAR(255));";
-    private WBDataBase mWBDataBase;
 
-    public LocationAlarmDao()
+    public static void insert(LocationAlarm locationAlarm)
     {
-        mWBDataBase = new WBDataBase();
-    }
-
-    public void insert(LocationAlarm locationAlarm)
-    {
+        WBDataBase mWBDataBase = new WBDataBase();
         if (null != locationAlarm)
         {
             ContentValues values = new ContentValues();
@@ -32,20 +29,25 @@ public class LocationAlarmDao
             values.put(LocationAlarm.STATUS, locationAlarm.status);
             mWBDataBase.insert(LocationAlarm.TABLE, values);
         }
+        mWBDataBase.closeDb();
     }
 
-    public void delete()
+    public static void delete()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.delete(LocationAlarm.TABLE, null, null);
     }
 
-    public void delete(String address)
+    public static void delete(String address)
     {
-        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ADDRESS + " = '" + address+"'", null);
+        WBDataBase mWBDataBase = new WBDataBase();
+        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ADDRESS + " = ? ",new String[]{address});
+        mWBDataBase.closeDb();
     }
 
-    public ArrayList<LocationAlarm> getList()
+    public static ArrayList<LocationAlarm> getList()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<LocationAlarm> alarmList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null, null, null, null, null);
         if (null != cursor)
@@ -62,13 +64,15 @@ public class LocationAlarmDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return alarmList;
     }
 
-    public LocationAlarm getAlarm(String address)
+    public static LocationAlarm getAlarm(String address)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         LocationAlarm alarm = null;
-        Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null,  LocationAlarm.ADDRESS + " = '" + address+"'", null, null, null);
+        Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null,  LocationAlarm.ADDRESS + " = ? ", new String []{address}, null, null);
         if (null != cursor)
         {
             if (cursor.moveToFirst())
@@ -82,20 +86,25 @@ public class LocationAlarmDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return alarm;
     }
 
-    public void update(String address, int status)
+    public static void update(String address, int status)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(LocationAlarm.STATUS, status);
-        mWBDataBase.update(LocationAlarm.TABLE, values, LocationAlarm.ADDRESS + " = '" + address + "'", null);
+        mWBDataBase.update(LocationAlarm.TABLE, values, LocationAlarm.ADDRESS + " = ? ", new String []{address});
+        mWBDataBase.closeDb();
     }
 
-    public void cancelAllAlarms()
+    public static void cancelAllAlarms()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(LocationAlarm.STATUS, LocationAlarm.ALARM_OFF);
         mWBDataBase.update(LocationAlarm.TABLE, values, null, null);
+        mWBDataBase.closeDb();
     }
 }

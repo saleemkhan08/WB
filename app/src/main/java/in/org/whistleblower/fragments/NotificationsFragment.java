@@ -23,7 +23,7 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.NotificationsAdapter;
 import in.org.whistleblower.models.Notifications;
-import in.org.whistleblower.models.NotificationsDao;
+import in.org.whistleblower.dao.NotificationsDao;
 import in.org.whistleblower.singletons.Otto;
 
 public class NotificationsFragment extends DialogFragment
@@ -60,8 +60,6 @@ public class NotificationsFragment extends DialogFragment
     private SharedPreferences preferences;
     private boolean isUnreadClicked = true;
 
-    Typeface normal = Typeface.defaultFromStyle(Typeface.NORMAL);
-    Typeface bold = Typeface.defaultFromStyle(Typeface.BOLD);
 
     public NotificationsFragment()
     {
@@ -75,12 +73,17 @@ public class NotificationsFragment extends DialogFragment
         ButterKnife.bind(this, parentView);
         Otto.register(this);
 
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
+        unread.setTypeface(WhistleBlower.getTypeface());
+        all.setTypeface(WhistleBlower.getTypeface());
+
         mActivity = (AppCompatActivity) getActivity();
         preferences = WhistleBlower.getPreferences();
 
-        NotificationsDao dao = new NotificationsDao();
-        mAllNotificationsList = dao.getAllNotifications();
-        mUnreadNotificationsList = dao.getUnreadList();
+        mAllNotificationsList = NotificationsDao.getAllNotifications();
+        mUnreadNotificationsList = NotificationsDao.getUnreadList();
 
         NotificationsAdapter mAdapter = new NotificationsAdapter(mActivity, mUnreadNotificationsList);
         notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -102,14 +105,13 @@ public class NotificationsFragment extends DialogFragment
         all.setTextColor(disabled);
         isUnreadClicked = true;
 
-        unread.setTypeface(bold);
-        all.setTypeface(normal);
+        unread.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
+        all.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
 
         unreadHighlight.setBackgroundColor(enabled);
         allHighlight.setBackgroundColor(transparent);
 
-        NotificationsDao dao = new NotificationsDao();
-        mUnreadNotificationsList = dao.getUnreadList();
+        mUnreadNotificationsList = NotificationsDao.getUnreadList();
 
         NotificationsAdapter mAdapter = new NotificationsAdapter(mActivity, mUnreadNotificationsList);
         notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -125,14 +127,13 @@ public class NotificationsFragment extends DialogFragment
         unread.setTextColor(disabled);
         all.setTextColor(enabled);
 
-        unread.setTypeface(normal);
-        all.setTypeface(bold);
+        unread.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
+        all.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
 
         unreadHighlight.setBackgroundColor(transparent);
         allHighlight.setBackgroundColor(enabled);
 
-        NotificationsDao dao = new NotificationsDao();
-        mAllNotificationsList = dao.getAllNotifications();
+        mAllNotificationsList = NotificationsDao.getAllNotifications();
 
         NotificationsAdapter mAdapter = new NotificationsAdapter(mActivity, mAllNotificationsList);
         notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));

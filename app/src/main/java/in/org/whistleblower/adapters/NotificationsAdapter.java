@@ -15,7 +15,7 @@ import butterknife.ButterKnife;
 import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.NotificationsFragment;
 import in.org.whistleblower.models.Notifications;
-import in.org.whistleblower.models.NotificationsDao;
+import in.org.whistleblower.dao.NotificationsDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 
@@ -24,15 +24,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     AppCompatActivity mActivity;
     LayoutInflater inflater;
     List<Notifications> mNotificationsList;
-    NotificationsDao dao;
 
     public NotificationsAdapter(AppCompatActivity activity, List<Notifications> mNotificationsList)
     {
         mActivity = activity;
         this.mNotificationsList = mNotificationsList;
         inflater = LayoutInflater.from(mActivity);
-        dao = new NotificationsDao();
-
     }
 
     @Override
@@ -61,7 +58,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             @Override
             public void onClick(View v)
             {
-                dao.delete(notification.id);
+                NotificationsDao.delete(notification.id);
                 removeAt(position);
             }
         });

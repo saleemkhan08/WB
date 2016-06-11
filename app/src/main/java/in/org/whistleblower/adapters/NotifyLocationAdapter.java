@@ -16,7 +16,8 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.NotifyLocationFragment;
 import in.org.whistleblower.fragments.NotifyLocationListFragment;
 import in.org.whistleblower.models.NotifyLocation;
-import in.org.whistleblower.models.NotifyLocationDao;
+import in.org.whistleblower.dao.NotifyLocationDao;
+import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 
@@ -25,15 +26,11 @@ public class NotifyLocationAdapter extends RecyclerView.Adapter<NotifyLocationAd
     AppCompatActivity mActivity;
     LayoutInflater inflater;
     List<NotifyLocation> mNotifyLocationList;
-    NotifyLocationDao dao;
-
     public NotifyLocationAdapter(AppCompatActivity activity, List<NotifyLocation> mNotifyLocationList)
     {
         mActivity = activity;
         this.mNotifyLocationList = mNotifyLocationList;
         inflater = LayoutInflater.from(mActivity);
-        dao = new NotifyLocationDao();
-
     }
 
     @Override
@@ -48,10 +45,10 @@ public class NotifyLocationAdapter extends RecyclerView.Adapter<NotifyLocationAd
     {
         final NotifyLocation notifyLocation = mNotifyLocationList.get(position);
         holder.notifyAddress.setText(NotifyLocationFragment.getAddressLines(notifyLocation.message, 3));
-        holder.friendsName.setText(notifyLocation.name);
-        if(notifyLocation.photoUrl != null && !(notifyLocation.photoUrl.trim().isEmpty()))
+        holder.friendsName.setText(notifyLocation.receiverName);
+        if(notifyLocation.receiverPhotoUrl != null && !(notifyLocation.receiverPhotoUrl.trim().isEmpty()))
         {
-            ImageUtil.displayImage(mActivity,notifyLocation.photoUrl, holder.friendCardIcon,true);
+            ImageUtil.displayImage(mActivity,notifyLocation.receiverPhotoUrl, holder.friendCardIcon,true);
         }
         else
         {
@@ -62,7 +59,7 @@ public class NotifyLocationAdapter extends RecyclerView.Adapter<NotifyLocationAd
             @Override
             public void onClick(View v)
             {
-                dao.delete(notifyLocation.userEmail);
+                NotifyLocationDao.delete(notifyLocation.receiverEmail);
                 removeAt(position);
             }
         });
@@ -76,6 +73,9 @@ public class NotifyLocationAdapter extends RecyclerView.Adapter<NotifyLocationAd
         if (mNotifyLocationList.size() < 1)
         {
             Otto.post(NotifyLocationListFragment.NOTIFY_LOC_LIST_EMPTY_TEXT);
+        }else
+        {
+            Otto.post(LocationTrackingService.DELETE_NOTIFY_ARRIVAL_ALARM_NOTIFICATION);
         }
     }
 

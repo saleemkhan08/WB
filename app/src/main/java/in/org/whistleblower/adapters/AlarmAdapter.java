@@ -20,7 +20,7 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.LocationAlarmListFragment;
 import in.org.whistleblower.fragments.NotifyLocationFragment;
 import in.org.whistleblower.models.LocationAlarm;
-import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.dao.LocationAlarmDao;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
@@ -29,15 +29,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     AppCompatActivity mActivity;
     LayoutInflater inflater;
     List<LocationAlarm> mAlarmList;
-    LocationAlarmDao dao;
-
     public AlarmAdapter(AppCompatActivity activity, List<LocationAlarm> mAlarmList)
     {
         mActivity = activity;
         this.mAlarmList = mAlarmList;
         inflater = LayoutInflater.from(mActivity);
-        dao = new LocationAlarmDao();
-
     }
 
     @Override
@@ -68,7 +64,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             @Override
             public void onClick(View v)
             {
-                int status = dao.getAlarm(alarm.address).status;
+                int status = LocationAlarmDao.getAlarm(alarm.address).status;
                 if (status == LocationAlarm.ALARM_ON)
                 {
                     setAlarm(alarm, false);
@@ -87,7 +83,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             @Override
             public void onClick(View v)
             {
-                dao.delete(alarm.address);
+                LocationAlarmDao.delete(alarm.address);
                 removeAt(position);
             }
         });
@@ -98,13 +94,13 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         if(isSet)
         {
             Log.d("FlowLogs", "setAlarm");
-            dao.update(alarm.address, LocationAlarm.ALARM_ON);
+            LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_ON);
             toast("Alarm Set : \n" + alarm.address);
         }
         else
         {
             Log.d("FlowLogs", "resetAlarm");
-            dao.update(alarm.address, LocationAlarm.ALARM_OFF);
+            LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_OFF);
             toast("Alarm Turned off : \n" + alarm.address);
         }
 
@@ -136,6 +132,9 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         if (mAlarmList.size() < 1)
         {
             Otto.post(LocationAlarmListFragment.ALARM_LIST_EMPTY_TEXT);
+        }else
+        {
+            Otto.post(LocationTrackingService.DELETE_ALARM_NOTIFICATION);
         }
     }
 

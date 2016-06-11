@@ -17,6 +17,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.model.LatLng;
 
 public class LocationUtil implements ResultCallback<LocationSettingsResult>,GoogleApiClient.ConnectionCallbacks
 {
@@ -154,5 +155,10 @@ public class LocationUtil implements ResultCallback<LocationSettingsResult>,Goog
     public void onConnectionSuspended(int i)
     {
 
+    }
+
+    public static LatLng getLatLng(String lat, String lng)
+    {
+        return new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
     }
 }

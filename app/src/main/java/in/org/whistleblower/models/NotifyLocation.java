@@ -5,20 +5,24 @@ import android.os.Parcelable;
 
 public class NotifyLocation implements Parcelable
 {
-    public static final String EMAIL = "email";
     public static final String TABLE = "NotifyLocation";
-    public static final String NAME = "name";
-    public static final String USER_EMAIL = "UserEmail";
-    public static final String PHOTO_URL = "photoUrl";
+    public static final String SENDER_EMAIL = "senderEmail";
+    public static final String SENDER_NAME = "senderName";
+    public static final String SENDER_PHOTO_URL = "senderPhotoUrl";
+    public static final String RECEIVER_EMAIL = "receiverEmail";
+    public static final String RECEIVER_NAME = "receiverName";
+    public static final String RECEIVER_PHOTO_URL = "receiverPhotoUrl";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String MESSAGE = "message";
     public static final String RADIUS = "radius";
+    public static final String STATUS = "status";
+
 
     public static final String FRAGMENT_TAG = "FRAGMENT_TAG";
 
-    public String name, email, userEmail, latitude, longitude, photoUrl, message;
-    public int radius;
+    public String senderName, senderPhotoUrl, senderEmail, receiverName, receiverPhotoUrl, receiverEmail, latitude, longitude, message;
+    public int radius, status;
 
     @Override
     public int describeContents()
@@ -29,14 +33,17 @@ public class NotifyLocation implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeString(this.name);
-        dest.writeString(this.email);
-        dest.writeString(this.userEmail);
+        dest.writeString(this.senderName);
+        dest.writeString(this.senderPhotoUrl);
+        dest.writeString(this.senderEmail);
+        dest.writeString(this.receiverName);
+        dest.writeString(this.receiverPhotoUrl);
+        dest.writeString(this.receiverEmail);
         dest.writeString(this.latitude);
         dest.writeString(this.longitude);
-        dest.writeString(this.photoUrl);
         dest.writeString(this.message);
         dest.writeInt(this.radius);
+        dest.writeInt(this.status);
     }
 
     public NotifyLocation()
@@ -45,14 +52,17 @@ public class NotifyLocation implements Parcelable
 
     protected NotifyLocation(Parcel in)
     {
-        this.name = in.readString();
-        this.email = in.readString();
-        this.userEmail = in.readString();
+        this.senderName = in.readString();
+        this.senderPhotoUrl = in.readString();
+        this.senderEmail = in.readString();
+        this.receiverName = in.readString();
+        this.receiverPhotoUrl = in.readString();
+        this.receiverEmail = in.readString();
         this.latitude = in.readString();
         this.longitude = in.readString();
-        this.photoUrl = in.readString();
         this.message = in.readString();
         this.radius = in.readInt();
+        this.status = in.readInt();
     }
 
     public static final Parcelable.Creator<NotifyLocation> CREATOR = new Parcelable.Creator<NotifyLocation>()

@@ -1,10 +1,12 @@
-package in.org.whistleblower.models;
+package in.org.whistleblower.dao;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Log;
 
 import java.util.ArrayList;
+
+import in.org.whistleblower.models.Notifications;
 
 public class NotificationsDao
 {
@@ -19,15 +21,10 @@ public class NotificationsDao
             + Notifications.LONGITUDE + " VARCHAR(255), "
             + Notifications.STATUS + " INTEGER, "
             + Notifications.TIME_STAMP + " INTEGER )";
-    private WBDataBase mWBDataBase;
 
-    public NotificationsDao()
+    public static void insert(Notifications notification)
     {
-        mWBDataBase = new WBDataBase();
-    }
-
-    public void insert(Notifications notification)
-    {
+        WBDataBase mWBDataBase = new WBDataBase();
         if (null != notification)
         {
             ContentValues values = new ContentValues();
@@ -45,20 +42,25 @@ public class NotificationsDao
 
             Log.d("NotificationsDao", "insert : "+mWBDataBase.insert(Notifications.TABLE, values));
         }
+        mWBDataBase.closeDb();
     }
 
-    public void delete()
+    public static void delete()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.delete(Notifications.TABLE, null, null);
     }
 
-    public void delete(long id)
+    public static void delete(long id)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.delete(Notifications.TABLE, Notifications.ID + " = " + id, null);
+        mWBDataBase.closeDb();
     }
 
-    public ArrayList<Notifications> getAllNotifications()
+    public static ArrayList<Notifications> getAllNotifications()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<Notifications> NotificationsList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(Notifications.TABLE, null, null ,null, null, null);
         if (null != cursor)
@@ -80,11 +82,13 @@ public class NotificationsDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return NotificationsList;
     }
 
-    public ArrayList<Notifications> getUnreadList()
+    public static ArrayList<Notifications> getUnreadList()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<Notifications> NotificationsList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(Notifications.TABLE, null, Notifications.STATUS +" = "+Notifications.UNREAD, null, null, null);
         if (null != cursor)
@@ -106,13 +110,16 @@ public class NotificationsDao
             }
             cursor.close();
         }
+        mWBDataBase.closeDb();
         return NotificationsList;
     }
 
-    public void markRead(long id)
+    public static void markRead(long id)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(Notifications.STATUS, Notifications.READ);
         mWBDataBase.update(Notifications.TABLE, values, Notifications.ID + " = " + id, null);
+        mWBDataBase.closeDb();
     }
 }

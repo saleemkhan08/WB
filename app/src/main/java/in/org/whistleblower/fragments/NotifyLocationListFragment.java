@@ -22,10 +22,12 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.NotifyLocationAdapter;
 import in.org.whistleblower.models.NotifyLocation;
-import in.org.whistleblower.models.NotifyLocationDao;
+import in.org.whistleblower.dao.NotifyLocationDao;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class NotifyLocationListFragment extends DialogFragment
 {
@@ -54,7 +56,11 @@ public class NotifyLocationListFragment extends DialogFragment
         View parentView = inflater.inflate(R.layout.fragment_notify_location_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        ArrayList<NotifyLocation> mNotifyLocationList = new NotifyLocationDao().getList();
+
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
+        ArrayList<NotifyLocation> mNotifyLocationList = NotifyLocationDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mNotifyLocationList.size() < 1)
         {
@@ -64,6 +70,22 @@ public class NotifyLocationListFragment extends DialogFragment
         notifyLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
         return parentView;
     }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        Bundle bundle = getArguments();
+        if(bundle.containsKey(NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG))
+        {
+            //show receiving Tab
+        }
+        else
+        {
+            //show sending Tab
+        }
+    }
+
     @Subscribe
     public void showEmptyListString(String msg)
     {

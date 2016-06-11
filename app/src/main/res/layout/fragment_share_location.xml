@@ -22,8 +22,9 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/shareLocation"
-                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/dialogTitle"
                 android:textColor="@color/white"
+                android:textSize="@dimen/dialog_title"
                 android:textStyle="bold"
                 />
             <ImageView
@@ -46,10 +47,10 @@
 
             <TextView
                 android:id="@+id/continuously"
-                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:textSize="@dimen/dialog_sub_title"
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"
                 android:text="Real Time"
@@ -59,8 +60,8 @@
             <TextView
                 android:id="@+id/justOnce"
                 android:layout_width="0dp"
-                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:layout_height="match_parent"
+                android:textSize="@dimen/dialog_sub_title"
                 android:layout_weight="1"
                 android:background="@drawable/bg_drawable"
                 android:gravity="center"

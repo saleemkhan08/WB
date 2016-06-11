@@ -28,11 +28,12 @@ import butterknife.BindColor;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.CommonUserListAdapter;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.models.ShareLocation;
-import in.org.whistleblower.models.ShareLocationDao;
+import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
@@ -62,9 +63,6 @@ public class ShareLocationFragment extends DialogFragment
     private SharedPreferences preferences;
     private boolean isContinuouslyClicked = true;
 
-    Typeface normal = Typeface.defaultFromStyle(Typeface.NORMAL);
-    Typeface bold = Typeface.defaultFromStyle(Typeface.BOLD);
-
     public ShareLocationFragment()
     {
     }
@@ -81,8 +79,13 @@ public class ShareLocationFragment extends DialogFragment
         preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         shareLocationFriendList = (RecyclerView) parentView.findViewById(R.id.shareLocationFriendList);
         Otto.register(this);
-        AccountsDao dao = new AccountsDao();
-        mFriendList = dao.getFriendsList();
+        mFriendList = AccountsDao.getFriendsList();
+
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
+        continuously.setTypeface(WhistleBlower.getTypeface());
+        justOnce.setTypeface(WhistleBlower.getTypeface());
 
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);
         shareLocationFriendList.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -118,13 +121,12 @@ public class ShareLocationFragment extends DialogFragment
 
         if (isContinuouslyClicked)
         {
-            ShareLocationDao dao = new ShareLocationDao();
             intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
 
             location.name = account.name;
             location.photoUrl = account.photo_url;
 
-            dao.insert(location);
+            ShareLocationDao.insert(location);
             Log.d("shareLocation", "continuously : checked");
         }
         else
@@ -157,8 +159,8 @@ public class ShareLocationFragment extends DialogFragment
         justOnce.setTextColor(disabled);
         isContinuouslyClicked = true;
 
-        continuously.setTypeface(bold);
-        justOnce.setTypeface(normal);
+        continuously.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
+        justOnce.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
 
         TransitionManager.beginDelayedTransition(continuouslyHighlight, new Slide());
         continuouslyHighlight.setBackgroundColor(colorAccent);
@@ -172,8 +174,8 @@ public class ShareLocationFragment extends DialogFragment
         continuously.setTextColor(disabled);
         justOnce.setTextColor(enabled);
 
-        continuously.setTypeface(normal);
-        justOnce.setTypeface(bold);
+        continuously.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
+        justOnce.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
 
         TransitionManager.beginDelayedTransition(justOnceHighlight, new Slide());
         continuouslyHighlight.setBackgroundColor(transparent);

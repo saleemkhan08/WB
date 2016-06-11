@@ -8,9 +8,12 @@ import android.net.NetworkInfo;
 
 import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.services.GetNotificationIntentService;
+import in.org.whistleblower.singletons.Otto;
 
 public class InternetConnectivityListener extends BroadcastReceiver
 {
+    public static final String INTERNET_CONNECTED = "INTERNET_CONNECTED";
+
     public InternetConnectivityListener()
     {
     }
@@ -28,6 +31,8 @@ public class InternetConnectivityListener extends BroadcastReceiver
 
                 Intent getNotificationsService = new Intent(context, GetNotificationIntentService.class);
                 context.startService(getNotificationsService);
+
+                Otto.post(INTERNET_CONNECTED);
             }
         }
     }

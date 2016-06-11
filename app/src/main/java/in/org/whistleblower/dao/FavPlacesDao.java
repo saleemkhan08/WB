@@ -1,9 +1,11 @@
-package in.org.whistleblower.models;
+package in.org.whistleblower.dao;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
 import java.util.ArrayList;
+
+import in.org.whistleblower.models.FavPlaces;
 
 public class FavPlacesDao
 {
@@ -28,15 +30,9 @@ public class FavPlacesDao
     private static final float OFFSET_LAT = 0.008983f;
     private static final float OFFSET_LNG = 0.015060f;
 
-    WBDataBase mWBDataBase;
-
-    public FavPlacesDao()
+    public static String insert(FavPlaces favPlaces)
     {
-        mWBDataBase = new WBDataBase();
-    }
-
-    public String insert(FavPlaces favPlaces)
-    {
+        WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(FavPlacesDao.ADDRESS_LINE, favPlaces.addressLine);
         values.put(FavPlacesDao.PLACE_TYPE_INDEX, favPlaces.placeTypeIndex);
@@ -49,28 +45,35 @@ public class FavPlacesDao
         {
             return "Couldn't Add \""+favPlaces.addressLine+"\" to Favorite Places";
         }
+        mWBDataBase.closeDb();
         return ADD_SUCCESS_MSG;
     }
 
-    public void delete()
+    public static void delete()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.delete(TABLE, null, null);
     }
 
-    public void delete(String address)
+    public static void delete(String address)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         String whereClause = ADDRESS_LINE+" = ?";
         String whereArgs[] = {address};
         mWBDataBase.delete(TABLE, whereClause, whereArgs);
+        mWBDataBase.closeDb();
     }
 
-    public void update(ContentValues cv, String whereClause)
+    public static void update(ContentValues cv, String whereClause)
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         mWBDataBase.update(TABLE, cv, whereClause, null);
+        mWBDataBase.closeDb();
     }
 
-    public ArrayList<FavPlaces> getFavPlacesList()
+    public static ArrayList<FavPlaces> getList()
     {
+        WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<FavPlaces> favPlacesArrayList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(FavPlacesDao.TABLE, null, null, null, null, null);
         if (null != cursor)
@@ -92,25 +95,6 @@ public class FavPlacesDao
         }
         mWBDataBase.closeDb();
         return favPlacesArrayList;
-    }
-
-    public boolean favPlaceExists(float longitude, float latitude)
-    {
-        String query = "SELECT * FROM " + TABLE + " WHERE " +
-                LONGITUDE + " < " + (longitude + OFFSET_LNG) + " AND " + LONGITUDE + " > " + (longitude - OFFSET_LNG) +
-                " AND " +
-                LATITUDE + " < " + (latitude + OFFSET_LAT) + " AND " + LATITUDE + " > " + (latitude - OFFSET_LAT);
-        Cursor cursor = mWBDataBase.query(query);
-        if (null != cursor)
-        {
-            if (cursor.getCount() <= 0)
-            {
-                cursor.close();
-                return false;
-            }
-            cursor.close();
-        }
-        return true;
     }
 
     public static float distFrom(float lat1, float lng1, float lat2, float lng2)

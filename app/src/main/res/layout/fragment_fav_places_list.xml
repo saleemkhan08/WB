@@ -16,8 +16,9 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/favoritePlaces"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/dialog_title"
             android:textColor="@color/white"
+            android:id="@+id/dialogTitle"
             android:textStyle="bold"
             />
         <ImageView

@@ -16,4 +16,7 @@
     <dimen name="crop__bar_height">56dp</dimen>
     <dimen name="rippleStrokeWidth">2dp</dimen>
     <dimen name="rippleRadius">64dp</dimen>
+    <dimen name="toolbar_title">35sp</dimen>
+    <dimen name="dialog_title">30sp</dimen>
+    <dimen name="dialog_sub_title">25sp</dimen>
 </resources>

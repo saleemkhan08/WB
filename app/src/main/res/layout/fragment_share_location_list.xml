@@ -19,9 +19,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-
+            android:id="@+id/dialogTitle"
             android:text="Sharing Location"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/dialog_title"
             android:textColor="@color/white"
             android:textStyle="bold"
             />

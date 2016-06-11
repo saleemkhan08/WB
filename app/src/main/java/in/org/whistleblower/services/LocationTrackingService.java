@@ -1,15 +1,12 @@
 package in.org.whistleblower.services;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -27,20 +24,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.whistleblower.AlarmActivity;
-import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.dao.LocationAlarmDao;
+import in.org.whistleblower.dao.NotifyLocationDao;
+import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.fragments.NotifyLocationFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.interfaces.SettingsResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.LocationAlarm;
-import in.org.whistleblower.models.LocationAlarmDao;
+import in.org.whistleblower.models.NotificationData;
 import in.org.whistleblower.models.NotifyLocation;
-import in.org.whistleblower.models.NotifyLocationDao;
 import in.org.whistleblower.models.ShareLocation;
-import in.org.whistleblower.models.ShareLocationDao;
+import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
@@ -51,18 +49,18 @@ import in.org.whistleblower.utilities.VolleyUtil;
 public class LocationTrackingService extends Service implements LocationListener,
         GoogleApiClient.ConnectionCallbacks
 {
-    public static final String KEY_LATLNG = "KEY_LATLNG";
-    public static final String KEY_PLACE_NAME = "KEY_PLACE_NAME";
     public static final String KEY_SHARE_LOCATION_REAL_TIME = "shareInRealTime";
     public static final String KEY_SHARE_LOCATION = "shareCurrentLocation";
-    public static final String KEY_NOTIFY_ARRIVAL = "isNotifyArrival";
-    public static final String STOP_LOCATION_SHARE = "stopLocationShare";
-    private static final int NOTIFICATION_ID = 9090;
+    public static final String KEY_NOTIFY_ARRIVAL = "notifyArrival";
     public static final String STOP_SERVICE = "stopService";
     public static final String FORCE_STOP = "forceStop";
     public static final String TURN_ON_LOCATION_SETTINGS = "turnOnLocationSettings";
     private static final int SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID = 9091;
-    public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
+    public static final String DELETE_SHARE_LOCATION_NOTIFICATION = "DELETE_SHARE_LOCATION_NOTIFICATION";
+    public static final String DELETE_ALARM_NOTIFICATION = "DELETE_ALARM_NOTIFICATION";
+    public static final String DELETE_NOTIFY_ARRIVAL_ALARM_NOTIFICATION = "DELETE_NOTIFY_ARRIVAL_ALARM_NOTIFICATION";
+    private static final String TAG = "LocationTrackingService";
+
     boolean isAlarmSet;
     boolean isNotifyArrival;
     boolean isShareLocation;
@@ -79,13 +77,12 @@ public class LocationTrackingService extends Service implements LocationListener
     public static final String KEY_ALARM_SET = "KEY_ALARM_SET";
     public static final String KEY_LOCATION_UPDATE_FREQ = "updateFreq";
     private boolean mStartLocationUpdates;
-    Location mCurrentLocation;
-    private NotifyLocation notifyLocation;
+    LatLng mCurrentLatLng;
     private ShareLocation shareLocation;
 
     public LocationTrackingService()
     {
-        Log.d("FlowLogs", "Service : Constructor");
+        Log.d(TAG, "Service : Constructor");
     }
 
     NotificationManager mNotificationManager;
@@ -94,7 +91,7 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public IBinder onBind(Intent intent)
     {
-        Log.d("FlowLogs", "Service : onBind");
+        Log.d(TAG, "Service : onBind");
         return null;
     }
 
@@ -107,7 +104,7 @@ public class LocationTrackingService extends Service implements LocationListener
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
-        Log.d("FlowLogs", "Service : onCreate");
+        Log.d(TAG, "Service : onCreate");
     }
 
     @Override
@@ -115,7 +112,7 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         if (intent == null)
         {
-            Log.d("FlowLogs", "Service : onStartCommand");
+            Log.d(TAG, "onStartCommand");
             if (!isStopServiceConditionMet())
             {
                 if (!isTravellingMode && PermissionUtil.isLocationPermissionAvailable() && !PermissionUtil.isLocationSettingsOn())
@@ -157,17 +154,27 @@ public class LocationTrackingService extends Service implements LocationListener
         {
             if (intent.hasExtra(KEY_SHARE_LOCATION_REAL_TIME))
             {
+                Log.d(TAG, "KEY_SHARE_LOCATION_REAL_TIME");
                 preferences.edit().putBoolean(KEY_SHARE_LOCATION_REAL_TIME, true).commit();
-                updateNotification();
+                communicator(DELETE_SHARE_LOCATION_NOTIFICATION);
             }
             else if (intent.hasExtra(KEY_SHARE_LOCATION))
             {
+                Log.d(TAG, "KEY_SHARE_LOCATION");
                 shareLocation = intent.getParcelableExtra(ShareLocation.LOCATION);
                 preferences.edit().putBoolean(KEY_SHARE_LOCATION, true).commit();
             }
             else if (intent.hasExtra(KEY_ALARM_SET))
             {
+                Log.d(TAG, "KEY_ALARM_SET");
                 preferences.edit().putBoolean(KEY_ALARM_SET, true).commit();
+                communicator(DELETE_ALARM_NOTIFICATION);
+            }
+            else if (intent.hasExtra(KEY_NOTIFY_ARRIVAL))
+            {
+                Log.d(TAG, "KEY_NOTIFY_ARRIVAL");
+                preferences.edit().putBoolean(KEY_NOTIFY_ARRIVAL, true).commit();
+                communicator(DELETE_NOTIFY_ARRIVAL_ALARM_NOTIFICATION);
             }
         }
 
@@ -201,10 +208,10 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void startLocationUpdates()
     {
-        Log.d("FlowLogs", "Service : startLocationUpdates");
+        Log.d(TAG, "startLocationUpdates");
         if (mGoogleApiClient.isConnected())
         {
-            int interval = Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000"));
+            int interval = Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "500"));
             mLocationRequest.setInterval(interval);
             mLocationRequest.setFastestInterval(interval);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
@@ -215,42 +222,13 @@ public class LocationTrackingService extends Service implements LocationListener
         }
     }
 
-    public void shareNotifyLocation(Map<String, String> data)
-    {
-        switch (data.get(VolleyUtil.KEY_ACTION))
-        {
-            case KEY_SHARE_LOCATION_REAL_TIME:
-                break;
-            case KEY_SHARE_LOCATION:
-                break;
-            case KEY_NOTIFY_ARRIVAL:
-                break;
-        }
-    }
-
-    void sendDataToServer(Map<String, String> data)
-    {
-        VolleyUtil.sendPostData(data, new ResultListener<String>()
-        {
-            @Override
-            public void onSuccess(String result)
-            {
-
-            }
-
-            @Override
-            public void onError(VolleyError error)
-            {
-
-            }
-        });
-    }
-
     private void stopLocationUpdates()
     {
-        Log.d("FlowLogs", "Service : stopLocationUpdates");
-
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        Log.d(TAG, "stopLocationUpdates");
+        if (mGoogleApiClient.isConnected())
+        {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
         mStartLocationUpdates = false;
     }
 
@@ -269,26 +247,28 @@ public class LocationTrackingService extends Service implements LocationListener
             case TURN_ON_LOCATION_SETTINGS:
                 turnOnLocationSettings();
                 break;
-            case UPDATE_NOTIFICATION:
-                updateNotification();
+            case DELETE_ALARM_NOTIFICATION:
+                triggerAlarm(mCurrentLatLng);
+                break;
+            case DELETE_SHARE_LOCATION_NOTIFICATION:
+                shareRealTimeLocation(mCurrentLatLng);
+                break;
+            case DELETE_NOTIFY_ARRIVAL_ALARM_NOTIFICATION:
+                notifyLocation(mCurrentLatLng);
                 break;
         }
     }
 
-    private void updateNotification()
+    private LatLng getLatLng(Location mCurrentLocation)
     {
-        WhistleBlower.toast("updateNotification : UPDATE_NOTIFICATION");
-        if (mCurrentLocation != null)
-        {
-            shareRealTimeLocation(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
-        }
+        return new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
     }
 
     @Override
     public void onDestroy()
     {
         super.onDestroy();
-        Log.d("FlowLogs", "Service : onDestroy");
+        Log.d(TAG, "Service : onDestroy");
         Otto.unregister(this);
         stopLocationUpdates();
     }
@@ -312,8 +292,8 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         MiscUtil.log("createLocationRequest");
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "30000")));
-        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setInterval(Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "500")));
+        mLocationRequest.setFastestInterval(500);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -329,7 +309,7 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onConnected(Bundle bundle)
     {
-        Log.d("FlowLogs", "Service  : onConnected : mStartLocationUpdates : " + mStartLocationUpdates);
+        Log.d(TAG, "Service  : onConnected : mStartLocationUpdates : " + mStartLocationUpdates);
 
         if (mStartLocationUpdates)
         {
@@ -340,26 +320,17 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public void onConnectionSuspended(int i)
     {
-        Log.d("FlowLogs", "Service  : onConnectionSuspended");
-
+        Log.d(TAG, "Service  : onConnectionSuspended");
         stopLocationUpdates();
-    }
-
-    public Location getCurrentLocation()
-    {
-        Log.d("FlowLogs", "Service  : getCurrentLocation");
-        return mCurrentLocation;
     }
 
     @Override
     public void onLocationChanged(Location location)
     {
-        mCurrentLocation = location;
+        Log.d(TAG, "onLocationChanged");
+        mCurrentLatLng = getLatLng(location);
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-        Log.d("showMyLocOnMap", "");
         Otto.post(location);
-
         if (preferences.getBoolean(KEY_ALARM_SET, false))
         {
             triggerAlarm(currentLatLng);
@@ -381,111 +352,143 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void notifyLocation(LatLng latLng)
     {
-        NotifyLocationDao dao = new NotifyLocationDao();
-        ArrayList<NotifyLocation> notifyLocations = dao.getList();
-
-        for (NotifyLocation location : notifyLocations)
+        Log.d(TAG, "notifyLocation");
+        ArrayList<NotifyLocation> notifyLocations = NotifyLocationDao.getList();
+        int size = notifyLocations.size();
+        if (size > 0)
         {
-            double notifyLat = Double.parseDouble(location.latitude);
-            double notifyLng = Double.parseDouble(location.longitude);
-
-            double distance = MapFragment.distFrom(latLng.latitude, latLng.longitude, notifyLat, notifyLng);
-
-            if (distance < location.radius)
+            if (latLng != null)
             {
-                Map<String, String> data = new HashMap<>();
-                data.put(NotifyLocation.EMAIL, location.email);
-                data.put(NotifyLocation.USER_EMAIL, location.userEmail);
-                data.put(NotifyLocation.PHOTO_URL, location.photoUrl);
-                data.put(NotifyLocation.NAME, location.name);
-                data.put(NotifyLocation.LONGITUDE, location.longitude);
-                data.put(NotifyLocation.LATITUDE, location.latitude);
-                data.put(NotifyLocation.MESSAGE, location.message);
-                data.put(NotifyLocation.RADIUS, "" + location.radius);
-                data.put(VolleyUtil.KEY_ACTION, KEY_NOTIFY_ARRIVAL);
-
-                VolleyUtil.sendPostData(data, new ResultListener<String>()
+                String notificationMessage = "";
+                for (NotifyLocation location : notifyLocations)
                 {
-                    @Override
-                    public void onSuccess(String result)
-                    {
-                        Log.d("NotifyLocation", result);
-                    }
+                    double notifyLat = Double.parseDouble(location.latitude);
+                    double notifyLng = Double.parseDouble(location.longitude);
 
-                    @Override
-                    public void onError(VolleyError error)
+                    double distance = MapFragment.distFrom(latLng.latitude, latLng.longitude, notifyLat, notifyLng);
+                    notificationMessage += location.receiverName + ", ";
+                    if (distance < location.radius)
                     {
-                        Log.d("NotifyLocation", error.getMessage());
+                        Map<String, String> data = new HashMap<>();
+                        data.put(NotifyLocation.SENDER_NAME, location.senderEmail);
+                        data.put(NotifyLocation.SENDER_NAME, location.senderName);
+                        data.put(NotifyLocation.SENDER_PHOTO_URL, location.senderPhotoUrl);
+                        data.put(NotifyLocation.RECEIVER_EMAIL, location.receiverEmail);
+                        data.put(NotifyLocation.LONGITUDE, location.longitude);
+                        data.put(NotifyLocation.LATITUDE, location.latitude);
+                        data.put(NotifyLocation.MESSAGE, location.message);
+                        data.put(NotifyLocation.RADIUS, "" + location.radius);
+                        data.put(NotifyLocation.STATUS, "" + location.status);
+                        data.put(VolleyUtil.KEY_ACTION, KEY_NOTIFY_ARRIVAL);
+
+                        VolleyUtil.sendPostData(data, new ResultListener<String>()
+                        {
+                            @Override
+                            public void onSuccess(String result)
+                            {
+                                Log.d("NotifyLocation", result);
+                            }
+
+                            @Override
+                            public void onError(VolleyError error)
+                            {
+                                Log.d("NotifyLocation", error.getMessage());
+                            }
+                        });
                     }
-                });
+                }
+                Log.d(TAG, "notificationMessage : "+notificationMessage );
+                if(notificationMessage.length() > 2)
+                {
+                    NotificationData notificationData = new NotificationData();
+                    notificationData.contentIntentTag = NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG;
+                    notificationData.contentTitle = "Notifying Location To:";
+                    notificationData.contentText = notificationMessage.substring(0, notificationMessage.length() - 2);
+                    notificationData.onGoing = true;
+                    notificationData.notificationId = NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID;
+                    NotificationsUtil.showNotification(notificationData);
+                }
             }
+            else
+            {
+                NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID);
+            }
+        }
+        else
+        {
+            preferences.edit().putBoolean(KEY_NOTIFY_ARRIVAL, false).commit();
+            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID);
+            stopService();
         }
     }
 
     private void shareRealTimeLocation(LatLng latLng)
     {
-        ShareLocationDao dao = new ShareLocationDao();
-        ArrayList<ShareLocation> shareLocations = dao.getList();
+        Log.d(TAG, "shareRealTimeLocation");
+        ArrayList<ShareLocation> shareLocations = ShareLocationDao.getList();
 
         if (shareLocations.size() > 0)
         {
-            String message = "";
-            for (ShareLocation location : shareLocations)
+            if (latLng != null)
             {
-                Map<String, String> data = new HashMap<>();
-
-                data.put(ShareLocation.EMAIL, preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com"));
-                data.put(ShareLocation.PHOTO_URL, preferences.getString(Accounts.PHOTO_URL, ""));
-                data.put(ShareLocation.NAME, preferences.getString(ShareLocation.NAME, "Saleem"));
-
-                data.put(ShareLocation.USER_EMAIL, location.userEmail);
-
-                data.put(ShareLocation.LONGITUDE, "" + latLng.longitude);
-                data.put(ShareLocation.LATITUDE, "" + latLng.latitude);
-
-                data.put(VolleyUtil.KEY_ACTION, KEY_SHARE_LOCATION_REAL_TIME);
-                message += location.name + ", ";
-                VolleyUtil.sendPostData(data, new ResultListener<String>()
+                String message = "";
+                for (ShareLocation location : shareLocations)
                 {
-                    @Override
-                    public void onSuccess(String result)
-                    {
-                        Log.d("RealTime", result);
-                    }
+                    Map<String, String> data = new HashMap<>();
 
-                    @Override
-                    public void onError(VolleyError error)
+                    data.put(ShareLocation.EMAIL, preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com"));
+                    data.put(ShareLocation.PHOTO_URL, preferences.getString(Accounts.PHOTO_URL, ""));
+                    data.put(ShareLocation.NAME, preferences.getString(ShareLocation.NAME, "Saleem"));
+
+                    data.put(ShareLocation.USER_EMAIL, location.userEmail);
+
+                    data.put(ShareLocation.LONGITUDE, "" + latLng.longitude);
+                    data.put(ShareLocation.LATITUDE, "" + latLng.latitude);
+
+                    data.put(VolleyUtil.KEY_ACTION, KEY_SHARE_LOCATION_REAL_TIME);
+                    message += location.name + ", ";
+                    VolleyUtil.sendPostData(data, new ResultListener<String>()
                     {
-                        Log.d("RealTime", "Error : " + error.getMessage());
-                    }
-                });
+                        @Override
+                        public void onSuccess(String result)
+                        {
+                            Log.d("RealTime", result);
+                        }
+
+                        @Override
+                        public void onError(VolleyError error)
+                        {
+                            Log.d("RealTime", "Error : " + error.getMessage());
+                        }
+                    });
+                }
+                message = message.substring(0, message.length() - 2);
+
+                NotificationData data = new NotificationData();
+                data.contentIntentTag = NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG;
+                data.contentText = message;
+                data.contentTitle = "Sharing Location To:";
+                data.onGoing = true;
+                data.notificationId = NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID;
+                NotificationsUtil.showNotification(data);
             }
-            message = message.substring(0, message.length() - 2);
-
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(NavigationUtil.DIALOG_FRAGMENT_TAG, NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
-
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
-            mBuilder.setContentTitle("Sharing Location To:")
-                    .setSmallIcon(R.drawable.bullhorn_white)
-                    .setAutoCancel(false)
-                    .setOngoing(true)
-                    .setContentText(message)
-                    .setContentIntent(pendingIntent);
-
-            mNotificationManager.notify(SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID, mBuilder.build());
+            else
+            {
+                NotificationsUtil.removeNotification(NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
+            }
         }
         else
         {
             preferences.edit().putBoolean(KEY_SHARE_LOCATION_REAL_TIME, false).commit();
+            NotificationsUtil.removeNotification(NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
+            stopService();
         }
     }
 
     private void shareLocation(LatLng latLng)
     {
-        if (shareLocation != null)
+        Log.d(TAG, "shareLocation");
+        if (shareLocation != null && latLng != null)
         {
             Map<String, String> data = new HashMap<>();
             data.put(ShareLocation.EMAIL, shareLocation.email);
@@ -516,63 +519,83 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void triggerAlarm(LatLng latLng)
     {
-        LocationAlarmDao dao = new LocationAlarmDao();
-        ArrayList<LocationAlarm> alarms = dao.getList();
+        Log.d(TAG, "triggerAlarm");
+        ArrayList<LocationAlarm> alarms = LocationAlarmDao.getList();
         boolean allAlarmsStatus = false;
         String locations = "No Alarms Set...";
         int noOfLocations = 0;
-        for (LocationAlarm alarm : alarms)
+        if (alarms.size() > 0)
         {
-            if (alarm.status == LocationAlarm.ALARM_ON)
+            for (LocationAlarm alarm : alarms)
             {
-                double alarmLat = Double.parseDouble(alarm.latitude);
-                double alarmLng = Double.parseDouble(alarm.longitude);
-
-                double distance = MapFragment.distFrom(latLng.latitude, latLng.longitude, alarmLat, alarmLng);
-
-                Log.d("triggerAlarm", "triggerAlarm  distance : " + distance);
-                boolean currentAlarm = true;
-                if (distance < alarm.radius)
+                if (alarm.status == LocationAlarm.ALARM_ON)
                 {
-                    Intent intent = new Intent(this, AlarmActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(LocationAlarm.ALARM, alarm);
-                    startActivity(intent);
-                    currentAlarm = false;
-                    dao.update(alarm.address, LocationAlarm.ALARM_OFF);
-                }
-                else
-                {
-                    noOfLocations++;
-                    if (noOfLocations > 1)
+                    double alarmLat = Double.parseDouble(alarm.latitude);
+                    double alarmLng = Double.parseDouble(alarm.longitude);
+
+                    double distance = (latLng != null) ? MapFragment.distFrom(latLng.latitude, latLng.longitude, alarmLat, alarmLng)
+                            : 1000000;
+
+                    Log.d("triggerAlarm", "triggerAlarm  distance : " + distance);
+                    boolean currentAlarm = true;
+                    if (distance < alarm.radius)
                     {
-                        locations = "Click here to view the list...";
+                        Intent intent = new Intent(this, AlarmActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra(LocationAlarm.ALARM, alarm);
+                        startActivity(intent);
+                        currentAlarm = false;
+                        LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_OFF);
                     }
                     else
                     {
-                        locations = NotifyLocationFragment.getAddressLines(alarm.address, 3);
+                        noOfLocations++;
+                        if (noOfLocations > 1)
+                        {
+                            locations = "Click here to view the list...";
+                        }
+                        else
+                        {
+                            locations = NotifyLocationFragment.getAddressLines(alarm.address, 3);
+                        }
                     }
+                    allAlarmsStatus = currentAlarm;
                 }
-                allAlarmsStatus = currentAlarm;
             }
         }
+
         if (!allAlarmsStatus)
         {
             preferences.edit().putBoolean(KEY_ALARM_SET, false).apply();
+            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_ALARMS);
+            stopService();
         }
         else
         {
-            NotificationsUtil.showAlarmNotification(this, locations, noOfLocations);
+            NotificationData data = new NotificationData();
+
+            data.actionIntentText = (noOfLocations > 1) ? "Turn Off All Alarms" : "Turn Off Alarm";
+            data.actionIntentIcon = R.mipmap.bell_cross_accent;
+            data.actionIntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
+
+            data.contentIntentTag = NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG;
+            data.contentText = locations;
+            data.contentTitle = "Location Alarm";
+            data.onGoing = true;
+            data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_ALARMS;
+
+            NotificationsUtil.showAlarmNotification(locations, noOfLocations);
         }
     }
 
     public void stopService()
     {
+        Log.d(TAG, "stopService");
         if (isStopServiceConditionMet())
         {
             stopLocationUpdates();
             stopSelf();
-            Log.d("FlowLogs", "Service  : stopSelf");
+            Log.d(TAG, "stopSelf");
         }
     }
 
@@ -589,15 +612,15 @@ public class LocationTrackingService extends Service implements LocationListener
                 mNotificationManager.cancel(SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
             }
         }
-        Log.d("FlowLogs", "Service  : isAlarmSet " + isAlarmSet + ", isNotifyArrival " + isNotifyArrival + ", shareLocation " + isShareLocation + ", isTravellingMode :" + isTravellingMode);
+        Log.d(TAG, "Service  : isAlarmSet " + isAlarmSet + ", isNotifyArrival " + isNotifyArrival + ", shareLocation " + isShareLocation + ", isTravellingMode :" + isTravellingMode);
         if (!isAlarmSet && !isNotifyArrival && !isShareLocation && !isTravellingMode)
         {
-            Log.d("FlowLogs", "isStopServiceConditionMet  : true");
+            Log.d(TAG, "isStopServiceConditionMet  : true");
             return true;
         }
         else
         {
-            Log.d("FlowLogs", "isStopServiceConditionMet  : false");
+            Log.d(TAG, "isStopServiceConditionMet  : false");
             return false;
         }
     }

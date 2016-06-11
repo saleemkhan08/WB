@@ -39,7 +39,7 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.CommonUserListAdapter;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.VolleyUtil;
 
@@ -72,8 +72,6 @@ public class UserListFragment extends DialogFragment
     String currentUserMail;
     SharedPreferences preferences;
     CommonUserListAdapter mAdapter;
-    AccountsDao dao;
-
     public UserListFragment()
     {
     }
@@ -88,7 +86,10 @@ public class UserListFragment extends DialogFragment
         View parentView = inflater.inflate(R.layout.fragment_add_friend, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
-        dao = new AccountsDao();
+
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
         mActivity = (AppCompatActivity) getActivity();
         mSearchTask = new SearchTask();
         mSearchTask.execute("");
@@ -288,7 +289,7 @@ public class UserListFragment extends DialogFragment
             {
                 Log.d("addFriend", "Result : " + result);
                 account.relation = Accounts.FRIEND;
-                dao.insert(account);
+                AccountsDao.insert(account);
                 WhistleBlower.toast("Added : " + account.name);
                 mAdapter.remove(account);
                 hideProgressFab();

@@ -27,7 +27,7 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -133,7 +133,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
                     Log.d("removeFriend", "removeFriend result : " + result);
                     if (result.equals("1"))
                     {
-                        new AccountsDao().update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
+                        AccountsDao.update(account.email, Accounts.RELATION, Accounts.NOT_A_FRIEND);
                         account.relation = Accounts.NOT_A_FRIEND;
                         removeAt(position);
                     }

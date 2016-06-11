@@ -22,7 +22,7 @@ import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.fragments.FavoritePlacesFragment;
 import in.org.whistleblower.models.FavPlaces;
-import in.org.whistleblower.models.FavPlacesDao;
+import in.org.whistleblower.dao.FavPlacesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.MiscUtil;
 
@@ -57,16 +57,16 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     @Override
     public void onBindViewHolder(PlaceViewHolder holder, final int position)
     {
-        final FavPlaces address = mAddressList.get(position);
-        holder.addressLine.setText(address.addressLine);
-        holder.placeTypeName.setText(address.placeType);
-        holder.placeTypeImg.setImageResource(getDrawableResId(address.placeTypeIndex));
+        final FavPlaces favPlace = mAddressList.get(position);
+        holder.addressLine.setText(favPlace.addressLine);
+        holder.placeTypeName.setText(favPlace.placeType);
+        holder.placeTypeImg.setImageResource(getDrawableResId(favPlace.placeTypeIndex));
         holder.item.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                Otto.post(address);
+                Otto.post(favPlace);
             }
         });
 
@@ -91,9 +91,9 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
                                 notifyLoc();
                                 break;
                             case R.id.deleteFavPlace:
-                                new FavPlacesDao().delete(address.addressLine);
+                                FavPlacesDao.delete(favPlace.addressLine);
                                 removeAt(position);
-                                Toast.makeText(mActivity, "Deleted : " + address.placeType, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mActivity, "Deleted : " + favPlace.placeType, Toast.LENGTH_SHORT).show();
                                 break;
 
                         }

@@ -16,10 +16,9 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.R;
-import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.fragments.ShareLocationListFragment;
 import in.org.whistleblower.models.ShareLocation;
-import in.org.whistleblower.models.ShareLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
@@ -71,8 +70,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             @Override
             public void onClick(View v)
             {
-                ShareLocationDao dao = new ShareLocationDao();
-                dao.delete(shareLocation.userEmail);
+                ShareLocationDao.delete(shareLocation.userEmail);
                 removeAt(position);
             }
         });
@@ -121,8 +119,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             }
             else
             {
-                WhistleBlower.toast("Adapter : UPDATE_NOTIFICATION");
-                Otto.post(LocationTrackingService.UPDATE_NOTIFICATION);
+                Otto.post(LocationTrackingService.DELETE_SHARE_LOCATION_NOTIFICATION);
             }
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, size);

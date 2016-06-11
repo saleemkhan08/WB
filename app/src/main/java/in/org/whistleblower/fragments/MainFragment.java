@@ -29,7 +29,7 @@ import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.IssueAdapter;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
@@ -123,7 +123,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         protected Void doInBackground(Void... params)
         {
             MiscUtil.log("LocalDataTask : doInBackground");
-            issuesList = new IssuesDao().getIssuesList();
+            issuesList = IssuesDao.getList();
             return null;
         }
 
@@ -166,8 +166,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
                     if (array != null)
                     {
-                        IssuesDao issueDao = new IssuesDao();
-                        issueDao.delete();//TODO Find a better Logic to do this
+                        IssuesDao.delete();//TODO Find a better Logic to do this
                         issuesList = new ArrayList<>();
                         int totalNoOfIssues = array.length();
                         for (int issueIndex = 0; issueIndex < totalNoOfIssues; issueIndex++)
@@ -185,7 +184,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                             issue.latitude = json.getDouble(IssuesDao.LATITUDE) + "";
                             issue.longitude = json.getDouble(IssuesDao.LONGITUDE) + "";
                             issuesList.add(issue);
-                            issueDao.insert(issue);
+                            IssuesDao.insert(issue);
                         }
                     }
                 }

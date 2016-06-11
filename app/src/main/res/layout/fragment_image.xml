@@ -19,18 +19,30 @@
         />
 
     <TextView
-        android:id="@+id/fragmentDesc"
+        android:id="@+id/fragmentTitle"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
-        android:gravity="top"
-        android:text="Description"
+        android:layout_weight="1.25"
+        android:text="Title"
         android:textStyle="bold"
+        android:gravity="top"
         android:textSize="40sp"
         android:textAppearance="?android:textAppearanceLarge"
         android:textAlignment="center"
         android:textColor="#ffffff"
         />
 
-
+    <TextView
+        android:id="@+id/fragmentDesc"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".75"
+        android:gravity="top"
+        android:text="Description"
+        android:textStyle="bold"
+        android:textSize="25sp"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:textAlignment="center"
+        android:textColor="#ffffff"
+        />
 </LinearLayout>

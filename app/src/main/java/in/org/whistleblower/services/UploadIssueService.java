@@ -27,7 +27,7 @@ import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.utilities.AndroidMultiPartEntity;
 import in.org.whistleblower.receivers.StopRetryReceiver;

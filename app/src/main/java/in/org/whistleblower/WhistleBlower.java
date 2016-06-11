@@ -2,6 +2,7 @@ package in.org.whistleblower;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
@@ -11,15 +12,16 @@ import in.org.whistleblower.modules.MiscModule;
 
 public class WhistleBlower extends android.app.Application
 {
-    private static WhistleBlower sInstance;
-    public static Context context;
+    private static Context context;
+    private static Typeface typeface;
     @Override
     public void onCreate()
     {
         super.onCreate();
-        sInstance = this;
         context = this.getApplicationContext();
+        typeface = Typeface.createFromAsset(getAssets(), "Gabriola.ttf");
     }
+
 
     public static AppComponent getComponent()
     {
@@ -40,7 +42,12 @@ public class WhistleBlower extends android.app.Application
     }
     public static Context getAppContext()
     {
-        return sInstance.getApplicationContext();
+        return context;
+    }
+
+    public static Typeface getTypeface()
+    {
+        return typeface;
     }
 }
 

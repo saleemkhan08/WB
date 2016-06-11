@@ -20,10 +20,12 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.ShareLocationListAdapter;
 import in.org.whistleblower.models.ShareLocation;
-import in.org.whistleblower.models.ShareLocationDao;
+import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.NavigationUtil;
 
 public class ShareLocationListFragment extends android.support.v4.app.DialogFragment
 {
@@ -52,7 +54,10 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         ButterKnife.bind(this, parentView);
         Otto.register(this);
 
-        ArrayList<ShareLocation> mShareLocationList = new ShareLocationDao().getList();
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
+
+        ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mShareLocationList.size() < 1)
         {
@@ -62,6 +67,22 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         shareLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
         return parentView;
     }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        Bundle bundle = getArguments();
+        if(bundle.containsKey(NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG))
+        {
+            //show receiving Tab
+        }
+        else
+        {
+            //show sending Tab
+        }
+    }
+
     @Subscribe
     public void showEmptyListString(String msg)
     {
@@ -71,6 +92,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
             emptyListTextView.setText(locationIsntBeingShared);
         }
     }
+
 
     private void showEmptyListString()
     {

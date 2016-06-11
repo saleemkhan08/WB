@@ -32,7 +32,7 @@ import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.models.IssuesDao;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -225,7 +225,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
                 if(result.equals("Deleted"))
                 {
                     removeAt(position);
-                    new IssuesDao().delete(issueId);
+                    IssuesDao.delete(issueId);
                 }
             }
 

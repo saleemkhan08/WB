@@ -22,8 +22,9 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/notifications"
-                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="@dimen/dialog_title"
                 android:textColor="@color/white"
+                android:id="@+id/dialogTitle"
                 android:textStyle="bold"
                 />
             <ImageView
@@ -45,7 +46,7 @@
 
             <TextView
                 android:id="@+id/unread"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="@dimen/dialog_sub_title"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -58,7 +59,7 @@
             <TextView
                 android:id="@+id/all"
                 android:layout_width="0dp"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="@dimen/dialog_sub_title"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/bg_drawable"

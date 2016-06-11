@@ -2,7 +2,6 @@ package in.org.whistleblower;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -32,10 +31,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import in.org.whistleblower.dao.WBDataBase;
 import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.WBDataBase;
 import in.org.whistleblower.utilities.MiscUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
@@ -44,7 +43,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public static final String LOGIN_STATUS = "login_status";
     private static final String SIGNING_IN = "Signing in...";
     private MiscUtil util;
-    public static Typeface typeface;
     RelativeLayout pageIndicator;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -55,7 +53,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         pageIndicator = (RelativeLayout) findViewById(R.id.selected);
         deleteDatabase(WBDataBase.DATABASE_NAME);
         WhistleBlower.getPreferences().edit().clear().apply();
-        typeface = Typeface.createFromAsset(getAssets(), "Gabriola.ttf");
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
         {
@@ -161,20 +158,25 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         {
             View rootView = inflater.inflate(R.layout.fragment_image, container, false);
             ImageView iconView = (ImageView) rootView.findViewById(R.id.fragmentIcon);
+            TextView titleTextView = (TextView) rootView.findViewById(R.id.fragmentTitle);
             TextView descTextView = (TextView) rootView.findViewById(R.id.fragmentDesc);
-            descTextView.setTypeface(typeface);
+            descTextView.setTypeface(WhistleBlower.getTypeface());
+            titleTextView.setTypeface(WhistleBlower.getTypeface());
             switch (getArguments().getInt(ARG_SECTION_NUMBER))
             {
                 case 1:
                     iconView.setImageResource(R.mipmap.notifier);
-                    descTextView.setText(R.string.user_text);
+                    titleTextView.setText(R.string.notifier_title);
+                    descTextView.setText(R.string.notifier_text);
                     break;
                 case 2:
                     iconView.setImageResource(R.mipmap.whistle_blower);
+                    titleTextView.setText(R.string.whistle_blower_title);
                     descTextView.setText(R.string.whistle_blower_text);
                     break;
                 case 3:
                     iconView.setImageResource(R.mipmap.volunteer);
+                    titleTextView.setText(R.string.volunteer_title);
                     descTextView.setText(R.string.volunteer_text);
             }
             return rootView;

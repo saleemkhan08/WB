@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
@@ -28,11 +29,12 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
+import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.CommonUserListAdapter;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.models.AccountsDao;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.models.NotifyLocation;
-import in.org.whistleblower.models.NotifyLocationDao;
+import in.org.whistleblower.dao.NotifyLocationDao;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
 
@@ -70,9 +72,10 @@ public class NotifyLocationFragment extends DialogFragment
         mActivity = (AppCompatActivity) getActivity();
         preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
 
+        TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
+        dialogTitle.setTypeface(WhistleBlower.getTypeface());
 
-        AccountsDao dao = new AccountsDao();
-        mFriendList = dao.getFriendsList();
+        mFriendList = AccountsDao.getFriendsList();
 
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);
         shareLocationFriendList.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -98,22 +101,20 @@ public class NotifyLocationFragment extends DialogFragment
     public void notifyLocation(Accounts account)
     {
         dismiss();
-        mNotifyLocation.email = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
-        mNotifyLocation.userEmail = account.email;
-        mNotifyLocation.photoUrl = preferences.getString(Accounts.PHOTO_URL, "");
-        mNotifyLocation.name = preferences.getString(Accounts.NAME, "Saleem");
+        mNotifyLocation.senderEmail = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
+        mNotifyLocation.receiverEmail = account.email;
+        mNotifyLocation.senderPhotoUrl = preferences.getString(Accounts.PHOTO_URL, "");
+        mNotifyLocation.senderName = preferences.getString(Accounts.NAME, "Saleem");
         mNotifyLocation.message = messageEdit.getText().toString();
+        mNotifyLocation.receiverName = account.name;
+        mNotifyLocation.receiverName = account.name;
+        mNotifyLocation.receiverPhotoUrl = account.photo_url;
 
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         intent.putExtra(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
+        intent.putExtra(LocationTrackingService.KEY_NOTIFY_ARRIVAL, true);
 
-        NotifyLocationDao dao = new NotifyLocationDao();
-        intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
-
-        mNotifyLocation.name = account.name;
-        mNotifyLocation.photoUrl = account.photo_url;
-
-        dao.insert(mNotifyLocation);
+        NotifyLocationDao.insert(mNotifyLocation);
         Otto.post(mNotifyLocation);
         mActivity.startService(intent);
         Log.d("shareLocation", "startService");
