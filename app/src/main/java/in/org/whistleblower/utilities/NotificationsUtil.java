@@ -42,14 +42,7 @@ public class NotificationsUtil
 
     public static void showReceivingNotifyLocation(Notifications notification)
     {
-//        RemoteViews contentView = new RemoteViews(mAppContext.getPackageName(), R.layout.notify_location_notification);
-//        contentView.setImageViewBitmap(R.id.notificationIcon, getCircleBitmapFromUrl(notification.photoUrl));
-//        contentView.setTextViewText(R.id.senderName, notification.name);
-//        contentView.setTextViewText(R.id.message, notification.message);
-//        showRemoteViewsNotification(contentView, notification.type, (int) notification.id);
-
         NotificationData data = new NotificationData();
-
         data.largeIconUrl = notification.photoUrl;
         data.contentTitle = notification.name;
         data.contentText = notification.message;
@@ -67,18 +60,18 @@ public class NotificationsUtil
         data.actionIntentIcon = R.mipmap.bell_cross_accent;
         data.actionIntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
 
-        data.contentIntentTag = NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG;
+        data.contentIntentTag = NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM;
         data.contentText = name;
         data.contentTitle = "Location Alarm";
         data.onGoing = true;
-        data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_ALARMS;
+        data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS;
         showNotification(data);
     }
 
 
     public static void showNotification(NotificationData data)
     {
-        if(data.largeIconUrl == null)
+        if (data.largeIconUrl == null)
         {
             showNotification(data, null);
         }
@@ -91,7 +84,10 @@ public class NotificationsUtil
     public static void showNotification(NotificationData data, Bitmap mLargeIcon)
     {
         Intent contentIntent = new Intent(mAppContext, NotificationActionReceiver.class);
+
         contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, data.contentIntentTag);
+        contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ID, data.notificationId);
+
         PendingIntent contentPendingIntent = PendingIntent.getBroadcast(mAppContext, (int) System.currentTimeMillis(), contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mAppContext);
@@ -110,12 +106,12 @@ public class NotificationsUtil
             mBuilder.addAction(data.actionIntentIcon, data.actionIntentText, actionPendingIntent);
         }
 
-        if(mLargeIcon !=null)
+        if (mLargeIcon != null)
         {
             mBuilder.setLargeIcon(mLargeIcon);
         }
 
-        if(data.vibrate)
+        if (data.vibrate)
         {
             Notification notificationDefault = new Notification();
             notificationDefault.defaults |= Notification.DEFAULT_LIGHTS; // LED
@@ -123,9 +119,40 @@ public class NotificationsUtil
             notificationDefault.defaults |= Notification.DEFAULT_SOUND; // Sound
             mBuilder.setDefaults(notificationDefault.defaults);
         }
-
-        mNotificationManager.notify(data.notificationId, mBuilder.build());
+        int notificationId = getNotificationId(data.contentIntentTag);
+        mNotificationManager.notify(notificationId, mBuilder.build());
     }
+
+    private static int getNotificationId(String contentIntentTag)
+    {
+        switch (contentIntentTag)
+        {
+            //Cancellable Notifications
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_NOTIFIED_LOCATION:
+                return NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION;
+
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION_ONCE:
+                return NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_SHARED_LOCATION_ONCE;
+
+            //On Going Notifications
+            case NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM:
+                return NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS;
+
+            case NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION:
+                return NotificationActionReceiver.NOTIFICATION_ID_NOTIFY_LOCATION;
+
+            case NavigationUtil.FRAGMENT_TAG_SHARING_REAL_TIME_LOCATION:
+                return NotificationActionReceiver.NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION;
+
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION:
+                return NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_SHARED_LOCATION;
+
+            default:
+                return -1;
+        }
+
+    }
+
     public static void showRemoteViewsNotification(RemoteViews contentView, String notificationType, int id)
     {
         Intent contentIntent = new Intent(mAppContext, NotificationActionReceiver.class);
@@ -161,10 +188,24 @@ public class NotificationsUtil
         return BitmapFactory.decodeResource(mAppContext.getResources(), R.drawable.bullhorn_invert);
     }
 
+    public static void showReceivingSharedLocation(Notifications notification)
+    {
+        NotificationData data = new NotificationData();
+
+        data.largeIconUrl = notification.photoUrl;
+        data.contentTitle = notification.name;
+        data.contentText = "Click to view " + notification.name + "'s location...";
+        data.contentIntentTag = notification.type;
+        data.notificationId = (int) notification.id;
+        data.vibrate = true;
+        showNotification(data);
+    }
+
     private static class ShowNormalNotification extends AsyncTask<NotificationData, Void, Void>
     {
         NotificationData mNotificationData;
         Bitmap mLargeIcon;
+
         @Override
         protected Void doInBackground(NotificationData... params)
         {
@@ -176,7 +217,7 @@ public class NotificationsUtil
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            showNotification(mNotificationData,mLargeIcon);
+            showNotification(mNotificationData, mLargeIcon);
         }
     }
 

@@ -401,23 +401,23 @@ public class LocationTrackingService extends Service implements LocationListener
                 if(notificationMessage.length() > 2)
                 {
                     NotificationData notificationData = new NotificationData();
-                    notificationData.contentIntentTag = NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG;
+                    notificationData.contentIntentTag = NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION_LIST;
                     notificationData.contentTitle = "Notifying Location To:";
                     notificationData.contentText = notificationMessage.substring(0, notificationMessage.length() - 2);
                     notificationData.onGoing = true;
-                    notificationData.notificationId = NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID;
+                    notificationData.notificationId = NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION;
                     NotificationsUtil.showNotification(notificationData);
                 }
             }
             else
             {
-                NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID);
+                NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION);
             }
         }
         else
         {
             preferences.edit().putBoolean(KEY_NOTIFY_ARRIVAL, false).commit();
-            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFY_LOCATION_NOTIFICATION_ID);
+            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION);
             stopService();
         }
     }
@@ -465,22 +465,22 @@ public class LocationTrackingService extends Service implements LocationListener
                 message = message.substring(0, message.length() - 2);
 
                 NotificationData data = new NotificationData();
-                data.contentIntentTag = NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG;
+                data.contentIntentTag = NavigationUtil.FRAGMENT_TAG_SHARING_REAL_TIME_LOCATION;
                 data.contentText = message;
                 data.contentTitle = "Sharing Location To:";
                 data.onGoing = true;
-                data.notificationId = NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID;
+                data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION;
                 NotificationsUtil.showNotification(data);
             }
             else
             {
-                NotificationsUtil.removeNotification(NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
+                NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION);
             }
         }
         else
         {
             preferences.edit().putBoolean(KEY_SHARE_LOCATION_REAL_TIME, false).commit();
-            NotificationsUtil.removeNotification(NotificationActionReceiver.SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID);
+            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION);
             stopService();
         }
     }
@@ -567,7 +567,7 @@ public class LocationTrackingService extends Service implements LocationListener
         if (!allAlarmsStatus)
         {
             preferences.edit().putBoolean(KEY_ALARM_SET, false).apply();
-            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_ALARMS);
+            NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS);
             stopService();
         }
         else
@@ -578,11 +578,11 @@ public class LocationTrackingService extends Service implements LocationListener
             data.actionIntentIcon = R.mipmap.bell_cross_accent;
             data.actionIntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
 
-            data.contentIntentTag = NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG;
+            data.contentIntentTag = NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM;
             data.contentText = locations;
             data.contentTitle = "Location Alarm";
             data.onGoing = true;
-            data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_ALARMS;
+            data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS;
 
             NotificationsUtil.showAlarmNotification(locations, noOfLocations);
         }

@@ -101,22 +101,11 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:id="@+id/emptyList"
-        android:visibility="gone"
         >
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
+            style="@style/emptyList"
             android:id="@+id/emptyListTextView"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:textSize="18sp"
-            android:layout_gravity="center"
-            android:padding="10dp"
             android:text="@string/locationIsntBeingShared"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/divider"
-            android:textStyle="bold"
             />
     </LinearLayout>
 

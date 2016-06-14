@@ -774,7 +774,7 @@ public class MapFragment extends SupportMapFragment implements
         Bundle bundle = new Bundle();
         bundle.putParcelable(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
         dialog.setArguments(bundle);
-        dialog.show(manager, NavigationUtil.NOTIFY_LOCATION_FRAGMENT_TAG);
+        dialog.show(manager, NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION);
     }
 
     int getRadius()

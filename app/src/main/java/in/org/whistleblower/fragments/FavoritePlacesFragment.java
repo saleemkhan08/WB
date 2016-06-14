@@ -100,23 +100,10 @@ public class FavoritePlacesFragment extends DialogFragment
     }
 
     @Override
-    public void onDestroyView()
-    {
-        super.onDestroyView();
-        Otto.unregister(this);
-    }
-
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        Otto.unregister(this);
-    }
-
-    @Override
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);
         Otto.post(MapFragment.DIALOG_DISMISS);
+        Otto.unregister(this);
     }
 }

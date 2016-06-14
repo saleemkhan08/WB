@@ -17,13 +17,18 @@ public class NotificationActionReceiver extends BroadcastReceiver
 {
     public static final String NOTIFICATION_ACTION = "notificationAction";
     public static final String CANCEL_ALL_ALARMS = "CancelAllAlarms";
-    public static final int NOTIFICATION_ID_ALARMS = 181;
-    public static final String NOTIFICATION_ACTION_2 = "notificationAction2";
-    public static final int NOTIFICATION_ID_RECEIVING_LOCATION_NOTIFICATION = 182;
-    public static final int SHARE_REAL_TIME_LOCATION_NOTIFICATION_ID = 183;
-    public static final int NOTIFY_LOCATION_NOTIFICATION_ID = 184 ;
+    public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+
+    public static final int NOTIFICATION_ID_LOCATION_ALARMS = 181;
+    public static final int NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION = 182;
+    public static final int NOTIFICATION_ID_NOTIFY_LOCATION = 183;
+
+    public static final int NOTIFICATION_ID_RECEIVING_SHARED_LOCATION = 184;
+    public static final int NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION = 185;
+    public static final int NOTIFICATION_ID_RECEIVING_SHARED_LOCATION_ONCE = 186;
 
     static int retryCnt = 0;
+
     public NotificationActionReceiver()
     {
     }
@@ -32,41 +37,46 @@ public class NotificationActionReceiver extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         String action = intent.getStringExtra(NOTIFICATION_ACTION);
-        Log.d(NOTIFICATION_ACTION, "NOTIFICATION_ACTION : "+action);
+        int id = intent.getIntExtra(NOTIFICATION_ID, -1);
+        Log.d(NOTIFICATION_ACTION, "NOTIFICATION_ACTION : " + action);
         switch (action)
         {
-            case RegistrationIntentService.TAG :
-                Intent registrationService = new Intent( context, RegistrationIntentService.class);
+            case RegistrationIntentService.TAG:
+                Intent registrationService = new Intent(context, RegistrationIntentService.class);
                 registrationService.putExtra(RegistrationIntentService.TAG, ++retryCnt);
                 context.startService(registrationService);
                 break;
 
-            case CANCEL_ALL_ALARMS :
+            case CANCEL_ALL_ALARMS:
                 NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 LocationAlarmDao.cancelAllAlarms();
-                notificationManager.cancel(NOTIFICATION_ID_ALARMS);
+                notificationManager.cancel(NOTIFICATION_ID_LOCATION_ALARMS);
                 break;
 
-            case NavigationUtil.NOTIFICATION_FRAGMENT_TAG :
-            case NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG :
-            case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG :
-            case NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG :
-            case NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG :
-            case NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG :
-                context.startActivity(getMainActivityDialogIntent(context, action));
+            case NavigationUtil.FRAGMENT_TAG_NOTIFICATIONS:
+            case NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM:
+            case NavigationUtil.FRAGMENT_TAG_SHARING_REAL_TIME_LOCATION:
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION:
+            case NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION_LIST:
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_NOTIFIED_LOCATION:
+                context.startActivity(getMainActivityDialogIntent(context, action, id));
                 break;
         }
     }
 
-    private Intent getMainActivityDialogIntent(Context context, String dialogTag)
+    private Intent getMainActivityDialogIntent(Context context, String dialogTag, int id)
     {
         SharedPreferences preferences = WhistleBlower.getPreferences();
 
         Intent intentMainActivity = new Intent(context, MainActivity.class);
         intentMainActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intentMainActivity.putExtra(NavigationUtil.DIALOG_FRAGMENT_TAG, dialogTag);
+        intentMainActivity.putExtra(NavigationUtil.FRAGMENT_TAG_DIALOG, dialogTag);
+        intentMainActivity.putExtra(NOTIFICATION_ID, id);
 
-        preferences.edit().putString(NavigationUtil.DIALOG_FRAGMENT_TAG, dialogTag).commit();
+        preferences.edit()
+                .putString(NavigationUtil.FRAGMENT_TAG_DIALOG, dialogTag)
+                .putInt(NOTIFICATION_ID, id)
+                .commit();
 
         return intentMainActivity;
     }

@@ -88,15 +88,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
 
         TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
         dialogTitle.setTypeface(WhistleBlower.getTypeface());
-
-        ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
-        AppCompatActivity mActivity = (AppCompatActivity) getActivity();
-        if(mShareLocationList.size() < 1)
-        {
-            showEmptyListString();
-        }
-        shareLocationListView.setAdapter(new ShareLocationListAdapter(mActivity, mShareLocationList));
-        shareLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
+        onSharingClick();
         return parentView;
     }
 
@@ -105,7 +97,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
     {
         super.onStart();
         Bundle bundle = getArguments();
-        if(bundle!=null && bundle.containsKey(NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG))
+        if(bundle!=null && bundle.containsKey(NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION))
         {
             onReceivingClick();
         }
@@ -166,6 +158,15 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         TransitionManager.beginDelayedTransition(sharingHighlight, new Slide());
         sharingHighlight.setBackgroundColor(colorAccent);
         receivingHighlight.setBackgroundColor(transparent);
+
+        ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
+        AppCompatActivity mActivity = (AppCompatActivity) getActivity();
+        if(mShareLocationList.size() < 1)
+        {
+            showEmptyListString();
+        }
+        shareLocationListView.setAdapter(new ShareLocationListAdapter(mActivity, mShareLocationList));
+        shareLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
     }
 
     @OnClick(R.id.receiving)
@@ -181,5 +182,16 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         TransitionManager.beginDelayedTransition(receivingHighlight, new Slide());
         sharingHighlight.setBackgroundColor(transparent);
         receivingHighlight.setBackgroundColor(colorAccent);
+
+        //Fetch from notifications tables and show.
+
+        ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
+        AppCompatActivity mActivity = (AppCompatActivity) getActivity();
+        if(mShareLocationList.size() < 1)
+        {
+            showEmptyListString();
+        }
+        shareLocationListView.setAdapter(new ShareLocationListAdapter(mActivity, mShareLocationList));
+        shareLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
     }
 }

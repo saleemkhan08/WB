@@ -164,10 +164,12 @@
     <string name="unread">New</string>
     <string name="message">Message</string>
     <string name="timeElapsed">Time Elapsed</string>
-    <string name="noNotifications">No New Notifications…</string>
+    <string name="noNotifications">No Notifications to show…</string>
+    <string name="removedAllNotifications">Removed All Notifications…</string>
     <string name="sending">Sending</string>
     <string name="receiving">Receiving</string>
     <string name="sharing">Sharing</string>
     <string name="locationIsntBeingReceived">Location I\'snt Being Received…</string>
     <string name="noLocationNotificationsAreReceived">No Location Notifications Are Received…</string>
+    <string name="noNewNotifications">No New Notifications…</string>
 </resources>

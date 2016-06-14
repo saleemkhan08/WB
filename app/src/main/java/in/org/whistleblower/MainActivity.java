@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import in.org.whistleblower.fragments.FriendListFragment;
 import in.org.whistleblower.interfaces.ConnectivityListener;
 import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.services.GetNotificationIntentService;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.FABUtil;
@@ -173,37 +174,40 @@ public class MainActivity extends AppCompatActivity
     {
         super.onResume();
         Intent intent = getIntent();
-        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "Extras : " + intent.getExtras());
-        if (intent.hasExtra(NavigationUtil.DIALOG_FRAGMENT_TAG))
+        Log.d(NavigationUtil.FRAGMENT_TAG_DIALOG, "Extras : " + intent.getExtras());
+        if (intent.hasExtra(NavigationUtil.FRAGMENT_TAG_DIALOG))
         {
-            showDialogFragment(intent.getStringExtra(NavigationUtil.DIALOG_FRAGMENT_TAG));
+            int notificationId = -1;
+            if (intent.hasExtra(NavigationUtil.FRAGMENT_TAG_DIALOG))
+            {
+                notificationId = intent.getIntExtra(NotificationActionReceiver.NOTIFICATION_ID, -1);
+            }
+            showDialogFragment(intent.getStringExtra(NavigationUtil.FRAGMENT_TAG_DIALOG),notificationId);
         }
     }
 
-
-
-    private void showDialogFragment(String tag)
+    private void showDialogFragment(String tag, int notificationId)
     {
-        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "has extra : " + tag);
+        Log.d(NavigationUtil.FRAGMENT_TAG_DIALOG, "has extra : " + tag);
         switch (tag)
         {
-            case NavigationUtil.LOCATION_ALARM_FRAGMENT_TAG:
+            case NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM:
                 mNavigationUtil.showAlarmFragment();
                 break;
-            case NavigationUtil.SHARE_LOCATION_LIST_FRAGMENT_TAG:
+            case NavigationUtil.FRAGMENT_TAG_SHARING_REAL_TIME_LOCATION:
                 mNavigationUtil.showShareLocationList();
                 break;
-            case NavigationUtil.NOTIFICATION_FRAGMENT_TAG:
+            case NavigationUtil.FRAGMENT_TAG_NOTIFICATIONS:
                 mNavigationUtil.showNotificationsFragment();
                 break;
-            case NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG:
-                mNavigationUtil.showShareLocationList(NavigationUtil.SHARE_LOCATION_RECEIVING_FRAGMENT_TAG);
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION:
+                mNavigationUtil.showShareLocationList(NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION);
                 break;
-            case NavigationUtil.NOTIFY_LOCATION_LIST_FRAGMENT_TAG:
+            case NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION_LIST:
                 mNavigationUtil.showNotifyLocationList();
                 break;
-            case NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG:
-                mNavigationUtil.showNotifyLocationList(NavigationUtil.NOTIFY_LOCATION_RECEIVING_FRAGMENT_TAG);
+            case NavigationUtil.FRAGMENT_TAG_RECEIVING_NOTIFIED_LOCATION:
+                mNavigationUtil.showNotifiedLocationOnMap();
                 break;
         }
     }
@@ -212,15 +216,19 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
-        Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "onNewIntent");
-        if (preferences.contains(NavigationUtil.DIALOG_FRAGMENT_TAG))
+        Log.d(NavigationUtil.FRAGMENT_TAG_DIALOG, "onNewIntent");
+        if (preferences.contains(NavigationUtil.FRAGMENT_TAG_DIALOG))
         {
-            String tag = preferences.getString(NavigationUtil.DIALOG_FRAGMENT_TAG, null);
-            Log.d(NavigationUtil.DIALOG_FRAGMENT_TAG, "tag : " + tag);
+            String tag = preferences.getString(NavigationUtil.FRAGMENT_TAG_DIALOG, null);
+            Log.d(NavigationUtil.FRAGMENT_TAG_DIALOG, "tag : " + tag);
+            int notificationId = preferences.getInt(NotificationActionReceiver.NOTIFICATION_ID, -1);
             if (tag != null)
             {
-                showDialogFragment(tag);
-                preferences.edit().putString(NavigationUtil.DIALOG_FRAGMENT_TAG, null).apply();
+                showDialogFragment(tag, notificationId);
+                preferences.edit()
+                        .putString(NavigationUtil.FRAGMENT_TAG_DIALOG, null)
+                        .putInt(NotificationActionReceiver.NOTIFICATION_ID, -1)
+                        .apply();
             }
         }
     }

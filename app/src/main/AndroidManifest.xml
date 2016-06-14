@@ -208,6 +208,11 @@
             android:name=".services.GetNotificationIntentService"
             android:exported="false">
         </service>
+        <service
+            android:name=".services.FriendsLocationTrackingService"
+            android:enabled="false"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

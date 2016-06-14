@@ -11,7 +11,7 @@ import in.org.whistleblower.models.Notifications;
 public class NotificationsDao
 {
     public static final String TABLE_SCHEMA = "CREATE TABLE " + Notifications.TABLE + " ("
-            + Notifications.ID + " INTEGER PRIMARY KEY, "
+            + Notifications.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + Notifications.SENDER_NAME + " VARCHAR(255), "
             + Notifications.SENDER_EMAIL + " VARCHAR(255), "
             + Notifications.SENDER_PHOTO_URL + " VARCHAR(255), "
@@ -28,8 +28,6 @@ public class NotificationsDao
         if (null != notification)
         {
             ContentValues values = new ContentValues();
-
-            values.put(Notifications.ID, notification.id);
             values.put(Notifications.SENDER_NAME, notification.name);
             values.put(Notifications.SENDER_EMAIL, notification.userEmail);
             values.put(Notifications.SENDER_PHOTO_URL, notification.photoUrl);
@@ -63,6 +61,7 @@ public class NotificationsDao
         WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<Notifications> NotificationsList = new ArrayList<>();
         Cursor cursor = mWBDataBase.query(Notifications.TABLE, null, null ,null, null, null);
+        Log.d("NotificationsDao", "cursor : "+cursor.getCount());
         if (null != cursor)
         {
             while (cursor.moveToNext())

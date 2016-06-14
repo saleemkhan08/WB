@@ -8,22 +8,27 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
+
 import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.BindColor;
+import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.NotificationsAdapter;
-import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.dao.NotificationsDao;
+import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.singletons.Otto;
 
 public class NotificationsFragment extends DialogFragment
@@ -57,9 +62,23 @@ public class NotificationsFragment extends DialogFragment
     @Bind(R.id.allHighlight)
     ViewGroup allHighlight;
 
+    @BindString(R.string.noNewNotifications)
+    String noNewNotifications;
+
+    @BindString(R.string.noNotifications)
+    String noNotifications;
+
+    @BindString(R.string.removedAllNotifications)
+    String removedAllNotifications;
+
     private SharedPreferences preferences;
     private boolean isUnreadClicked = true;
 
+    @Bind(R.id.emptyList)
+    ViewGroup emptyList;
+
+    @Bind(R.id.emptyListTextView)
+    TextView emptyListTextView;
 
     public NotificationsFragment()
     {
@@ -84,10 +103,9 @@ public class NotificationsFragment extends DialogFragment
 
         mAllNotificationsList = NotificationsDao.getAllNotifications();
         mUnreadNotificationsList = NotificationsDao.getUnreadList();
-
-        NotificationsAdapter mAdapter = new NotificationsAdapter(mActivity, mUnreadNotificationsList);
-        notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));
-        notificationsListView.setAdapter(mAdapter);
+        Log.d("NotificationsFragment", "mUnreadNotificationsList : " + mUnreadNotificationsList.size());
+        Log.d("NotificationsFragment", "mAllNotificationsList : " + mAllNotificationsList.size());
+        onUnreadClick();
         return parentView;
     }
 
@@ -117,7 +135,15 @@ public class NotificationsFragment extends DialogFragment
         notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));
         notificationsListView.setAdapter(mAdapter);
 
-
+        if(mUnreadNotificationsList.size() < 1)
+        {
+            emptyList.setVisibility(View.VISIBLE);
+            emptyListTextView.setText(noNewNotifications);
+        }
+        else
+        {
+            emptyList.setVisibility(View.GONE);
+        }
     }
 
     @OnClick(R.id.all)
@@ -138,6 +164,15 @@ public class NotificationsFragment extends DialogFragment
         NotificationsAdapter mAdapter = new NotificationsAdapter(mActivity, mAllNotificationsList);
         notificationsListView.setLayoutManager(new LinearLayoutManager(mActivity));
         notificationsListView.setAdapter(mAdapter);
+        if(mAllNotificationsList.size() < 1)
+        {
+            emptyList.setVisibility(View.VISIBLE);
+            emptyListTextView.setText(noNotifications);
+        }
+        else
+        {
+            emptyList.setVisibility(View.GONE);
+        }
 
     }
 
@@ -152,5 +187,23 @@ public class NotificationsFragment extends DialogFragment
     {
         super.onPause();
         dismiss();
+    }
+
+    @Subscribe
+    public void showEmptyListString(String msg)
+    {
+        if(msg.equals(NOTIFICATION_LIST_EMPTY_TEXT))
+        {
+            showEmptyListString();
+            emptyListTextView.setText(noNewNotifications);
+            emptyListTextView.setText(isUnreadClicked ? noNewNotifications : removedAllNotifications);
+        }
+    }
+
+
+    private void showEmptyListString()
+    {
+        TransitionManager.beginDelayedTransition(emptyList);
+        emptyList.setVisibility(View.VISIBLE);
     }
 }

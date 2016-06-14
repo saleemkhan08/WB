@@ -39,16 +39,8 @@
         >
         <TextView
             android:id="@+id/emptyListTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_gravity="center"
-            android:padding="10dp"
-            android:textSize="18sp"
             android:text="@string/noFavoritePlacesAdded"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/divider"
-            android:textStyle="bold"
+            style="@style/emptyList"
             />
     </LinearLayout>
     <android.support.v7.widget.RecyclerView

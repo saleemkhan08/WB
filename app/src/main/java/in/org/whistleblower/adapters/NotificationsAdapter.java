@@ -2,6 +2,7 @@ package in.org.whistleblower.adapters;
 
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +26,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     LayoutInflater inflater;
     List<Notifications> mNotificationsList;
 
-    public NotificationsAdapter(AppCompatActivity activity, List<Notifications> mNotificationsList)
+    public NotificationsAdapter(AppCompatActivity activity, List<Notifications> notificationsList)
     {
         mActivity = activity;
-        this.mNotificationsList = mNotificationsList;
+        mNotificationsList = notificationsList;
+        Log.d("NotificationsAdapter", "onBindViewHolder : " + mNotificationsList.size());
         inflater = LayoutInflater.from(mActivity);
     }
 
@@ -43,11 +45,15 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public void onBindViewHolder(final PlaceViewHolder holder, final int position)
     {
         final Notifications notification = mNotificationsList.get(position);
+        Log.d("NotificationsAdapter", "onBindViewHolder : " + mNotificationsList.size());
+        Log.d("NotificationsAdapter", "notification.name : " + notification.name);
+        Log.d("NotificationsAdapter", "notification.type : " +notification.type);
+        Log.d("NotificationsAdapter", "notification.message : " + notification.message);
         holder.notifyMessage.setText(notification.message);
         holder.friendsName.setText(notification.name);
-        if(notification.photoUrl != null && !(notification.photoUrl.trim().isEmpty()))
+        if (notification.photoUrl != null && !(notification.photoUrl.trim().isEmpty()))
         {
-            ImageUtil.displayImage(mActivity,notification.photoUrl, holder.friendCardIcon,true);
+            ImageUtil.displayImage(mActivity, notification.photoUrl, holder.friendCardIcon, true);
         }
         else
         {

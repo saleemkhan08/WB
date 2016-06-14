@@ -23,17 +23,10 @@
 
             <TextView
                 android:id="@+id/emptyListTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:padding="10dp"
                 android:text="@string/noFriendsAreAddedYet"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="@color/divider"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
+                style="@style/emptyList"
+                android:paddingTop="10dp"
+                />
         </android.support.v7.widget.CardView>
     </RelativeLayout>
 
