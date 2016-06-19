@@ -11,7 +11,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 
@@ -27,9 +26,9 @@ import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.IssueAdapter;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
@@ -92,9 +91,9 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public void onResume()
     {
         super.onResume();
-        MiscUtil.log("onResume");
         NavigationUtil.highlightNavigationDrawerMenu(mActivity, R.id.nav_news);
         mActivity.setTitle(MainActivity.NEWS_FEEDS);
+        onRefresh();
     }
 
     //TODO Make issueList static
@@ -204,7 +203,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             @Override
             public void onError(VolleyError error)
             {
-                Toast.makeText(mActivity, "Error : " + error.getMessage(), Toast.LENGTH_LONG).show();
+                WhistleBlower.toast("Error : " + error.getMessage());
             }
         });
     }

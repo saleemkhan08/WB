@@ -21,18 +21,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import in.org.whistleblower.IssueActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -46,19 +44,17 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     MiscUtil mUtil;
     ImageUtil mImageUtil;
 
-    @Inject
     SharedPreferences preferences;
 
     public IssueAdapter(AppCompatActivity activity, ArrayList<Issue> mIssuesList)
     {
         mActivity = activity;
         mInflater = LayoutInflater.from(mActivity);
-        WhistleBlower.getComponent().inject(this);
+        preferences = WhistleBlower.getPreferences();
 
         this.mIssuesArrayList = mIssuesList;
         mUtil = new MiscUtil(mActivity);
         mImageUtil = new ImageUtil(mActivity);
-        //preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
     }
 
     @Override
