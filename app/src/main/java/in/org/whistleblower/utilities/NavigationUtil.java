@@ -56,7 +56,6 @@ public class NavigationUtil implements NavigationView.OnNavigationItemSelectedLi
     public static final String FRAGMENT_TAG_RECEIVING_SHARED_LOCATION = "receivingSharedLocationFragmentTag";
     public static final String FRAGMENT_TAG_RECEIVING_SHARED_LOCATION_ONCE = "receivingSharedLocationOnceFragmentTag";
 
-
     @BindString(R.string.noFriendsAreAddedYet)
     String youHaventAddedFriends;
 

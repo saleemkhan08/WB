@@ -5,10 +5,16 @@ import android.os.Parcelable;
 
 public class NotificationData implements Parcelable
 {
-    public String actionIntentTag;
     public String contentText;
-    public String actionIntentText;
-    public int actionIntentIcon;
+
+    public String action1IntentTag;
+    public String action1IntentText;
+    public int action1IntentIcon;
+
+    public String action2IntentTag;
+    public String action2IntentText;
+    public int action2IntentIcon;
+
     public String contentTitle;
     public int notificationId;
     public String contentIntentTag;
@@ -16,6 +22,7 @@ public class NotificationData implements Parcelable
     public String largeIconUrl;
     public boolean vibrate;
     public String notificationType;
+    public int priority = 0;
 
     @Override
     public int describeContents()
@@ -26,10 +33,10 @@ public class NotificationData implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeString(this.actionIntentTag);
+        dest.writeString(this.action1IntentTag);
         dest.writeString(this.contentText);
-        dest.writeString(this.actionIntentText);
-        dest.writeInt(this.actionIntentIcon);
+        dest.writeString(this.action1IntentText);
+        dest.writeInt(this.action1IntentIcon);
         dest.writeString(this.contentTitle);
         dest.writeInt(this.notificationId);
         dest.writeString(this.contentIntentTag);
@@ -45,10 +52,10 @@ public class NotificationData implements Parcelable
 
     protected NotificationData(Parcel in)
     {
-        this.actionIntentTag = in.readString();
+        this.action1IntentTag = in.readString();
         this.contentText = in.readString();
-        this.actionIntentText = in.readString();
-        this.actionIntentIcon = in.readInt();
+        this.action1IntentText = in.readString();
+        this.action1IntentIcon = in.readInt();
         this.contentTitle = in.readString();
         this.notificationId = in.readInt();
         this.contentIntentTag = in.readString();

@@ -1,6 +1,6 @@
 package in.org.whistleblower.gcm;
 
-import android.content.Intent;
+import android.app.Notification;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -9,19 +9,20 @@ import com.google.android.gms.gcm.GcmListenerService;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import in.org.whistleblower.R;
 import in.org.whistleblower.dao.NotificationsDao;
 import in.org.whistleblower.models.NotificationData;
 import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.receivers.NotificationActionReceiver;
-import in.org.whistleblower.services.FriendsLocationTrackingService;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.NotificationsUtil;
+import in.org.whistleblower.utilities.VolleyUtil;
 
 public class GcmPushReceiver extends GcmListenerService
 {
-    public static final String SENDER_NOTIFICATION = "senderNotification";
-
     @Override
     public void onMessageReceived(String from, Bundle bundle)
     {
@@ -43,10 +44,26 @@ public class GcmPushReceiver extends GcmListenerService
                     cancellable++;
                     break;
                 case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION:
-                    Intent intent = new Intent(this, FriendsLocationTrackingService.class);
-                    intent.putExtra(SENDER_NOTIFICATION, receivedNotification);
-                    startService(intent);
                     break;
+
+                case Notifications.KEY_INITIATE_SHARE_LOCATION:
+                    NotificationData data = new NotificationData();
+                    data.contentTitle = notification.senderName;
+                    data.largeIconUrl = notification.senderPhotoUrl;
+                    data.contentIntentTag = Notifications.KEY_INITIATE_SHARE_LOCATION;
+                    data.contentText = "Sharing Location";
+
+                    data.action1IntentIcon = R.mipmap.check_primary_dark;
+                    data.action1IntentTag = NotificationActionReceiver.START_LOCATION_SHARING;
+                    data.action1IntentText = "Accept";
+
+                    data.action2IntentIcon = R.mipmap.reject_primary_dark;
+                    data.action2IntentTag = NotificationActionReceiver.NOTIFY_REJECTION_TO_SENDER;
+                    data.action2IntentText = "Reject";
+                    data.priority = Notification.PRIORITY_MAX;
+                    NotificationsUtil.showNotification(data);
+                    break;
+
             }
         }
 
@@ -87,16 +104,26 @@ public class GcmPushReceiver extends GcmListenerService
         {
             notification = new Notifications();
             JSONObject json = new JSONObject(result);
-            notification.userEmail = json.getString(Notifications.SENDER_EMAIL);
-            notification.name = json.getString(Notifications.SENDER_NAME);
-            notification.photoUrl = json.getString(Notifications.SENDER_PHOTO_URL);
+            notification.senderEmail = json.getString(Notifications.SENDER_EMAIL);
+            notification.senderName = json.getString(Notifications.SENDER_NAME);
+            notification.senderPhotoUrl = json.getString(Notifications.SENDER_PHOTO_URL);
             notification.message = json.getString(Notifications.MESSAGE);
             notification.type = json.getString(Notifications.TYPE);
-            notification.latitude = json.getString(Notifications.LATITUDE);
-            notification.longitude = json.getString(Notifications.LONGITUDE);
+            notification.senderLatitude = json.getString(Notifications.SENDER_LATITUDE);
+            notification.senderLongitude = json.getString(Notifications.SENDER_LONGITUDE);
             notification.timeStamp = json.getLong(Notifications.TIME_STAMP);
+            notification.serverNotificationId = json.getLong(Notifications.SERVER_NOTIFICATION_ID);
             notification.status = Notifications.UNREAD;
             NotificationsDao.insert(notification);
+
+            Map<String, String> data = new HashMap<>();
+            data.put(Notifications.SERVER_NOTIFICATION_ID, notification.serverNotificationId + "");
+            data.put(Notifications.RECEIVER_STATUS, notification.serverNotificationId + "");
+            data.put(Notifications.SENDER_LATITUDE, notification.senderLatitude);
+            data.put(Notifications.SENDER_LONGITUDE, notification.senderLongitude);
+            data.put(VolleyUtil.KEY_ACTION, Notifications.UPDATE_NOTIFICATION_STATUS);
+
+            VolleyUtil.sendPostData(data, null);
         }
         catch (Exception e)
         {

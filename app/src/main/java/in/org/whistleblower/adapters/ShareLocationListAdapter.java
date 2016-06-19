@@ -51,15 +51,15 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
     public void onBindViewHolder(UserSearchViewHolder holder, final int position)
     {
         final ShareLocation shareLocation = mAccountsList.get(position);
-        holder.username.setText(shareLocation.name);
-        holder.email.setText(shareLocation.email);
-        if (shareLocation.photoUrl == null || shareLocation.photoUrl.isEmpty())
+        holder.username.setText(shareLocation.senderName);
+        holder.email.setText(shareLocation.senderEmail);
+        if (shareLocation.senderPhotoUrl == null || shareLocation.senderPhotoUrl.isEmpty())
         {
             holder.profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
         }
         else
         {
-            mImageUtil.displayImage(shareLocation.photoUrl, holder.profilePic, true);
+            mImageUtil.displayImage(shareLocation.senderPhotoUrl, holder.profilePic, true);
         }
 
 
@@ -70,7 +70,7 @@ public class ShareLocationListAdapter extends RecyclerView.Adapter<ShareLocation
             @Override
             public void onClick(View v)
             {
-                ShareLocationDao.delete(shareLocation.userEmail);
+                ShareLocationDao.delete(shareLocation.receiverEmail);
                 removeAt(position);
             }
         });

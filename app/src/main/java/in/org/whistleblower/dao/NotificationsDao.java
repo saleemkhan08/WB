@@ -17,9 +17,10 @@ public class NotificationsDao
             + Notifications.SENDER_PHOTO_URL + " VARCHAR(255), "
             + Notifications.MESSAGE + " VARCHAR(255), "
             + Notifications.TYPE + " VARCHAR(255), "
-            + Notifications.LATITUDE + " VARCHAR(255), "
-            + Notifications.LONGITUDE + " VARCHAR(255), "
-            + Notifications.STATUS + " INTEGER, "
+            + Notifications.SENDER_LATITUDE + " VARCHAR(255), "
+            + Notifications.SENDER_LONGITUDE + " VARCHAR(255), "
+            + Notifications.RECEIVER_STATUS + " INTEGER, "
+            + Notifications.SERVER_NOTIFICATION_ID + " INTEGER, "
             + Notifications.TIME_STAMP + " INTEGER )";
 
     public static void insert(Notifications notification)
@@ -28,15 +29,16 @@ public class NotificationsDao
         if (null != notification)
         {
             ContentValues values = new ContentValues();
-            values.put(Notifications.SENDER_NAME, notification.name);
-            values.put(Notifications.SENDER_EMAIL, notification.userEmail);
-            values.put(Notifications.SENDER_PHOTO_URL, notification.photoUrl);
+            values.put(Notifications.SENDER_NAME, notification.senderName);
+            values.put(Notifications.SENDER_EMAIL, notification.senderEmail);
+            values.put(Notifications.SENDER_PHOTO_URL, notification.senderPhotoUrl);
             values.put(Notifications.MESSAGE, notification.message);
             values.put(Notifications.TYPE, notification.type);
-            values.put(Notifications.LATITUDE, notification.latitude);
-            values.put(Notifications.LONGITUDE, notification.longitude);
-            values.put(Notifications.STATUS, notification.status);
+            values.put(Notifications.SENDER_LATITUDE, notification.senderLatitude);
+            values.put(Notifications.SENDER_LONGITUDE, notification.senderLongitude);
+            values.put(Notifications.RECEIVER_STATUS, notification.status);
             values.put(Notifications.TIME_STAMP, notification.timeStamp);
+            values.put(Notifications.SERVER_NOTIFICATION_ID, notification.serverNotificationId);
 
             Log.d("NotificationsDao", "insert : "+mWBDataBase.insert(Notifications.TABLE, values));
         }
@@ -68,15 +70,16 @@ public class NotificationsDao
             {
                 Notifications notification = new Notifications();
                 notification.id = cursor.getLong(cursor.getColumnIndex(Notifications.ID));
-                notification.userEmail = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_EMAIL));
-                notification.name = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_NAME));
-                notification.photoUrl = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_PHOTO_URL));
+                notification.senderEmail = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_EMAIL));
+                notification.senderName = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_NAME));
+                notification.senderPhotoUrl = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_PHOTO_URL));
                 notification.message = cursor.getString(cursor.getColumnIndex(Notifications.MESSAGE));
                 notification.type = cursor.getString(cursor.getColumnIndex(Notifications.TYPE));
-                notification.latitude = cursor.getString(cursor.getColumnIndex(Notifications.LATITUDE));
-                notification.longitude = cursor.getString(cursor.getColumnIndex(Notifications.LONGITUDE));
+                notification.senderLatitude = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_LATITUDE));
+                notification.senderLongitude = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_LONGITUDE));
                 notification.timeStamp = cursor.getLong(cursor.getColumnIndex(Notifications.TIME_STAMP));
-                notification.status = cursor.getInt(cursor.getColumnIndex(Notifications.STATUS));
+                notification.serverNotificationId = cursor.getLong(cursor.getColumnIndex(Notifications.SERVER_NOTIFICATION_ID));
+                notification.status = cursor.getInt(cursor.getColumnIndex(Notifications.RECEIVER_STATUS));
                 NotificationsList.add(notification);
             }
             cursor.close();
@@ -89,22 +92,23 @@ public class NotificationsDao
     {
         WBDataBase mWBDataBase = new WBDataBase();
         ArrayList<Notifications> NotificationsList = new ArrayList<>();
-        Cursor cursor = mWBDataBase.query(Notifications.TABLE, null, Notifications.STATUS +" = "+Notifications.UNREAD, null, null, null);
+        Cursor cursor = mWBDataBase.query(Notifications.TABLE, null, Notifications.RECEIVER_STATUS +" = "+Notifications.UNREAD, null, null, null);
         if (null != cursor)
         {
             while (cursor.moveToNext())
             {
                 Notifications notification = new Notifications();
                 notification.id = cursor.getLong(cursor.getColumnIndex(Notifications.ID));
-                notification.name = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_NAME));
-                notification.userEmail = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_EMAIL));
-                notification.photoUrl = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_PHOTO_URL));
+                notification.senderName = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_NAME));
+                notification.senderEmail = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_EMAIL));
+                notification.senderPhotoUrl = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_PHOTO_URL));
                 notification.message = cursor.getString(cursor.getColumnIndex(Notifications.MESSAGE));
                 notification.type = cursor.getString(cursor.getColumnIndex(Notifications.TYPE));
-                notification.latitude = cursor.getString(cursor.getColumnIndex(Notifications.LATITUDE));
-                notification.longitude = cursor.getString(cursor.getColumnIndex(Notifications.LONGITUDE));
+                notification.senderLatitude = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_LATITUDE));
+                notification.senderLongitude = cursor.getString(cursor.getColumnIndex(Notifications.SENDER_LONGITUDE));
                 notification.timeStamp = cursor.getLong(cursor.getColumnIndex(Notifications.TIME_STAMP));
-                notification.status = cursor.getInt(cursor.getColumnIndex(Notifications.STATUS));
+                notification.serverNotificationId = cursor.getLong(cursor.getColumnIndex(Notifications.SERVER_NOTIFICATION_ID));
+                notification.status = cursor.getInt(cursor.getColumnIndex(Notifications.RECEIVER_STATUS));
                 NotificationsList.add(notification);
             }
             cursor.close();
@@ -117,7 +121,7 @@ public class NotificationsDao
     {
         WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
-        values.put(Notifications.STATUS, Notifications.READ);
+        values.put(Notifications.RECEIVER_STATUS, Notifications.READ);
         mWBDataBase.update(Notifications.TABLE, values, Notifications.ID + " = " + id, null);
         mWBDataBase.closeDb();
     }

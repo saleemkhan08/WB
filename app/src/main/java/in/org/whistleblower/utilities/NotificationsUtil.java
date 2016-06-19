@@ -15,6 +15,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -43,8 +44,8 @@ public class NotificationsUtil
     public static void showReceivingNotifyLocation(Notifications notification)
     {
         NotificationData data = new NotificationData();
-        data.largeIconUrl = notification.photoUrl;
-        data.contentTitle = notification.name;
+        data.largeIconUrl = notification.senderPhotoUrl;
+        data.contentTitle = notification.senderName;
         data.contentText = notification.message;
         data.contentIntentTag = notification.type;
         data.notificationId = (int) notification.id;
@@ -56,9 +57,9 @@ public class NotificationsUtil
     {
         NotificationData data = new NotificationData();
 
-        data.actionIntentText = (noOfAlarms > 1) ? "Turn Off All Alarms" : "Turn Off Alarm";
-        data.actionIntentIcon = R.mipmap.bell_cross_accent;
-        data.actionIntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
+        data.action1IntentText = (noOfAlarms > 1) ? "Turn Off All Alarms" : "Turn Off Alarm";
+        data.action1IntentIcon = R.mipmap.bell_cross_accent;
+        data.action1IntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
 
         data.contentIntentTag = NavigationUtil.FRAGMENT_TAG_LOCATION_ALARM;
         data.contentText = name;
@@ -97,13 +98,22 @@ public class NotificationsUtil
                 .setContentText(data.contentText)
                 .setContentIntent(contentPendingIntent);
 
-        if (data.actionIntentTag != null)
+        if (data.action1IntentTag != null)
         {
             Intent actionIntent = new Intent(mAppContext, NotificationActionReceiver.class);
-            actionIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, data.actionIntentTag);
+            actionIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, data.action1IntentTag);
             PendingIntent actionPendingIntent = PendingIntent.getBroadcast(mAppContext, (int) System.currentTimeMillis(), actionIntent, 0);
 
-            mBuilder.addAction(data.actionIntentIcon, data.actionIntentText, actionPendingIntent);
+            mBuilder.addAction(data.action1IntentIcon, data.action1IntentText, actionPendingIntent);
+        }
+
+        if (data.action2IntentTag != null)
+        {
+            Intent actionIntent = new Intent(mAppContext, NotificationActionReceiver.class);
+            actionIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, data.action2IntentTag);
+            PendingIntent actionPendingIntent = PendingIntent.getBroadcast(mAppContext, (int) System.currentTimeMillis(), actionIntent, 0);
+
+            mBuilder.addAction(data.action2IntentIcon, data.action2IntentText, actionPendingIntent);
         }
 
         if (mLargeIcon != null)
@@ -118,6 +128,10 @@ public class NotificationsUtil
             notificationDefault.defaults |= Notification.DEFAULT_VIBRATE; //Vibration
             notificationDefault.defaults |= Notification.DEFAULT_SOUND; // Sound
             mBuilder.setDefaults(notificationDefault.defaults);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            {
+                mBuilder.setPriority(data.priority);
+            }
         }
         int notificationId = getNotificationId(data.contentIntentTag);
         mNotificationManager.notify(notificationId, mBuilder.build());
@@ -147,6 +161,8 @@ public class NotificationsUtil
             case NavigationUtil.FRAGMENT_TAG_RECEIVING_SHARED_LOCATION:
                 return NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_SHARED_LOCATION;
 
+            case Notifications.KEY_INITIATE_SHARE_LOCATION :
+                return NotificationActionReceiver.NOTIFICATION_ID_INITIATE_SHARE_LOCATION;
             default:
                 return -1;
         }
@@ -191,10 +207,9 @@ public class NotificationsUtil
     public static void showReceivingSharedLocation(Notifications notification)
     {
         NotificationData data = new NotificationData();
-
-        data.largeIconUrl = notification.photoUrl;
-        data.contentTitle = notification.name;
-        data.contentText = "Click to view " + notification.name + "'s location...";
+        data.largeIconUrl = notification.senderPhotoUrl;
+        data.contentTitle = notification.senderName;
+        data.contentText = "Click to view " + notification.senderName + "'s location...";
         data.contentIntentTag = notification.type;
         data.notificationId = (int) notification.id;
         data.vibrate = true;

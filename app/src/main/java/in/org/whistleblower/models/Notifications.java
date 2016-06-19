@@ -5,18 +5,15 @@ import android.os.Parcelable;
 
 public class Notifications implements Parcelable
 {
-
-
-    public String userEmail, name, message, latitude, longitude, photoUrl, type;
-    public long timeStamp, id;
+    public static final String UPDATE_NOTIFICATION_STATUS = "updateNotificationStatus";
+    public static final String KEY_INITIATE_SHARE_LOCATION = "initiateShareLocation";
+    public String senderEmail, senderName, message, senderLatitude, senderLongitude, senderPhotoUrl, type;
+    public long timeStamp, id, serverNotificationId;
     public int status;
-//    (senderEmail, senderName, senderPhotoUrl, receiverEmail, message, type, latitude, longitude, timeStamp, status)
 
-
-    public static final int READ = 3;
-    public static final int UNREAD = 2;
-    public static final int DOWNLOAD = 1;
-    public static final int NOT_DOWNLOAD = 0;
+    public static final int READ = 2;
+    public static final int UNREAD = 1;
+    public static final int NOT_DOWNLOADED = 0;
 
     public static final String TYPE_NOTIFY_LOCATION = "TYPE_NOTIFY_LOCATION";
     public static final String TYPE_SHARE_LOCATION_ONCE = "TYPE_SHARE_LOCATION_ONCE";
@@ -29,11 +26,16 @@ public class Notifications implements Parcelable
     public static final String SENDER_PHOTO_URL = "senderPhotoUrl";
     public static final String RECEIVER_EMAIL = "receiverEmail";
     public static final String MESSAGE = "message";
-    public static final String LATITUDE = "latitude";
-    public static final String LONGITUDE = "longitude";
+    public static final String SENDER_LATITUDE = "senderLatitude";
+    public static final String SENDER_LONGITUDE = "senderLongitude";
     public static final String TIME_STAMP = "timeStamp";
-    public static final String STATUS = "status";
+    public static final String RECEIVER_STATUS = "receiverStatus";
     public static final String TYPE = "type";
+    public static final String SERVER_NOTIFICATION_ID = "serverNotificationId";
+
+    public Notifications()
+    {
+    }
 
     @Override
     public int describeContents()
@@ -44,33 +46,31 @@ public class Notifications implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeString(this.userEmail);
-        dest.writeString(this.name);
+        dest.writeString(this.senderEmail);
+        dest.writeString(this.senderName);
         dest.writeString(this.message);
-        dest.writeString(this.latitude);
-        dest.writeString(this.longitude);
-        dest.writeString(this.photoUrl);
+        dest.writeString(this.senderLatitude);
+        dest.writeString(this.senderLongitude);
+        dest.writeString(this.senderPhotoUrl);
         dest.writeString(this.type);
         dest.writeLong(this.timeStamp);
         dest.writeLong(this.id);
+        dest.writeLong(this.serverNotificationId);
         dest.writeInt(this.status);
-    }
-
-    public Notifications()
-    {
     }
 
     protected Notifications(Parcel in)
     {
-        this.userEmail = in.readString();
-        this.name = in.readString();
+        this.senderEmail = in.readString();
+        this.senderName = in.readString();
         this.message = in.readString();
-        this.latitude = in.readString();
-        this.longitude = in.readString();
-        this.photoUrl = in.readString();
+        this.senderLatitude = in.readString();
+        this.senderLongitude = in.readString();
+        this.senderPhotoUrl = in.readString();
         this.type = in.readString();
         this.timeStamp = in.readLong();
         this.id = in.readLong();
+        this.serverNotificationId = in.readLong();
         this.status = in.readInt();
     }
 

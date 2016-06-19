@@ -5,16 +5,22 @@ import android.os.Parcelable;
 
 public class ShareLocation implements Parcelable
 {
-    public static final String EMAIL = "email";
+    public static final String SENDER_EMAIL = "senderEmail";
     public static final String TABLE = "ShareLocation";
-    public static final String NAME = "name";
-    public static final String USER_EMAIL = "UserEmail";
-    public static final String PHOTO_URL = "photoUrl";
-    public static final String LATITUDE = "latitude";
-    public static final String LONGITUDE = "longitude";
+    public static final String SENDER_NAME = "senderName";
+    public static final String RECEIVER_EMAIL = "receiverEmail";
+    public static final String SENDER_PHOTO_URL = "senderPhotoUrl";
+    public static final String SENDER_LATITUDE = "senderLatitude";
+    public static final String SENDER_LONGITUDE = "senderLongitude";
+    public static final String SERVER_NOTIFICATION_ID = "serverNotificationId";
     public static final String LOCATION = "location";
 
-    public String name, email, userEmail, photoUrl;
+    public String senderName, senderEmail, receiverEmail, senderPhotoUrl;
+    public long serverNotificationId;
+
+    public ShareLocation()
+    {
+    }
 
     @Override
     public int describeContents()
@@ -25,22 +31,20 @@ public class ShareLocation implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeString(this.name);
-        dest.writeString(this.email);
-        dest.writeString(this.userEmail);
-        dest.writeString(this.photoUrl);
-    }
-
-    public ShareLocation()
-    {
+        dest.writeString(this.senderName);
+        dest.writeString(this.senderEmail);
+        dest.writeString(this.receiverEmail);
+        dest.writeString(this.senderPhotoUrl);
+        dest.writeLong(this.serverNotificationId);
     }
 
     protected ShareLocation(Parcel in)
     {
-        this.name = in.readString();
-        this.email = in.readString();
-        this.userEmail = in.readString();
-        this.photoUrl = in.readString();
+        this.senderName = in.readString();
+        this.senderEmail = in.readString();
+        this.receiverEmail = in.readString();
+        this.senderPhotoUrl = in.readString();
+        this.serverNotificationId = in.readLong();
     }
 
     public static final Parcelable.Creator<ShareLocation> CREATOR = new Parcelable.Creator<ShareLocation>()

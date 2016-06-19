@@ -14,11 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.whistleblower.WhistleBlower;
-import in.org.whistleblower.gcm.GcmPushReceiver;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.NotificationData;
-import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.NotificationsUtil;
@@ -44,14 +42,10 @@ public class FriendsLocationTrackingService extends Service implements ResultLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Notifications notification = intent.getParcelableExtra(GcmPushReceiver.SENDER_NOTIFICATION);
-        if (notification != null)
-        {
-            Map<String, String> receivingAcknowledgement = new HashMap<>();
-            receivingAcknowledgement.put("receiverEmail", mPreferences.getString(Accounts.EMAIL, ""));
-            receivingAcknowledgement.put("action", "receivingLocation");
-            VolleyUtil.sendPostData(receivingAcknowledgement, this);
-        }
+        Map<String, String> receivingAcknowledgement = new HashMap<>();
+        receivingAcknowledgement.put("receiverEmail", mPreferences.getString(Accounts.EMAIL, ""));
+        receivingAcknowledgement.put("action", "receivingLocation");
+        VolleyUtil.sendPostData(receivingAcknowledgement, this);
         return START_REDELIVER_INTENT;
     }
 

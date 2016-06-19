@@ -10,21 +10,23 @@ import in.org.whistleblower.models.ShareLocation;
 public class ShareLocationDao
 {
     public static final String TABLE_SCHEMA = "CREATE TABLE " + ShareLocation.TABLE + " ("
-            + ShareLocation.EMAIL + " VARCHAR(255), "
-            + ShareLocation.NAME + " VARCHAR(255), "
-            + ShareLocation.PHOTO_URL + " VARCHAR(255), "
-            + ShareLocation.USER_EMAIL + " VARCHAR(255) PRIMARY KEY );";
+            + ShareLocation.SENDER_EMAIL + " VARCHAR(255), "
+            + ShareLocation.SENDER_NAME + " VARCHAR(255), "
+            + ShareLocation.SENDER_PHOTO_URL + " VARCHAR(255), "
+            + ShareLocation.SERVER_NOTIFICATION_ID + " INTEGER PRIMARY KEY, "
+            + ShareLocation.RECEIVER_EMAIL + " VARCHAR(255));";
 
-    public static void insert(ShareLocation account)
+    public static void insert(ShareLocation shareLocation)
     {
         WBDataBase mWBDataBase = new WBDataBase();
-        if (null != account)
+        if (null != shareLocation)
         {
             ContentValues values = new ContentValues();
-            values.put(ShareLocation.NAME, account.name);
-            values.put(ShareLocation.EMAIL, account.email);
-            values.put(ShareLocation.PHOTO_URL, account.photoUrl);
-            values.put(ShareLocation.USER_EMAIL, account.userEmail);
+            values.put(ShareLocation.SENDER_NAME, shareLocation.senderName);
+            values.put(ShareLocation.SENDER_EMAIL, shareLocation.senderEmail);
+            values.put(ShareLocation.SENDER_PHOTO_URL, shareLocation.senderPhotoUrl);
+            values.put(ShareLocation.RECEIVER_EMAIL, shareLocation.receiverEmail);
+            values.put(ShareLocation.SERVER_NOTIFICATION_ID, shareLocation.serverNotificationId);
             mWBDataBase.insert(ShareLocation.TABLE, values);
         }
         mWBDataBase.closeDb();
@@ -40,7 +42,7 @@ public class ShareLocationDao
     public static void delete(String email)
     {
         WBDataBase mWBDataBase = new WBDataBase();
-        mWBDataBase.delete(ShareLocation.TABLE, ShareLocation.USER_EMAIL + " = ? ", new String []{email});
+        mWBDataBase.delete(ShareLocation.TABLE, ShareLocation.RECEIVER_EMAIL + " = ? ", new String []{email});
         mWBDataBase.closeDb();
     }
 
@@ -53,12 +55,13 @@ public class ShareLocationDao
         {
             while (cursor.moveToNext())
             {
-                ShareLocation account = new ShareLocation();
-                account.name = cursor.getString(cursor.getColumnIndex(ShareLocation.NAME));
-                account.email = cursor.getString(cursor.getColumnIndex(ShareLocation.EMAIL));
-                account.photoUrl = cursor.getString(cursor.getColumnIndex(ShareLocation.PHOTO_URL));
-                account.userEmail =  cursor.getString(cursor.getColumnIndex(ShareLocation.USER_EMAIL));
-                accountsList.add(account);
+                ShareLocation shareLocation = new ShareLocation();
+                shareLocation.senderName = cursor.getString(cursor.getColumnIndex(ShareLocation.SENDER_NAME));
+                shareLocation.senderEmail = cursor.getString(cursor.getColumnIndex(ShareLocation.SENDER_EMAIL));
+                shareLocation.senderPhotoUrl = cursor.getString(cursor.getColumnIndex(ShareLocation.SENDER_PHOTO_URL));
+                shareLocation.receiverEmail =  cursor.getString(cursor.getColumnIndex(ShareLocation.RECEIVER_EMAIL));
+                shareLocation.serverNotificationId =  cursor.getLong(cursor.getColumnIndex(ShareLocation.SERVER_NOTIFICATION_ID));
+                accountsList.add(shareLocation);
             }
             cursor.close();
         }

@@ -112,7 +112,7 @@ public class NotifyLocationFragment extends DialogFragment
 
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         intent.putExtra(NotifyLocation.FRAGMENT_TAG, mNotifyLocation);
-        intent.putExtra(LocationTrackingService.KEY_NOTIFY_ARRIVAL, true);
+        intent.putExtra(LocationTrackingService.KEY_NOTIFY_LOCATION, true);
 
         NotifyLocationDao.insert(mNotifyLocation);
         Otto.post(mNotifyLocation);

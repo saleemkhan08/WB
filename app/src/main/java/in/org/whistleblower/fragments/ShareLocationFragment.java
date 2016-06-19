@@ -19,9 +19,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.BindColor;
@@ -30,12 +33,15 @@ import butterknife.OnClick;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.CommonUserListAdapter;
-import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.dao.AccountsDao;
-import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.dao.ShareLocationDao;
+import in.org.whistleblower.interfaces.ResultListener;
+import in.org.whistleblower.models.Accounts;
+import in.org.whistleblower.models.Notifications;
+import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.VolleyUtil;
 
 public class ShareLocationFragment extends DialogFragment
 {
@@ -97,10 +103,10 @@ public class ShareLocationFragment extends DialogFragment
     public void onStart()
     {
         super.onStart();
-        if(mFriendList.size() < 1)
+        if (mFriendList.size() < 1)
         {
             dismiss();
-            if(!preferences.getBoolean(FriendListFragment.KEY_USERS_FETCHED, false))
+            if (!preferences.getBoolean(FriendListFragment.KEY_USERS_FETCHED, false))
             {
                 Toast.makeText(mActivity, "Please add friends to share location", Toast.LENGTH_SHORT).show();
             }
@@ -112,31 +118,70 @@ public class ShareLocationFragment extends DialogFragment
     {
         dismiss();
         ShareLocation location = new ShareLocation();
-        location.email = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
-        location.userEmail = account.email;
-        location.photoUrl = preferences.getString(Accounts.PHOTO_URL, "");
-        location.name = preferences.getString(ShareLocation.NAME, "Saleem");
+        location.senderEmail = preferences.getString(Accounts.EMAIL, "saleemkhan08@gmail.com");
+        location.receiverEmail = account.email;
+        location.senderPhotoUrl = preferences.getString(Accounts.PHOTO_URL, "");
+        location.senderName = preferences.getString(ShareLocation.SENDER_NAME, "Saleem");
         Intent intent = new Intent(mActivity, LocationTrackingService.class);
         intent.putExtra(ShareLocation.LOCATION, location);
 
         if (isContinuouslyClicked)
         {
-            intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION_REAL_TIME, true);
-
-            location.name = account.name;
-            location.photoUrl = account.photo_url;
-
-            ShareLocationDao.insert(location);
             Log.d("shareLocation", "continuously : checked");
+            initiateShareLocation(location, account);
         }
         else
         {
             intent.putExtra(LocationTrackingService.KEY_SHARE_LOCATION, true);
             Log.d("shareLocation", "just once : checked");
+            mActivity.startService(intent);
         }
-
-        mActivity.startService(intent);
         Log.d("shareLocation", "startService");
+    }
+
+    private void initiateShareLocation(final ShareLocation location, final Accounts account)
+    {
+        //Initiate location sharing.
+        Map<String, String> data = new HashMap<>();
+        data.put(VolleyUtil.KEY_ACTION, Notifications.KEY_INITIATE_SHARE_LOCATION);
+        data.put(Notifications.RECEIVER_EMAIL, location.receiverEmail);
+        data.put(Notifications.SENDER_EMAIL, location.senderEmail);
+        data.put(Notifications.SENDER_NAME, location.senderName);
+        data.put(Notifications.SENDER_PHOTO_URL, location.senderPhotoUrl);
+        VolleyUtil.sendPostData(data, new ResultListener<String>()
+        {
+            @Override
+            public void onSuccess(String result)
+            {
+                Log.d("ShareLocation", "Initiate sharing :" + result);
+                WhistleBlower.toast(result);
+                try
+                {
+                    long notificationId = Long.parseLong(result.trim());
+                    if (notificationId != -1)
+                    {
+                        location.senderName = account.name;
+                        location.senderPhotoUrl = account.photo_url;
+                        location.serverNotificationId = notificationId;
+                        ShareLocationDao.insert(location);
+                    }
+                    else
+                    {
+                        WhistleBlower.toast("Please Try Sharing Again!");
+                    }
+                }catch (Exception e)
+                {
+                    WhistleBlower.toast("Please Try Sharing Again!");
+                }
+            }
+
+            @Override
+            public void onError(VolleyError error)
+            {
+                Log.d("ShareLocation", "Initiate sharing :" + error.getMessage());
+                WhistleBlower.toast("Please Try Again!");
+            }
+        });
     }
 
     @Override

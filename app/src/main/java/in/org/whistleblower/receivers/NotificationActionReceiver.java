@@ -11,14 +11,14 @@ import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.dao.LocationAlarmDao;
+import in.org.whistleblower.services.FriendsLocationTrackingService;
 import in.org.whistleblower.utilities.NavigationUtil;
 
 public class NotificationActionReceiver extends BroadcastReceiver
 {
     public static final String NOTIFICATION_ACTION = "notificationAction";
     public static final String CANCEL_ALL_ALARMS = "CancelAllAlarms";
-    public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
-
+    public static final String NOTIFICATION_ID = "notificationId";
     public static final int NOTIFICATION_ID_LOCATION_ALARMS = 181;
     public static final int NOTIFICATION_ID_SHARING_REAL_TIME_LOCATION = 182;
     public static final int NOTIFICATION_ID_NOTIFY_LOCATION = 183;
@@ -26,7 +26,10 @@ public class NotificationActionReceiver extends BroadcastReceiver
     public static final int NOTIFICATION_ID_RECEIVING_SHARED_LOCATION = 184;
     public static final int NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION = 185;
     public static final int NOTIFICATION_ID_RECEIVING_SHARED_LOCATION_ONCE = 186;
-
+    public static final String FRIENDS_LOCATION_TRACKING_SERVICE = "friendsLocationTrackingService";
+    public static final String START_LOCATION_SHARING = "startLocationSharing";
+    public static final String NOTIFY_REJECTION_TO_SENDER = "notifyRejectionToSender";
+    public static final int NOTIFICATION_ID_INITIATE_SHARE_LOCATION = 187;
     static int retryCnt = 0;
 
     public NotificationActionReceiver()
@@ -60,6 +63,9 @@ public class NotificationActionReceiver extends BroadcastReceiver
             case NavigationUtil.FRAGMENT_TAG_NOTIFY_LOCATION_LIST:
             case NavigationUtil.FRAGMENT_TAG_RECEIVING_NOTIFIED_LOCATION:
                 context.startActivity(getMainActivityDialogIntent(context, action, id));
+                break;
+            case FRIENDS_LOCATION_TRACKING_SERVICE:
+                context.startService(new Intent(context, FriendsLocationTrackingService.class));
                 break;
         }
     }

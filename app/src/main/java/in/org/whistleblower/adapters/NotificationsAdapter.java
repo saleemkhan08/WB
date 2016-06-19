@@ -46,14 +46,14 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     {
         final Notifications notification = mNotificationsList.get(position);
         Log.d("NotificationsAdapter", "onBindViewHolder : " + mNotificationsList.size());
-        Log.d("NotificationsAdapter", "notification.name : " + notification.name);
+        Log.d("NotificationsAdapter", "notification.name : " + notification.senderName);
         Log.d("NotificationsAdapter", "notification.type : " +notification.type);
         Log.d("NotificationsAdapter", "notification.message : " + notification.message);
         holder.notifyMessage.setText(notification.message);
-        holder.friendsName.setText(notification.name);
-        if (notification.photoUrl != null && !(notification.photoUrl.trim().isEmpty()))
+        holder.friendsName.setText(notification.senderName);
+        if (notification.senderPhotoUrl != null && !(notification.senderPhotoUrl.trim().isEmpty()))
         {
-            ImageUtil.displayImage(mActivity, notification.photoUrl, holder.friendCardIcon, true);
+            ImageUtil.displayImage(mActivity, notification.senderPhotoUrl, holder.friendCardIcon, true);
         }
         else
         {

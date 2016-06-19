@@ -51,15 +51,15 @@ public class GetNotificationIntentService extends IntentService
                         Notifications notification = new Notifications();
                         JSONObject json = (JSONObject) array.get(notificationIndex);
                         notification.id = json.getLong(Notifications.ID);
-                        notification.userEmail = json.getString(Notifications.SENDER_EMAIL);
-                        notification.name = json.getString(Notifications.SENDER_NAME);
-                        notification.photoUrl = json.getString(Notifications.SENDER_PHOTO_URL);
+                        notification.senderEmail = json.getString(Notifications.SENDER_EMAIL);
+                        notification.senderName = json.getString(Notifications.SENDER_NAME);
+                        notification.senderPhotoUrl = json.getString(Notifications.SENDER_PHOTO_URL);
                         notification.message = json.getString(Notifications.MESSAGE);
                         notification.type = json.getString(Notifications.TYPE);
-                        notification.latitude = json.getString(Notifications.LATITUDE);
-                        notification.longitude = json.getString(Notifications.LONGITUDE);
+                        notification.senderLatitude = json.getString(Notifications.SENDER_LATITUDE);
+                        notification.senderLongitude = json.getString(Notifications.SENDER_LONGITUDE);
                         notification.timeStamp = json.getLong(Notifications.TIME_STAMP);
-                        notification.status = json.getInt(Notifications.STATUS);
+                        notification.status = json.getInt(Notifications.RECEIVER_STATUS);
                         NotificationsDao.insert(notification);
                     }
                 }

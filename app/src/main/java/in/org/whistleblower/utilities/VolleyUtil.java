@@ -35,7 +35,10 @@ public class VolleyUtil
                     @Override
                     public void onResponse(JSONObject response)
                     {
-                        listener.onSuccess(response);
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
                     }
                 }, new Response.ErrorListener()
         {
@@ -43,7 +46,10 @@ public class VolleyUtil
             public void onErrorResponse(VolleyError error)
             {
                 error.printStackTrace();
-                listener.onError(error);
+                if(listener != null)
+                {
+                    listener.onError(error);
+                }
             }
         });
 
@@ -59,7 +65,10 @@ public class VolleyUtil
                     @Override
                     public void onResponse(String response)
                     {
-                        listener.onSuccess(response);
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
                     }
                 },
                 new Response.ErrorListener()
@@ -67,7 +76,10 @@ public class VolleyUtil
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-                        listener.onError(error);
+                        if(listener != null)
+                        {
+                            listener.onError(error);
+                        }
                     }
                 })
         {
@@ -97,7 +109,10 @@ public class VolleyUtil
                     @Override
                     public void onResponse(String response)
                     {
-                        listener.onSuccess(response);
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
                     }
                 },
                 new Response.ErrorListener()
@@ -105,7 +120,10 @@ public class VolleyUtil
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-                        listener.onError(error);
+                        if(listener != null)
+                        {
+                            listener.onError(error);
+                        }
                     }
                 });
 
@@ -123,7 +141,10 @@ public class VolleyUtil
                     @Override
                     public void onResponse(String response)
                     {
-                        listener.onSuccess(response);
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
                     }
                 },
                 new Response.ErrorListener()
@@ -131,7 +152,10 @@ public class VolleyUtil
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-                        listener.onError(error);
+                        if(listener != null)
+                        {
+                            listener.onError(error);
+                        }
                     }
                 });
 
@@ -153,7 +177,10 @@ public class VolleyUtil
                     @Override
                     public void onResponse(String response)
                     {
-                        listener.onSuccess(response);
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
                     }
                 },
                 new Response.ErrorListener()
@@ -161,7 +188,10 @@ public class VolleyUtil
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-                        listener.onError(error);
+                        if(listener != null)
+                        {
+                            listener.onError(error);
+                        }
                     }
                 })
         {
