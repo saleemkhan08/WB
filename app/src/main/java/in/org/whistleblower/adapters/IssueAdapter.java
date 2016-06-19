@@ -112,7 +112,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                mUtil.toast("Volunteer : " + position);
+                WhistleBlower.toast("Volunteer : " + position);
             }
         });
 
@@ -166,7 +166,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
-            holder.profilePic.setImageResource(R.drawable.anonymous_white_primary_dark);
+            holder.profilePic.setImageResource(R.mipmap.user_accent_primary_o);
         }
         else
         {
