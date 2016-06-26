@@ -10,12 +10,11 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +40,7 @@ import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.services.LocationTrackingService;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.TransitionUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
 
 public class ShareLocationFragment extends DialogFragment
@@ -96,6 +96,7 @@ public class ShareLocationFragment extends DialogFragment
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);
         shareLocationFriendList.setLayoutManager(new LinearLayoutManager(mActivity));
         shareLocationFriendList.setAdapter(mAdapter);
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
 
@@ -148,13 +149,15 @@ public class ShareLocationFragment extends DialogFragment
         data.put(Notifications.SENDER_EMAIL, location.senderEmail);
         data.put(Notifications.SENDER_NAME, location.senderName);
         data.put(Notifications.SENDER_PHOTO_URL, location.senderPhotoUrl);
+        data.put(Notifications.TIME_STAMP, System.currentTimeMillis()+"");
+
+        WhistleBlower.toast("Requesting " + account.name+"...");
         VolleyUtil.sendPostData(data, new ResultListener<String>()
         {
             @Override
             public void onSuccess(String result)
             {
                 Log.d("ShareLocation", "Initiate sharing :" + result);
-                WhistleBlower.toast(result);
                 try
                 {
                     long notificationId = Long.parseLong(result.trim());
@@ -164,10 +167,11 @@ public class ShareLocationFragment extends DialogFragment
                         location.senderPhotoUrl = account.photo_url;
                         location.serverNotificationId = notificationId;
                         ShareLocationDao.insert(location);
+                        WhistleBlower.toast("Request sent to "+account.name);
                     }
                     else
                     {
-                        WhistleBlower.toast("Please Try Sharing Again!");
+                        WhistleBlower.toast(account.name +" is offline");
                     }
                 }catch (Exception e)
                 {
@@ -207,7 +211,7 @@ public class ShareLocationFragment extends DialogFragment
         continuously.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
         justOnce.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
 
-        TransitionManager.beginDelayedTransition(continuouslyHighlight, new Slide());
+        TransitionUtil.defaultTransition(continuouslyHighlight);
         continuouslyHighlight.setBackgroundColor(colorAccent);
         justOnceHighlight.setBackgroundColor(transparent);
     }
@@ -222,7 +226,7 @@ public class ShareLocationFragment extends DialogFragment
         continuously.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
         justOnce.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
 
-        TransitionManager.beginDelayedTransition(justOnceHighlight, new Slide());
+        TransitionUtil.defaultTransition(justOnceHighlight);
         continuouslyHighlight.setBackgroundColor(transparent);
         justOnceHighlight.setBackgroundColor(colorAccent);
 

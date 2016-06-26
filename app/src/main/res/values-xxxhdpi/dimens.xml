@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="loginTitle">40sp</dimen>
+    <dimen name="loginDesc">25sp</dimen>
+    <dimen name="toolbar_title">35sp</dimen>
+
+    <item name="totalWeight" type="dimen" format="float">11</item>
+    <item name="imageWeight" type="dimen" format="float">9</item>
+    <item name="titleWeight" type="dimen" format="float">1.25</item>
+    <item name="descWeight" type="dimen" format="float">0.75</item>
+</resources>

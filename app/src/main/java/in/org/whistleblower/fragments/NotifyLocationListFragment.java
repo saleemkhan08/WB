@@ -7,10 +7,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -27,6 +27,7 @@ import in.org.whistleblower.adapters.NotifyLocationAdapter;
 import in.org.whistleblower.dao.NotifyLocationDao;
 import in.org.whistleblower.models.NotifyLocation;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.TransitionUtil;
 
 public class NotifyLocationListFragment extends DialogFragment
 {
@@ -67,6 +68,7 @@ public class NotifyLocationListFragment extends DialogFragment
         }
         notifyLocationListView.setAdapter(new NotifyLocationAdapter(mActivity, mNotifyLocationList));
         notifyLocationListView.setLayoutManager(new LinearLayoutManager(mActivity));
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
 
@@ -82,7 +84,7 @@ public class NotifyLocationListFragment extends DialogFragment
 
     private void showEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
     }
 

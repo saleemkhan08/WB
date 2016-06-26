@@ -47,14 +47,17 @@ public class GcmPushReceiver extends GcmListenerService
                     break;
 
                 case Notifications.KEY_INITIATE_SHARE_LOCATION:
+
                     NotificationData data = new NotificationData();
+                    data.notificationId = notification.id;
+                    data.notification = notification;
                     data.contentTitle = notification.senderName;
                     data.largeIconUrl = notification.senderPhotoUrl;
                     data.contentIntentTag = Notifications.KEY_INITIATE_SHARE_LOCATION;
                     data.contentText = "Sharing Location";
 
                     data.action1IntentIcon = R.mipmap.check_primary_dark;
-                    data.action1IntentTag = NotificationActionReceiver.START_LOCATION_SHARING;
+                    data.action1IntentTag = NotificationActionReceiver.START_RECEIVING_LOCATION;
                     data.action1IntentText = "Accept";
 
                     data.action2IntentIcon = R.mipmap.reject_primary_dark;
@@ -63,7 +66,6 @@ public class GcmPushReceiver extends GcmListenerService
                     data.priority = Notification.PRIORITY_MAX;
                     NotificationsUtil.showNotification(data);
                     break;
-
             }
         }
 

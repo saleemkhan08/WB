@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -80,6 +81,7 @@ public class NotifyLocationFragment extends DialogFragment
         CommonUserListAdapter mAdapter = new CommonUserListAdapter(mActivity, mFriendList);
         shareLocationFriendList.setLayoutManager(new LinearLayoutManager(mActivity));
         shareLocationFriendList.setAdapter(mAdapter);
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
 

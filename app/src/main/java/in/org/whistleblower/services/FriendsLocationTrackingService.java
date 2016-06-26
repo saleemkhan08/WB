@@ -10,17 +10,13 @@ import android.util.Log;
 
 import com.android.volley.VolleyError;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.interfaces.ResultListener;
-import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.NotificationData;
+import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.receivers.NotificationActionReceiver;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.NotificationsUtil;
-import in.org.whistleblower.utilities.VolleyUtil;
 
 public class FriendsLocationTrackingService extends Service implements ResultListener<String>
 {
@@ -42,10 +38,14 @@ public class FriendsLocationTrackingService extends Service implements ResultLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Map<String, String> receivingAcknowledgement = new HashMap<>();
-        receivingAcknowledgement.put("receiverEmail", mPreferences.getString(Accounts.EMAIL, ""));
-        receivingAcknowledgement.put("action", "receivingLocation");
-        VolleyUtil.sendPostData(receivingAcknowledgement, this);
+        Notifications notifications = intent.getParcelableExtra(NotificationActionReceiver.KEY_NOTIFICATION);
+        Log.d("NOTIFICATION_ACTION", "notificationsId : "+notifications.serverNotificationId);
+        NotificationsUtil.removeNotification(NotificationsUtil.getLastIntDigitsFromLong(notifications.serverNotificationId));
+        WhistleBlower.toast(intent.getStringExtra(NotificationActionReceiver.NOTIFICATION_ACTION));
+//        Map<String, String> receivingAcknowledgement = new HashMap<>();
+//        receivingAcknowledgement.put("receiverEmail", mPreferences.getString(Accounts.EMAIL, ""));
+//        receivingAcknowledgement.put("action", "receivingLocation");
+//        VolleyUtil.sendPostData(receivingAcknowledgement, this);
         return START_REDELIVER_INTENT;
     }
 

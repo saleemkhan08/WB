@@ -7,10 +7,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -24,9 +24,10 @@ import butterknife.OnClick;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.PlaceAdapter;
-import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.dao.FavPlacesDao;
+import in.org.whistleblower.models.FavPlaces;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.TransitionUtil;
 
 public class FavoritePlacesFragment extends DialogFragment
 {
@@ -66,7 +67,7 @@ public class FavoritePlacesFragment extends DialogFragment
 
         TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
         dialogTitle.setTypeface(WhistleBlower.getTypeface());
-
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
 
@@ -88,7 +89,7 @@ public class FavoritePlacesFragment extends DialogFragment
 
     private void showEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
     }
 

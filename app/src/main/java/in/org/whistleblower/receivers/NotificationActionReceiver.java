@@ -9,8 +9,9 @@ import android.util.Log;
 
 import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.WhistleBlower;
-import in.org.whistleblower.gcm.RegistrationIntentService;
 import in.org.whistleblower.dao.LocationAlarmDao;
+import in.org.whistleblower.gcm.RegistrationIntentService;
+import in.org.whistleblower.models.Notifications;
 import in.org.whistleblower.services.FriendsLocationTrackingService;
 import in.org.whistleblower.utilities.NavigationUtil;
 
@@ -27,9 +28,10 @@ public class NotificationActionReceiver extends BroadcastReceiver
     public static final int NOTIFICATION_ID_RECEIVING_NOTIFIED_LOCATION = 185;
     public static final int NOTIFICATION_ID_RECEIVING_SHARED_LOCATION_ONCE = 186;
     public static final String FRIENDS_LOCATION_TRACKING_SERVICE = "friendsLocationTrackingService";
-    public static final String START_LOCATION_SHARING = "startLocationSharing";
+    public static final String START_RECEIVING_LOCATION = "startLocationSharing";
     public static final String NOTIFY_REJECTION_TO_SENDER = "notifyRejectionToSender";
     public static final int NOTIFICATION_ID_INITIATE_SHARE_LOCATION = 187;
+    public static final String KEY_NOTIFICATION = "notification";
     static int retryCnt = 0;
 
     public NotificationActionReceiver()
@@ -41,6 +43,7 @@ public class NotificationActionReceiver extends BroadcastReceiver
     {
         String action = intent.getStringExtra(NOTIFICATION_ACTION);
         int id = intent.getIntExtra(NOTIFICATION_ID, -1);
+        Notifications notification = intent.getParcelableExtra(KEY_NOTIFICATION);
         Log.d(NOTIFICATION_ACTION, "NOTIFICATION_ACTION : " + action);
         switch (action)
         {
@@ -64,9 +67,14 @@ public class NotificationActionReceiver extends BroadcastReceiver
             case NavigationUtil.FRAGMENT_TAG_RECEIVING_NOTIFIED_LOCATION:
                 context.startActivity(getMainActivityDialogIntent(context, action, id));
                 break;
-            case FRIENDS_LOCATION_TRACKING_SERVICE:
-                context.startService(new Intent(context, FriendsLocationTrackingService.class));
+            case START_RECEIVING_LOCATION:
+            case NOTIFY_REJECTION_TO_SENDER:
+                Intent friendsLocationTrackingIntent = new Intent(context, FriendsLocationTrackingService.class);
+                friendsLocationTrackingIntent.putExtra(NOTIFICATION_ACTION, action);
+                friendsLocationTrackingIntent.putExtra(KEY_NOTIFICATION, notification);
+                context.startService(friendsLocationTrackingIntent);
                 break;
+
         }
     }
 

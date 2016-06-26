@@ -12,10 +12,9 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -78,6 +77,7 @@ import in.org.whistleblower.utilities.MiscUtil;
 import in.org.whistleblower.utilities.NavigationUtil;
 import in.org.whistleblower.utilities.PermissionUtil;
 import in.org.whistleblower.utilities.TouchableWrapper;
+import in.org.whistleblower.utilities.TransitionUtil;
 
 public class MapFragment extends SupportMapFragment implements
         View.OnClickListener,
@@ -409,7 +409,7 @@ public class MapFragment extends SupportMapFragment implements
         int drawableId;
         favPlaceTypeSelector.setVisibility(View.GONE);
         showShareLocationOptions = false;
-        TransitionManager.beginDelayedTransition(shareLocationOptions);
+        TransitionUtil.defaultTransition(shareLocationOptions);
         shareLocationOptions.setVisibility(View.GONE);
 
         setupRadiusSeekBar();
@@ -419,7 +419,7 @@ public class MapFragment extends SupportMapFragment implements
                 drawableId = R.mipmap.fav_holo;
                 placeType = HOME;
                 favPlaceTypeSelector.setVisibility(View.GONE);
-                TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+                TransitionUtil.defaultTransition(favPlaceTypeSelector);
                 favPlaceTypeSelector.setVisibility(View.VISIBLE);
                 break;
             case FABUtil.ADD_ISSUE:
@@ -437,15 +437,15 @@ public class MapFragment extends SupportMapFragment implements
         }
         mSubmitButton.setVisibility(View.VISIBLE);
         isSubmitButtonShown = true;
-        searchIcon.setImageDrawable(mActivity.getDrawable(drawableId));
+        searchIcon.setImageDrawable(ContextCompat.getDrawable(mActivity,drawableId));
 
-        TransitionManager.beginDelayedTransition(map_fab_buttons);
+        TransitionUtil.slideTransition(map_fab_buttons);
 
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) map_fab_buttons.getLayoutParams();
         layoutParams.bottomMargin = MiscUtil.dp(mActivity, 60);
         map_fab_buttons.setLayoutParams(layoutParams);
 
-        TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
+        TransitionUtil.defaultTransition(radiusSeekBarInnerWrapper);
         radiusSeekBarInnerWrapper.setVisibility(View.VISIBLE);
 
         Log.d("hjki", "radius : VISIBLE");
@@ -455,19 +455,19 @@ public class MapFragment extends SupportMapFragment implements
     public void hideSubmitButtonAndShowSearchIcon()
     {
         showShareLocationOptions = true;
-        TransitionManager.beginDelayedTransition(favPlaceTypeSelector);
+        TransitionUtil.defaultTransition(favPlaceTypeSelector);
         favPlaceTypeSelector.setVisibility(View.GONE);
 
         isSubmitButtonShown = false;
-        searchIcon.setImageDrawable(mActivity.getDrawable(R.drawable.search_primary_dark));
+        searchIcon.setImageDrawable(ContextCompat.getDrawable(mActivity, R.drawable.search_primary_dark));
         mSubmitButton.setVisibility(View.INVISIBLE);
-        TransitionManager.beginDelayedTransition(map_fab_buttons);
+        TransitionUtil.slideTransition(map_fab_buttons);
 
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) map_fab_buttons.getLayoutParams();
         layoutParams.bottomMargin = MiscUtil.dp(mActivity, 0);
         map_fab_buttons.setLayoutParams(layoutParams);
 
-        TransitionManager.beginDelayedTransition(radiusSeekBarInnerWrapper);
+        TransitionUtil.defaultTransition(radiusSeekBarInnerWrapper);
         radiusSeekBarInnerWrapper.setVisibility(View.GONE);
         removeActionCircle();
         showShareLocationOptions();
@@ -815,11 +815,10 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActionUp()
     {
-        Slide slide = new Slide();
-        TransitionManager.beginDelayedTransition(map_fab_buttons, slide);
+        TransitionUtil.slideTransition(map_fab_buttons);
         map_fab_buttons.setVisibility(View.VISIBLE);
 
-        TransitionManager.beginDelayedTransition(searchBar);
+        TransitionUtil.defaultTransition(searchBar);
 
         RelativeLayout.LayoutParams searchBarLayoutParams = (RelativeLayout.LayoutParams) searchBar.getLayoutParams();
         searchBarLayoutParams.topMargin = searchBarMargin;
@@ -845,13 +844,12 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActionDown()
     {
-        Slide slide = new Slide();
         mOnActionDownLatLng = mGeoCodeLatLng;
-        TransitionManager.beginDelayedTransition(map_fab_buttons, slide);
+        TransitionUtil.slideTransition(map_fab_buttons);
         map_fab_buttons.setVisibility(View.GONE);
         mToolbar.animate().translationY(-mToolbar.getBottom()).start();
 
-        TransitionManager.beginDelayedTransition(searchBar);
+        TransitionUtil.defaultTransition(searchBar);
 
         RelativeLayout.LayoutParams searchBarLayoutParams = (RelativeLayout.LayoutParams) searchBar.getLayoutParams();
         searchBarMargin = searchBarLayoutParams.topMargin;
@@ -1323,7 +1321,7 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("MapFragmentFlowLogs", "showShareLocationOptions : " + dist);
         if (dist < 10 && showShareLocationOptions)
         {
-            TransitionManager.beginDelayedTransition(shareLocationOptions);
+            TransitionUtil.defaultTransition(shareLocationOptions);
             shareLocationOptions.setVisibility(View.VISIBLE);
         }
         else
@@ -1335,7 +1333,7 @@ public class MapFragment extends SupportMapFragment implements
     void hideShareLocationOptions()
     {
         Log.d("MapFragmentFlowLogs", "hideShareLocationOptions");
-        TransitionManager.beginDelayedTransition(shareLocationOptions);
+        TransitionUtil.defaultTransition(shareLocationOptions);
         shareLocationOptions.setVisibility(View.GONE);
     }
 

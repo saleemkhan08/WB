@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -141,7 +142,7 @@ public class AddIssueActivity extends AppCompatActivity implements View.OnClickL
         displayPic = (ImageView) findViewById(R.id.profilePic);
         username = (TextView) findViewById(R.id.username);
         String dpUrl = preferences.getString(Accounts.PHOTO_URL, "");
-        Drawable anonymous = getDrawable(R.drawable.anonymous_white_primary_dark);
+        Drawable anonymous = ContextCompat.getDrawable(this, R.drawable.anonymous_white_primary_dark);
         if (preferences.getBoolean(IssuesDao.ANONYMOUS, false))
         {
             displayPic.setImageDrawable(anonymous);

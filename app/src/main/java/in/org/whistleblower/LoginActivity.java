@@ -11,8 +11,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,20 +79,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             @Override
             public void onClick(View v)
             {
-                util.isConnected((ConnectivityListener) LoginActivity.this);
+                util.isConnected(LoginActivity.this, LoginActivity.this);
             }
         });
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setScopes(gso.getScopeArray());
     }
 
-    @Override
     public void onInternetConnected()
     {
         signIn();
     }
 
-    @Override
     public void onCancelled()
     {
 
@@ -111,7 +107,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     {
         Log.d(TAG, "onPageSelected :: " + position);
 
-        TransitionManager.beginDelayedTransition(pageIndicator, new Slide());
         RelativeLayout.LayoutParams params =
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         switch (position)
@@ -300,8 +295,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onConnectionFailed(ConnectionResult connectionResult)
     {
         util.hideProgressDialog();
-        util.toast("Something went wrong!");
-        util.toast("Please Try again!");
+        WhistleBlower.toast("Something went wrong!");
+        WhistleBlower.toast("Please Try again!");
         signOut();
         revokeAccess();
     }
@@ -314,4 +309,53 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         startActivityForResult(signInIntent, RC_GET_TOKEN);
         util.showIndeterminateProgressDialog(SIGNING_IN);
     }
+
+   /* public void isConnected()
+    {
+        if (!MiscUtil.isConnected(this))
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.no_network_access);
+            builder.setPositiveButton("Try Again",
+                    new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            if (MiscUtil.isConnected(LoginActivity.this))
+                            {
+                                onInternetConnected();
+                                dialog.dismiss();
+                            }
+                            else
+                            {
+                                isConnected();
+                            }
+                        }
+                    });
+            builder.setCancelable(false);
+            builder.setTitle(R.string.internet_failure);
+            builder.setOnKeyListener(new DialogInterface.OnKeyListener()
+            {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode,
+                                     KeyEvent event)
+                {
+                    if (keyCode == KeyEvent.KEYCODE_BACK
+                            && event.getAction() == KeyEvent.ACTION_UP
+                            && !event.isCanceled())
+                    {
+                        dialog.dismiss();
+                        onCancelled();
+                    }
+                    return false;
+                }
+            });
+            builder.show();
+        }
+        else
+        {
+            onInternetConnected();
+        }
+    }*/
 }

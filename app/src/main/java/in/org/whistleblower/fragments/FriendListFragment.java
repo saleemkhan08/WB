@@ -10,8 +10,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -37,10 +35,11 @@ import in.org.whistleblower.MainActivity;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.FriendListAdapter;
+import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
-import in.org.whistleblower.dao.AccountsDao;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.TransitionUtil;
 import in.org.whistleblower.utilities.VolleyUtil;
 
 public class FriendListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, ResultListener<String>
@@ -110,7 +109,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
             {
                 if (event.getAction() == MotionEvent.ACTION_DOWN)
                 {
-                    TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                    TransitionUtil.slideTransition(fabWrapper);
                     fabWrapper.setVisibility(View.GONE);
                 }
                 else if (event.getAction() == MotionEvent.ACTION_UP)
@@ -121,7 +120,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
                         @Override
                         public void run()
                         {
-                            TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                            TransitionUtil.slideTransition(fabWrapper);
                             fabWrapper.setVisibility(View.VISIBLE);
                         }
                     }, 1000);
@@ -134,7 +133,7 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
                         @Override
                         public void run()
                         {
-                            TransitionManager.beginDelayedTransition(fabWrapper, new Slide());
+                            TransitionUtil.slideTransition(fabWrapper);
                             fabWrapper.setVisibility(View.VISIBLE);
                         }
                     }, 500);
@@ -288,14 +287,14 @@ public class FriendListFragment extends Fragment implements SwipeRefreshLayout.O
 
     private void showEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setEnabled(false);
     }
 
     private void hideEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.GONE);
         swipeRefreshLayout.setEnabled(true);
     }

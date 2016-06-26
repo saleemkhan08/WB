@@ -6,11 +6,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -29,6 +28,7 @@ import in.org.whistleblower.dao.ShareLocationDao;
 import in.org.whistleblower.models.ShareLocation;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.NavigationUtil;
+import in.org.whistleblower.utilities.TransitionUtil;
 
 public class ShareLocationListFragment extends android.support.v4.app.DialogFragment
 {
@@ -89,6 +89,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         TextView dialogTitle = (TextView) parentView.findViewById(R.id.dialogTitle);
         dialogTitle.setTypeface(WhistleBlower.getTypeface());
         onSharingClick();
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
 
@@ -120,7 +121,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
 
     private void showEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
         emptyListTextView.setText(isSharingClicked ? locationIsntBeingShared : locationIsntBeingReceived);
     }
@@ -155,7 +156,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         sharing.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
         receiving.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
 
-        TransitionManager.beginDelayedTransition(sharingHighlight, new Slide());
+        TransitionUtil.defaultTransition(sharingHighlight);
         sharingHighlight.setBackgroundColor(colorAccent);
         receivingHighlight.setBackgroundColor(transparent);
 
@@ -179,7 +180,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         sharing.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
         receiving.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
 
-        TransitionManager.beginDelayedTransition(receivingHighlight, new Slide());
+        TransitionUtil.defaultTransition(receivingHighlight);
         sharingHighlight.setBackgroundColor(transparent);
         receivingHighlight.setBackgroundColor(colorAccent);
 

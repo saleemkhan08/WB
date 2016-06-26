@@ -2,6 +2,7 @@ package in.org.whistleblower;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
@@ -18,15 +19,14 @@ import com.android.volley.VolleyError;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import butterknife.Bind;
+import butterknife.BindColor;
 import butterknife.ButterKnife;
+import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.fragments.MapFragment;
 import in.org.whistleblower.interfaces.ResultListener;
 import in.org.whistleblower.models.Accounts;
 import in.org.whistleblower.models.Issue;
-import in.org.whistleblower.dao.IssuesDao;
 import in.org.whistleblower.singletons.Otto;
 import in.org.whistleblower.utilities.ImageUtil;
 import in.org.whistleblower.utilities.MiscUtil;
@@ -63,9 +63,11 @@ public class IssueActivity extends AppCompatActivity
     @Bind(R.id.shareContainer)
     View shareContainer;
 
+    @BindColor(R.color.transparent)
+    int colorTransparent;
+
     ImageUtil mImageUtil;
 
-    @Inject
     SharedPreferences preferences;
     private MiscUtil mUtil;
     Issue issue;
@@ -81,7 +83,7 @@ public class IssueActivity extends AppCompatActivity
         mImageUtil = new ImageUtil(this);
         mUtil = new MiscUtil(this);
         ButterKnife.bind(this);
-        WhistleBlower.getComponent().inject(this);
+        preferences = WhistleBlower.getPreferences();
         if (!intent.hasExtra(IssuesDao.ISSUE_ID))
         {
             startActivity(new Intent(this, MainActivity.class));
@@ -172,13 +174,21 @@ public class IssueActivity extends AppCompatActivity
         String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
-            profilePic.setBackground(getDrawable(R.drawable.anonymous_white_primary_dark));
+            if (Build.VERSION.SDK_INT > 16)
+            {
+                profilePic.setBackground(getDrawable(R.drawable.anonymous_white_primary_dark));
+            }
+            else
+            {
+                profilePic.setBackgroundDrawable(getDrawable(R.drawable.anonymous_white_primary_dark));
+            }
+
             profilePic.setImageResource(android.R.color.transparent);
         }
         else
         {
             mImageUtil.displayImage(dpUrl, profilePic, true);
-            profilePic.setBackgroundColor(getResources().getColor(android.R.color.transparent, null));
+            profilePic.setBackgroundColor(colorTransparent);
         }
 
         issueImage.setOnClickListener(new View.OnClickListener()

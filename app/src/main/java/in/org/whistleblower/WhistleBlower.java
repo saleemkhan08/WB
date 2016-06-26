@@ -4,13 +4,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDexApplication;
 import android.widget.Toast;
 
 import in.org.whistleblower.components.AppComponent;
 import in.org.whistleblower.components.DaggerAppComponent;
 import in.org.whistleblower.modules.MiscModule;
 
-public class WhistleBlower extends android.app.Application
+
+public class WhistleBlower extends MultiDexApplication
 {
     private static Context context;
     private static Typeface typeface;

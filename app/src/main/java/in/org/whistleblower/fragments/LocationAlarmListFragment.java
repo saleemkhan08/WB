@@ -7,10 +7,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -24,9 +24,10 @@ import butterknife.OnClick;
 import in.org.whistleblower.R;
 import in.org.whistleblower.WhistleBlower;
 import in.org.whistleblower.adapters.AlarmAdapter;
-import in.org.whistleblower.models.LocationAlarm;
 import in.org.whistleblower.dao.LocationAlarmDao;
+import in.org.whistleblower.models.LocationAlarm;
 import in.org.whistleblower.singletons.Otto;
+import in.org.whistleblower.utilities.TransitionUtil;
 
 public class LocationAlarmListFragment extends DialogFragment
 {
@@ -55,6 +56,7 @@ public class LocationAlarmListFragment extends DialogFragment
         View parentView = inflater.inflate(R.layout.fragment_location_alarm_list, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
+
         ArrayList<LocationAlarm> mAlarmList = LocationAlarmDao.getList();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mAlarmList.size() < 1)
@@ -67,7 +69,7 @@ public class LocationAlarmListFragment extends DialogFragment
 
         locationAlarmList.setAdapter(new AlarmAdapter(mActivity, mAlarmList));
         locationAlarmList.setLayoutManager(new LinearLayoutManager(mActivity));
-
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return parentView;
     }
     @Subscribe
@@ -82,7 +84,7 @@ public class LocationAlarmListFragment extends DialogFragment
 
     private void showEmptyListString()
     {
-        TransitionManager.beginDelayedTransition(emptyList);
+        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
     }
 

@@ -10,6 +10,8 @@
     tools:context="in.org.whistleblower.AlarmActivity">
     <RelativeLayout
         android:layout_width="match_parent"
+        android:paddingRight="20dp"
+        android:paddingLeft="20dp"
         android:background="@drawable/alarm_bg"
         android:layout_height="match_parent">
 

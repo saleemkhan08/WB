@@ -31,7 +31,6 @@ import in.org.whistleblower.receivers.NotificationActionReceiver;
 public class NotificationsUtil
 {
     private static final String TAG = "NotificationsUtil";
-
     private static Context mAppContext;
     private static NotificationManager mNotificationManager;
 
@@ -87,7 +86,7 @@ public class NotificationsUtil
         Intent contentIntent = new Intent(mAppContext, NotificationActionReceiver.class);
 
         contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ACTION, data.contentIntentTag);
-        contentIntent.putExtra(NotificationActionReceiver.NOTIFICATION_ID, data.notificationId);
+        contentIntent.putExtra(NotificationActionReceiver.KEY_NOTIFICATION, data.notification);
 
         PendingIntent contentPendingIntent = PendingIntent.getBroadcast(mAppContext, (int) System.currentTimeMillis(), contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -133,11 +132,16 @@ public class NotificationsUtil
                 mBuilder.setPriority(data.priority);
             }
         }
-        int notificationId = getNotificationId(data.contentIntentTag);
+        int notificationId = getNotificationId(data.contentIntentTag, data.notificationId);
         mNotificationManager.notify(notificationId, mBuilder.build());
     }
 
-    private static int getNotificationId(String contentIntentTag)
+    public static int getLastIntDigitsFromLong(long notificationId)
+    {
+        return (int) (notificationId % 1000000000);
+    }
+
+    private static int getNotificationId(String contentIntentTag, long notificationId)
     {
         switch (contentIntentTag)
         {
@@ -162,7 +166,7 @@ public class NotificationsUtil
                 return NotificationActionReceiver.NOTIFICATION_ID_RECEIVING_SHARED_LOCATION;
 
             case Notifications.KEY_INITIATE_SHARE_LOCATION :
-                return NotificationActionReceiver.NOTIFICATION_ID_INITIATE_SHARE_LOCATION;
+                return getLastIntDigitsFromLong(notificationId);
             default:
                 return -1;
         }

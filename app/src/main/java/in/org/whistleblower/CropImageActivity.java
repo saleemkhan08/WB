@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 
+import butterknife.BindColor;
+import butterknife.ButterKnife;
 import in.org.whistleblower.custom.view.CropImageView;
 import in.org.whistleblower.custom.view.HighlightView;
 import in.org.whistleblower.custom.view.ImageViewTouchBase;
@@ -44,6 +46,8 @@ public class CropImageActivity extends MonitoredActivity
 
     private boolean isSaving;
 
+    @BindColor(R.color.colorPrimaryDark)
+    int primaryDark;
     private int sampleSize;
     private RotateBitmap rotateBitmap;
     private CropImageView imageView;
@@ -55,6 +59,7 @@ public class CropImageActivity extends MonitoredActivity
         super.onCreate(savedInstanceState);
         setupViews();
         loadInput();
+        ButterKnife.bind(this);
         if (rotateBitmap == null)
         {
             finish();
@@ -408,7 +413,7 @@ public class CropImageActivity extends MonitoredActivity
 
     private void clearImageView()
     {
-        imageView.setBackgroundColor(getColor(R.color.colorPrimaryDark));
+        imageView.setBackgroundColor(primaryDark);
         imageView.clear();
         if (rotateBitmap != null)
         {

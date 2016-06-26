@@ -6,7 +6,7 @@ import android.os.Parcelable;
 public class NotificationData implements Parcelable
 {
     public String contentText;
-
+    public Notifications notification;
     public String action1IntentTag;
     public String action1IntentText;
     public int action1IntentIcon;
@@ -16,13 +16,17 @@ public class NotificationData implements Parcelable
     public int action2IntentIcon;
 
     public String contentTitle;
-    public int notificationId;
+    public long notificationId;
     public String contentIntentTag;
     public boolean onGoing = false;
     public String largeIconUrl;
     public boolean vibrate;
     public String notificationType;
     public int priority = 0;
+
+    public NotificationData()
+    {
+    }
 
     @Override
     public int describeContents()
@@ -33,29 +37,34 @@ public class NotificationData implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeString(this.action1IntentTag);
         dest.writeString(this.contentText);
+        dest.writeParcelable(this.notification, flags);
+        dest.writeString(this.action1IntentTag);
         dest.writeString(this.action1IntentText);
         dest.writeInt(this.action1IntentIcon);
+        dest.writeString(this.action2IntentTag);
+        dest.writeString(this.action2IntentText);
+        dest.writeInt(this.action2IntentIcon);
         dest.writeString(this.contentTitle);
-        dest.writeInt(this.notificationId);
+        dest.writeLong(this.notificationId);
         dest.writeString(this.contentIntentTag);
         dest.writeByte(onGoing ? (byte) 1 : (byte) 0);
         dest.writeString(this.largeIconUrl);
         dest.writeByte(vibrate ? (byte) 1 : (byte) 0);
         dest.writeString(this.notificationType);
-    }
-
-    public NotificationData()
-    {
+        dest.writeInt(this.priority);
     }
 
     protected NotificationData(Parcel in)
     {
-        this.action1IntentTag = in.readString();
         this.contentText = in.readString();
+        this.notification = in.readParcelable(Notifications.class.getClassLoader());
+        this.action1IntentTag = in.readString();
         this.action1IntentText = in.readString();
         this.action1IntentIcon = in.readInt();
+        this.action2IntentTag = in.readString();
+        this.action2IntentText = in.readString();
+        this.action2IntentIcon = in.readInt();
         this.contentTitle = in.readString();
         this.notificationId = in.readInt();
         this.contentIntentTag = in.readString();
@@ -63,6 +72,7 @@ public class NotificationData implements Parcelable
         this.largeIconUrl = in.readString();
         this.vibrate = in.readByte() != 0;
         this.notificationType = in.readString();
+        this.priority = in.readInt();
     }
 
     public static final Parcelable.Creator<NotificationData> CREATOR = new Parcelable.Creator<NotificationData>()
