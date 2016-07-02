@@ -151,6 +151,8 @@ public class NotificationsFragment extends DialogFragment
     @OnClick(R.id.all)
     public void onAllClick()
     {
+
+        //Checking branch
         isUnreadClicked = false;
         unread.setTextColor(disabled);
         all.setTextColor(enabled);
