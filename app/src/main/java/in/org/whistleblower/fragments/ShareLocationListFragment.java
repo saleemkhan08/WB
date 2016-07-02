@@ -121,7 +121,6 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
 
     private void showEmptyListString()
     {
-        TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
         emptyListTextView.setText(isSharingClicked ? locationIsntBeingShared : locationIsntBeingReceived);
     }
@@ -149,6 +148,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
     @OnClick(R.id.sharing)
     public void onSharingClick()
     {
+        emptyList.setVisibility(View.GONE);
         sharing.setTextColor(enabled);
         receiving.setTextColor(disabled);
         isSharingClicked = true;
@@ -156,11 +156,11 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
         sharing.setTypeface(WhistleBlower.getTypeface(), Typeface.BOLD);
         receiving.setTypeface(WhistleBlower.getTypeface(), Typeface.NORMAL);
 
-        TransitionUtil.defaultTransition(sharingHighlight);
         sharingHighlight.setBackgroundColor(colorAccent);
         receivingHighlight.setBackgroundColor(transparent);
 
         ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
+
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mShareLocationList.size() < 1)
         {
@@ -173,6 +173,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
     @OnClick(R.id.receiving)
     public void onReceivingClick()
     {
+        emptyList.setVisibility(View.GONE);
         isSharingClicked = false;
         sharing.setTextColor(disabled);
         receiving.setTextColor(enabled);
@@ -186,7 +187,7 @@ public class ShareLocationListFragment extends android.support.v4.app.DialogFrag
 
         //Fetch from notifications tables and show.
 
-        ArrayList<ShareLocation> mShareLocationList = ShareLocationDao.getList();
+        ArrayList<ShareLocation> mShareLocationList = new ArrayList<>();
         AppCompatActivity mActivity = (AppCompatActivity) getActivity();
         if(mShareLocationList.size() < 1)
         {

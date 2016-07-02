@@ -1,6 +1,5 @@
 package in.org.whistleblower.gcm;
 
-import android.app.Notification;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -63,7 +62,6 @@ public class GcmPushReceiver extends GcmListenerService
                     data.action2IntentIcon = R.mipmap.reject_primary_dark;
                     data.action2IntentTag = NotificationActionReceiver.NOTIFY_REJECTION_TO_SENDER;
                     data.action2IntentText = "Reject";
-                    data.priority = Notification.PRIORITY_MAX;
                     NotificationsUtil.showNotification(data);
                     break;
             }

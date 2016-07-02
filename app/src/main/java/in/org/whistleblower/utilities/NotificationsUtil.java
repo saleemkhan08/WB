@@ -15,7 +15,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -127,10 +126,6 @@ public class NotificationsUtil
             notificationDefault.defaults |= Notification.DEFAULT_VIBRATE; //Vibration
             notificationDefault.defaults |= Notification.DEFAULT_SOUND; // Sound
             mBuilder.setDefaults(notificationDefault.defaults);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-            {
-                mBuilder.setPriority(data.priority);
-            }
         }
         int notificationId = getNotificationId(data.contentIntentTag, data.notificationId);
         mNotificationManager.notify(notificationId, mBuilder.build());
